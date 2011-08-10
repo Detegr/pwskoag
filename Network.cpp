@@ -1,5 +1,4 @@
 #include "Network.h"
-
 #include <iostream>
 
 namespace Network
@@ -34,17 +33,49 @@ namespace Network
 	}
 	Server::~Server()
 	{
+		if(SelfThread) std::cerr << "!! Server not stopped and still shutting down !!" << std::endl;
+	}
+	TcpServer::~TcpServer()
+	{
 		sf::Lock lock(SelfMutex);
-		if(SelfThread) Stop();
+		for(auto it=Clients.begin(); it!=Clients.end(); ++it) delete *it;
 	}
 	void TcpServer::ServerLoop()
 	{
 		TcpListener.Listen(ServerPort);
 		TcpListener.SetBlocking(false);
+		sf::SocketSelector selector;
+		selector.Add(TcpListener);
 		while(!StopNow)
 		{
-			sf::TcpSocket socket;
-			if(TcpListener.Accept(socket)==sf::Socket::Done) std::cout << "Client connected from " << socket.GetRemoteAddress() << std::endl;
+			selector.Wait(1000);
+			if(selector.IsReady(TcpListener))
+			{
+				sf::TcpSocket* client = new sf::TcpSocket;
+				if(TcpListener.Accept(*client) == sf::Socket::Done)
+				{
+					std::cout << "Client connected." << std::endl;
+					Clients.push_back(client);
+					selector.Add(*client);
+				}
+			}
+			else
+			{
+				for(auto it=Clients.begin(); it!=Clients.end(); ++it)
+				{
+					sf::TcpSocket& client = **it;
+					if(selector.IsReady(client))
+					{
+						sf::Packet p;
+						if(client.Receive(p)==sf::Socket::Done)
+						{
+							std::string data;
+							p >> data;
+							std::cout << data << std::endl;
+						}
+					}
+				}
+			}
 		}
 		TcpListener.Close();
 		std::cout << "Shut down successful." << std::endl;

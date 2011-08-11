@@ -61,13 +61,6 @@ namespace Network
 										selector.Remove(*client);
 										std::cout << "Client disconnected." << std::endl;
 										break;
-									case Command::String:
-									{
-										std::string str;
-										p >> str;
-										std::cout << str << std::endl;
-										break;
-									}
 									case Command::EOP: goto EndOfPacket;
 									default: break;
 								}
@@ -103,12 +96,37 @@ namespace Network
 		sf::Lock lock(selfMutex);
 		tcpSocket.Disconnect();
 	}
-	void TcpClient::ClientLoop() {}
 	void TcpClient::Send(Command c)
 	{
 		packet<<(uchar)c;
 		packet<<(uchar)Command::EOP;
 		tcpSocket.Send(packet);
 		packet.Clear();
+	}
+	void TcpClient::ClientLoop()
+	{
+		while(!stopNow)
+		{
+			sf::Packet p;
+			tcpSocket.Receive(p);
+			uchar header=0;
+			for(;;)
+			{
+				p>>header;
+				switch (header)
+				{
+					case Command::String:
+					{
+						std::string str;
+						p >> str;
+						std::cout << str << std::endl;
+						break;
+					}
+					case Command::EOP: goto EndOfPacket;
+					default: break;
+				}
+			}
+			EndOfPacket:;
+		}
 	}
 }

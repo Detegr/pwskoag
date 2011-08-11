@@ -53,12 +53,12 @@ namespace Network
 			void 		ClientLoop();
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
-			void Connect(const char* addr, ushort port);
-			void Disconnect();
-			void Append(Command c) {packet<<(uchar)c;}
-			template<class type> void Append(Command c, type t) {Append(c); packet<<t;}
-			void Send() {Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
-			void Send(Command c);
+			void 				Connect(const char* addr, ushort port);
+			void 				Disconnect();
+			void 				Append(Command c) {packet<<(uchar)c;}
+			template<class type> void 	Append(Command c, type t) {Append(c); packet<<t;}
+			void 				Send() {Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
+			void 				Send(Command c);
 	};
 
 	class Networking

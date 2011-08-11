@@ -40,6 +40,7 @@ namespace Network
 	class Client
 	{
 		protected:
+			bool		stopNow;
 			uint 		serverPort;
 			sf::Mutex	selfMutex;
 			sf::Thread*	selfThread;
@@ -47,14 +48,14 @@ namespace Network
 			virtual 	~Client();
 			virtual void 	ClientLoop()=0;
 
-			Client() : serverPort(), selfThread(NULL) {};
+			Client() : stopNow(false), serverPort(), selfThread(NULL) {};
 		public:
-			virtual void 	Start();
-			virtual void 	Stop();
-			virtual void 	ForceStop();
-			virtual void 	Connect(const char* addr, ushort port)=0;
-			virtual void 	Disconnect()=0;
-			bool 		IsRunning() const { return selfThread!=NULL; }
+			virtual void 			Start();
+			virtual void 			Stop();
+			virtual void 			ForceStop();
+			virtual void 			Connect(const char* addr, ushort port)=0;
+			virtual void 			Disconnect()=0;
+			bool 				IsRunning() const { return selfThread!=NULL; }
 	};
 
 }

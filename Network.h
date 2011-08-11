@@ -16,10 +16,10 @@ namespace Network
 	
 	enum Command
 	{
-		EOP=0,
 		Heartbeat,
 		Connect,
-		Disconnect
+		Disconnect,
+		EOP=255
 	};
 
 	/*
@@ -55,7 +55,7 @@ namespace Network
 			void Connect(const char* addr, ushort port);
 			void Disconnect();
 			void Send(sf::Packet& p) {tcpSocket.Send(p); packet.Clear();}
-			void Send(Command c) {packet<<(uchar)c; tcpSocket.Send(packet); packet.Clear();}
+			void Send(Command c);
 	};
 
 	class Networking

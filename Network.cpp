@@ -47,20 +47,26 @@ namespace Network
 						sf::Packet p;
 						if(client->Receive(p)==sf::Socket::Done)
 						{
-							uchar header; p>>header;
-							switch (header)
+							uchar header=0;
+							for(;;)
 							{
-								case Command::Heartbeat:
-									lastHeartBeat.Reset();
-									std::cout << "Beat from " << client->GetRemoteAddress() << ":" << client->GetRemotePort() << std::endl;
-									break;
-								case Command::Disconnect:		
-									it=clients.erase(it);
-									selector.Remove(*client);
-									std::cout << "Client disconnected." << std::endl;
-									break;
-								default: break;
+								p>>header;
+								switch (header)
+								{
+									case Command::Heartbeat:
+										lastHeartBeat.Reset();
+										std::cout << "Beat from " << client->GetRemoteAddress() << ":" << client->GetRemotePort() << std::endl;
+										break;
+									case Command::Disconnect:		
+										it=clients.erase(it);
+										selector.Remove(*client);
+										std::cout << "Client disconnected." << std::endl;
+										break;
+									case Command::EOP: goto EndOfPacket;
+									default: break;
+								}
 							}
+							EndOfPacket:;
 						}
 					}
 				}
@@ -92,4 +98,11 @@ namespace Network
 		tcpSocket.Disconnect();
 	}
 	void TcpClient::ClientLoop() {}
+	void TcpClient::Send(Command c)
+	{
+		packet<<(uchar)c;
+		packet<<(uchar)Command::EOP;
+		tcpSocket.Send(packet);
+		packet.Clear();
+	}
 }

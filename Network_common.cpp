@@ -49,6 +49,7 @@ namespace Network
 	void Client::Stop()
 	{
 		sf::Lock lock(selfMutex);
+		stopNow=true;
 		if(selfThread) {selfThread->Wait(); delete selfThread; selfThread=NULL;}
 		else std::cerr << "Client already stopped!" << std::endl;
 	}

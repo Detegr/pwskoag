@@ -65,7 +65,15 @@ namespace Network
 									default: break;
 								}
 							}
-							EndOfPacket:;
+							EndOfPacket:
+							sf::Packet data_to_client;
+							std::string str("Hi, this is server speaking.");
+							data_to_client << str;
+							data_to_client << (uchar)Command::EOP;
+							client->Connect(client->GetRemoteAddress(), client->GetRemotePort());
+							client->Send(data_to_client);
+							std::cout << "Sent: " << str << std::endl;
+							data_to_client.Clear();
 						}
 					}
 				}
@@ -89,12 +97,14 @@ namespace Network
 		serverPort=port;
 		tcpSocket.Connect(serverAddress, serverPort);
 		Send(Command::Connect);
+		Start();
 	}
 	void TcpClient::Disconnect()
 	{
-		Send(Command::Disconnect);
 		sf::Lock lock(selfMutex);
+		Send(Command::Disconnect);
 		tcpSocket.Disconnect();
+		Stop();
 	}
 	void TcpClient::Send(Command c)
 	{
@@ -105,6 +115,8 @@ namespace Network
 	}
 	void TcpClient::ClientLoop()
 	{
+		Append(Command::String, std::string("Hello, server!"));
+		Send();
 		while(!stopNow)
 		{
 			sf::Packet p;

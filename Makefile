@@ -1,13 +1,12 @@
 CC=g++
 OPTS=-std=c++0x -ggdb
+SOURCES=Network.cpp Network_common.cpp
 LIBS=-lsfml-network -lsfml-system
 EXE=a.out
 
-all: main.cpp Network.o
-	$(CC) -o $(EXE) main.cpp Network.o $(LIBS) $(OPTS)
-Network.o: Network.cpp
-	$(CC) -c Network.cpp $(OPTS)
-server: Server.cpp Network.o
-	$(CC) -o server Server.cpp Network.o $(LIBS) $(OPTS)
+all: main.cpp $(SOURCES)
+	$(CC) -o $(EXE) main.cpp $(SOURCES) $(OPTS) $(LIBS)
+server: Server.cpp $(SOURCES)
+	$(CC) -o server Server.cpp $(SOURCES) $(OPTS) $(LIBS)
 clean:
 	rm *.o $(EXE)

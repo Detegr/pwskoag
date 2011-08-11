@@ -7,6 +7,8 @@
 namespace Network
 {
 	const uint TIMEOUTMS=10000;
+	const uint TICKS_PER_SEC=33;
+	const uint TICK_WAITTIME=1000/TICKS_PER_SEC;
 
 	enum Command
 	{
@@ -34,9 +36,9 @@ namespace Network
 
 			Server(ushort port) : stopNow(false), serverPort(port), selfThread(NULL) {};
 		public:
-			virtual void Start();
-			virtual void Stop();
-			virtual void ForceStop();
+			virtual void 	Start();
+			virtual void 	Stop();
+			virtual void 	ForceStop();
 			bool IsRunning() const { return selfThread!=NULL; }
 	};
 

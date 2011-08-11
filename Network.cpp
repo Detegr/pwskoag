@@ -48,7 +48,7 @@ namespace Network
 		selector.Add(tcpListener);
 		while(!stopNow)
 		{
-			selector.Wait(1000);
+			selector.Wait(10);
 			if(selector.IsReady(tcpListener))
 			{
 				sf::TcpSocket* client = new sf::TcpSocket;
@@ -84,6 +84,7 @@ namespace Network
 			}
 		}
 		tcpListener.Close();
+
 		std::cout << "Shut down successful." << std::endl;
 	}
 

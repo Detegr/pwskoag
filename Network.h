@@ -8,15 +8,20 @@
 namespace Network
 {
 	const uint TIMEOUTMS=10000;
-	const uint TICKS_PER_SEC=33;
-	const uint TICK_WAITTIME=1000/TICKS_PER_SEC;
+	const uint TICKS_PER_SEC_TCP=4;
+	const uint TICK_WAITTIME_TCP=1000/TICKS_PER_SEC_TCP;
 
+	const uint TICKS_PER_SEC_UDP=33;
+	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
+	
 	enum Command
 	{
+		EOP=0,
 		Heartbeat,
 		Connect,
 		Disconnect
 	};
+
 	/*
 	 * TcpServer class
 	 *
@@ -43,12 +48,14 @@ namespace Network
 			std::string	serverAddress;
 			uint 		serverPort;
 			sf::TcpSocket 	tcpSocket;
+			sf::Packet	packet;
 			void 		ClientLoop();
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
 			void Connect(const char* addr, ushort port);
 			void Disconnect();
-			void Send(sf::Packet& p) { tcpSocket.Send(p); }
+			void Send(sf::Packet& p) {tcpSocket.Send(p); packet.Clear();}
+			void Send(Command c) {packet<<(uchar)c; tcpSocket.Send(packet); packet.Clear();}
 	};
 
 	class Networking

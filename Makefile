@@ -8,5 +8,7 @@ all: main.cpp $(SOURCES)
 	$(CC) -o $(EXE) main.cpp $(SOURCES) $(OPTS) $(LIBS)
 server: Server.cpp $(SOURCES)
 	$(CC) -o server Server.cpp $(SOURCES) $(OPTS) $(LIBS)
+client: Client.cpp $(SOURCES)
+	$(CC) -o client Client.cpp $(SOURCES) $(OPTS) $(LIBS)
 clean:
 	rm *.o $(EXE)

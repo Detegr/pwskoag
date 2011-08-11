@@ -66,14 +66,10 @@ namespace Network
 								}
 							}
 							EndOfPacket:
-							sf::Packet data_to_client;
-							data_to_client << (uchar)Command::String;
+							sf::Packet toClient;
 							std::string str("Hi, this is server speaking.");
-							data_to_client << str;
-							data_to_client << (uchar)Command::EOP;
-							client->Send(data_to_client);
+							Send(Command::String, str, client, toClient);
 							std::cout << "Sent: " << str << std::endl;
-							data_to_client.Clear();
 						}
 					}
 				}
@@ -106,19 +102,9 @@ namespace Network
 		Send(Command::Disconnect);
 		tcpSocket.Disconnect();
 	}
-	void TcpClient::Send(Command c)
-	{
-		sf::Lock lock(selfMutex);
-		packet<<(uchar)c;
-		packet<<(uchar)Command::EOP;
-		tcpSocket.Send(packet);
-		packet.Clear();
-	}
 	void TcpClient::ClientLoop()
 	{
-		Append(Command::String, std::string("Hello, server!"));
-		Send();
-		std::cout << "Entering receive loop" << std::endl;
+		Send(Command::Heartbeat);
 		while(!stopNow)
 		{
 			sf::Packet p;
@@ -138,6 +124,7 @@ namespace Network
 					}
 					case Command::EOP: goto EndOfPacket;
 				}
+				std::cout << "Parsing..." << std::endl;
 			}
 			EndOfPacket:
 			sleep(1);

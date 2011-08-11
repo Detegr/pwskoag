@@ -5,26 +5,26 @@ namespace Network
 {
 	void Server::Start()
 	{
-		sf::Lock lock(SelfMutex);
-		if(!SelfThread)
+		sf::Lock lock(selfMutex);
+		if(!selfThread)
 		{
-			StopNow=false;
-			SelfThread = new sf::Thread(Server::ServerInitializer, this);
-			SelfThread->Launch();
+			stopNow=false;
+			selfThread = new sf::Thread(Server::ServerInitializer, this);
+			selfThread->Launch();
 		}
 		else std::cerr << "Server already running!" << std::endl;
 	}
 	void Server::Stop()
 	{
-		sf::Lock lock(SelfMutex);
-		StopNow=true;
-		if(SelfThread) {delete SelfThread; SelfThread=NULL;}
+		sf::Lock lock(selfMutex);
+		stopNow=true;
+		if(selfThread) {delete selfThread; selfThread=NULL;}
 		else std::cerr << "Server already stopped!" << std::endl;
 	}
 	void Server::ForceStop()
 	{
-		sf::Lock lock(SelfMutex);
-		if(SelfThread) {SelfThread->Terminate(); delete SelfThread; SelfThread=NULL;}
+		sf::Lock lock(selfMutex);
+		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Server::ServerInitializer(void* args)
 	{
@@ -33,41 +33,47 @@ namespace Network
 	}
 	Server::~Server()
 	{
-		if(SelfThread) std::cerr << "!! Server not stopped and still shutting down !!" << std::endl;
+		if(selfThread) std::cerr << "!! Server not stopped and still shutting down !!" << std::endl;
 	}
 	TcpServer::~TcpServer()
 	{
-		sf::Lock lock(SelfMutex);
-		for(auto it=Clients.begin(); it!=Clients.end(); ++it) delete *it;
+		sf::Lock lock(selfMutex);
+		for(auto it=clients.begin(); it!=clients.end(); ++it) delete it->first;
 	}
 	void TcpServer::ServerLoop()
 	{
-		TcpListener.Listen(ServerPort);
-		TcpListener.SetBlocking(false);
+		tcpListener.Listen(serverPort);
+		tcpListener.SetBlocking(false);
 		sf::SocketSelector selector;
-		selector.Add(TcpListener);
-		while(!StopNow)
+		selector.Add(tcpListener);
+		while(!stopNow)
 		{
 			selector.Wait(1000);
-			if(selector.IsReady(TcpListener))
+			if(selector.IsReady(tcpListener))
 			{
 				sf::TcpSocket* client = new sf::TcpSocket;
-				if(TcpListener.Accept(*client) == sf::Socket::Done)
+				if(tcpListener.Accept(*client) == sf::Socket::Done)
 				{
 					std::cout << "Client connected." << std::endl;
-					Clients.push_back(client);
+					clients.push_back(std::make_pair(client, sf::Clock()));
 					selector.Add(*client);
 				}
 			}
 			else
 			{
-				for(auto it=Clients.begin(); it!=Clients.end(); ++it)
+				for(auto it=clients.begin(); it!=clients.end(); ++it)
 				{
-					sf::TcpSocket& client = **it;
-					if(selector.IsReady(client))
+					sf::TcpSocket* client = it->first;
+					sf::Clock& lastHeartBeat = it->second;
+					if(lastHeartBeat.GetElapsedTime() > TIMEOUTMS)
+					{
+						it=clients.erase(it);
+						std::cout << "Client timed out." << std::endl;
+					}
+					if(selector.IsReady(*client))
 					{
 						sf::Packet p;
-						if(client.Receive(p)==sf::Socket::Done)
+						if(client->Receive(p)==sf::Socket::Done)
 						{
 							std::string data;
 							p >> data;
@@ -77,35 +83,32 @@ namespace Network
 				}
 			}
 		}
-		TcpListener.Close();
+		tcpListener.Close();
 		std::cout << "Shut down successful." << std::endl;
 	}
 
 	Client::~Client()
-	{
-		sf::Lock lock(SelfMutex);
-		if(SelfThread) Stop();
-	}
+	{}
 	void Client::Start()
 	{
-		sf::Lock lock(SelfMutex);
-		if(!SelfThread)
+		sf::Lock lock(selfMutex);
+		if(!selfThread)
 		{
-			SelfThread = new sf::Thread(Client::ClientInitializer, this);
-			SelfThread->Launch();
+			selfThread = new sf::Thread(Client::ClientInitializer, this);
+			selfThread->Launch();
 		}
 		else std::cerr << "Client already running!" << std::endl;
 	}
 	void Client::Stop()
 	{
-		sf::Lock lock(SelfMutex);
-		if(SelfThread) {SelfThread->Wait(); delete SelfThread; SelfThread=NULL;}
+		sf::Lock lock(selfMutex);
+		if(selfThread) {selfThread->Wait(); delete selfThread; selfThread=NULL;}
 		else std::cerr << "Client already stopped!" << std::endl;
 	}
 	void Client::ForceStop()
 	{
-		sf::Lock lock(SelfMutex);
-		if(SelfThread) {SelfThread->Terminate(); delete SelfThread; SelfThread=NULL;}
+		sf::Lock lock(selfMutex);
+		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Client::ClientInitializer(void* args)
 	{
@@ -114,15 +117,15 @@ namespace Network
 	}
 	void TcpClient::Connect(const char* addr, ushort port)
 	{
-		sf::Lock lock(SelfMutex);
-		ServerAddress=addr;
-		ServerPort=port;
-		TcpSocket.Connect(ServerAddress, ServerPort);
+		sf::Lock lock(selfMutex);
+		serverAddress=addr;
+		serverPort=port;
+		tcpSocket.Connect(serverAddress, serverPort);
 	}
 	void TcpClient::Disconnect()
 	{
-		sf::Lock lock(SelfMutex);
-		TcpSocket.Disconnect();
+		sf::Lock lock(selfMutex);
+		tcpSocket.Disconnect();
 	}
 	void TcpClient::ClientLoop() {}
 }

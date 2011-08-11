@@ -6,6 +6,14 @@
 
 namespace Network
 {
+	const uint TIMEOUTMS=10000;
+
+	enum Command
+	{
+		Heartbeat,
+		Connect,
+		Disconnect
+	};
 	/*
 	 * Server class
 	 * Meant to be inherited. Includes routines for starting and
@@ -16,20 +24,20 @@ namespace Network
 	class Server
 	{
 		protected:
-			bool 		StopNow;
-			uint 		ServerPort;
-			sf::Mutex 	SelfMutex;
-			sf::Thread* 	SelfThread;
+			bool 		stopNow;
+			uint 		serverPort;
+			sf::Mutex 	selfMutex;
+			sf::Thread* 	selfThread;
 			static void 	ServerInitializer(void* args);
 			virtual 	~Server();
 			virtual 	void ServerLoop()=0;
 
-			Server(ushort port) : StopNow(false), ServerPort(port), SelfThread(NULL) {};
+			Server(ushort port) : stopNow(false), serverPort(port), selfThread(NULL) {};
 		public:
 			virtual void Start();
 			virtual void Stop();
 			virtual void ForceStop();
-			bool isRunning() const { return SelfThread!=NULL; }
+			bool IsRunning() const { return selfThread!=NULL; }
 	};
 
 	/*
@@ -40,13 +48,13 @@ namespace Network
 	class TcpServer : public Server
 	{	
 		private:
-			sf::TcpListener 		TcpListener;
-			std::list<sf::TcpSocket*> 	Clients;
-			void				ServerLoop();
+			sf::TcpListener 					tcpListener;
+			std::list<std::pair<sf::TcpSocket*, sf::Clock> > 	clients;
+			void							ServerLoop();
 		public:
 			TcpServer(ushort port) : Server(port) {}
 			~TcpServer();
-			std::list<sf::TcpSocket*>& GetClients() { return Clients; }
+			std::list<std::pair<sf::TcpSocket*, sf::Clock> >& GetClients() { return clients; }
 	};
 
 	/*
@@ -56,21 +64,21 @@ namespace Network
 	class Client
 	{
 		protected:
-			uint 		ServerPort;
-			sf::Mutex	SelfMutex;
-			sf::Thread*	SelfThread;
+			uint 		serverPort;
+			sf::Mutex	selfMutex;
+			sf::Thread*	selfThread;
 			static void	ClientInitializer(void* args);
 			virtual 	~Client();
 			virtual void 	ClientLoop()=0;
 
-			Client() : ServerPort(), SelfThread(NULL) {};
+			Client() : serverPort(), selfThread(NULL) {};
 		public:
 			virtual void 	Start();
 			virtual void 	Stop();
 			virtual void 	ForceStop();
 			virtual void 	Connect(const char* addr, ushort port)=0;
 			virtual void 	Disconnect()=0;
-			bool 		isRunning() const { return SelfThread!=NULL; }
+			bool 		IsRunning() const { return selfThread!=NULL; }
 	};
 
 	/*
@@ -79,21 +87,21 @@ namespace Network
 	class TcpClient : public Client
 	{
 		private:
-			std::string	ServerAddress;
-			uint 		ServerPort;
-			sf::TcpSocket 	TcpSocket;
+			std::string	serverAddress;
+			uint 		serverPort;
+			sf::TcpSocket 	tcpSocket;
 			void 		ClientLoop();
 		public:
-			TcpClient() : ServerAddress(), ServerPort(0), TcpSocket() {}
+			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
 			void Connect(const char* addr, ushort port);
 			void Disconnect();
-			void Send(sf::Packet& p) { TcpSocket.Send(p); }
+			void Send(sf::Packet& p) { tcpSocket.Send(p); }
 	};
 
 	class Networking
 	{
 		private:
-			TcpClient TcpData;
+			TcpClient tcpData;
 			//UdpClient UdpData;
 		public:
 	};

@@ -21,7 +21,6 @@ namespace Network
 					if(client->Receive(p)==sf::Socket::Done)
 					{
 						uchar header; p>>header;
-						std::cout << "header" << std::endl;
 						if(header==Command::Connect)
 						{
 							selector.Add(*client);
@@ -62,6 +61,13 @@ namespace Network
 										selector.Remove(*client);
 										std::cout << "Client disconnected." << std::endl;
 										break;
+									case Command::String:
+									{
+										std::string str;
+										p >> str;
+										std::cout << str << std::endl;
+										break;
+									}
 									case Command::EOP: goto EndOfPacket;
 									default: break;
 								}

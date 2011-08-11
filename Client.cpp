@@ -4,10 +4,8 @@ int main()
 {
 	Network::TcpClient c;
 	c.Connect("localhost", 55555);
-	for(int i=0; i<50; ++i)
-	{
-		c.Send(Network::Command::Heartbeat);
-		usleep(100000);
-	}
+	std::string str("Hello TcpClient!");
+	c.Append(Network::Command::String, str);
+	c.Send();
 	c.Disconnect();
 }

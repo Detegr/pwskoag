@@ -19,6 +19,7 @@ namespace Network
 		Heartbeat,
 		Connect,
 		Disconnect,
+		String,
 		EOP=255
 	};
 
@@ -54,7 +55,9 @@ namespace Network
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
 			void Connect(const char* addr, ushort port);
 			void Disconnect();
-			void Send(sf::Packet& p) {tcpSocket.Send(p); packet.Clear();}
+			void Append(Command c) {packet<<(uchar)c;}
+			template<class type> void Append(Command c, type t) {Append(c); packet<<t;}
+			void Send() {Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
 			void Send(Command c);
 	};
 

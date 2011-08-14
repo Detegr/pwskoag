@@ -62,8 +62,8 @@ namespace Network
 			void			ClientLoop();
 		public:
 			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
-			void	SetServer(const char* addr, uint port) : serverAddress(addr), serverPort(port) {udpSocket.Bind(sf::Socket::Anyport);}
-			void	Clear() {udpSocket.Unbind();}
+			void SetServer(const char* addr, uint port);
+			void Clear() {udpSocket.Unbind();}
 	};
 
 	class Networking

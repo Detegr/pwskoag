@@ -148,4 +148,10 @@ namespace Network
 			msSleep(TICK_WAITTIME_TCP);
 		}
 	}
+	void UdpClient::SetServer(const char* addr, uint port)
+	{
+		serverAddress = std::string(addr);
+		serverPort = port;
+		udpSocket.Bind(sf::Socket::AnyPort);
+	}
 }

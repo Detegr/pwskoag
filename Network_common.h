@@ -18,11 +18,24 @@ namespace Network
 		p.Clear();
 	}
 	static void TcpSend(sf::TcpSocket* sock, sf::Packet& p) {sock->Send(p); p.Clear();}
-	template <class type> void TcpSend(Command c, type t, sf::TcpSocket* sock, sf::Packet& p){p.Clear();Append(c,p);Append(t,p);Append(Command::EOP, p);TcpSend(sock,p);}
+	template <class type> void TcpSend(Command c, type t, sf::TcpSocket* sock, sf::Packet& p)
+	{
+			p.Clear();
+			Append(c,t,p); Append(Command::EOP, p); TcpSend(sock,p);
+	}
 
 	// Udp-functions
-	static void UdpSend(Command c, sf::IpAddress ip, uint port, sf::Packet& p)
-	{}
+	static void UdpSend(Command c, sf::UdpSocket* sock, sf::IpAddress ip, ushort port, sf::Packet& p)
+	{
+		p << (uchar)c << (uchar)Command::EOP;
+		sock->Send(p, ip, port);
+	}
+	static void UdpSend(sf::UdpSocket* sock, sf::IpAddress ip, uint port, sf::Packet& p) {sock->Send(p,ip,port); p.Clear();}
+	template <class type> void UdpSend(Command c, type t, sf::UdpSocket* sock, sf::IpAddress ip, ushort port, sf::Packet& p)
+	{
+		p.Clear();
+		Append(c, t, p); Append(Command::EOP, p); UdpSend(sock, ip, port, p);
+	}
 
 	/*
 	 * Server class

@@ -85,6 +85,25 @@ namespace Network
 		if(clients.size()>0) {std::cout << "There were " << clients.size() << " clients connected." << std::endl;}
 		std::cout << "Shut down successful." << std::endl;
 	}
+	void UdpServer::ServerLoop()
+	{
+		sf::Packet p;
+		while(!stopNow)
+		{
+			auto clients = master->GetClients();
+			for(auto it=clients.begin(); it!=clients.end(); ++it)
+			{
+				p.Clear();
+				sf::IpAddress ip = it->first->GetRemoteAddress();
+				ushort port = it->first->GetRemotePort();
+				if(udpSocket.Receive(p, ip, port)==sf::Socket::Done)
+				{
+					std::cout << "Got data from: " << it->first->GetRemoteAddress() << std::endl;
+				}
+			}
+			msSleep(TICK_WAITTIME_UDP);
+		}
+	}
 		
 	TcpServer::~TcpServer()
 	{
@@ -146,6 +165,23 @@ namespace Network
 			}
 			EndOfPacket:
 			msSleep(TICK_WAITTIME_TCP);
+		}
+	}
+	void UdpClient::Connect(const char* addr, ushort port)
+	{
+		serverAddress = sf::IpAddress(addr);
+		serverPort = port;
+		udpSocket.SetBlocking(false);
+		udpSocket.Bind(sf::Socket::AnyPort);
+		Start();
+	}
+	void UdpClient::ClientLoop()
+	{
+		sf::Packet p;
+		while(!stopNow)
+		{
+			UdpSend(Command::String, std::string("UDP Data."), &udpSocket, serverAddress, serverPort, p);
+			msSleep(100);
 		}
 	}
 }

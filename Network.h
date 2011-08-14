@@ -31,6 +31,17 @@ namespace Network
 			std::list<std::pair<sf::TcpSocket*, sf::Clock> >& GetClients() { return clients; }
 	};
 
+	class UdpServer : public Server
+	{
+		private:
+			TcpServer*		master;
+			sf::UdpSocket	udpSocket;
+			void			ServerLoop();
+		public:
+			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp)
+			{udpSocket.SetBlocking(false); udpSocket.Bind(port);}
+	};
+
 	/*
 	 * TcpClient class
 	 */
@@ -50,6 +61,20 @@ namespace Network
 			template<class type> void 	Append(Command c, type t) {Append(c); packet<<t;}
 			void 				Send() {Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
 			void 				Send(Command c) {Network::TcpSend(c, &tcpSocket, packet);}
+	};
+
+	class UdpClient : public Client
+	{
+		private:
+			sf::IpAddress 	serverAddress;
+			ushort			serverPort;
+			sf::UdpSocket 	udpSocket;
+			sf::Packet		packet;
+			void			ClientLoop();
+		public:
+			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
+			void Connect(const char* addr, ushort port);
+			void Disconnect() {udpSocket.Unbind(); Stop();}
 	};
 
 	class Networking

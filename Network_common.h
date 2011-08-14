@@ -5,10 +5,7 @@
 
 namespace Network
 {
-	/*
-	 * Static sending and appending
-	 * primarily for Server to use.
-	 */
+	// Functions for sending and appending.
 	static void Send(Command c, sf::TcpSocket* sock, sf::Packet& p)
 	{
 		p<<(uchar)c;

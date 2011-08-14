@@ -14,7 +14,7 @@ namespace Network
 		p.Clear();
 	}
 	static void Send(sf::TcpSocket* sock, sf::Packet& p) {sock->Send(p); p.Clear();}
-	static void Append(Command c, sf::Packet& p) {p<<(uint)c;}
+	static void Append(Command c, sf::Packet& p) {p<<(uchar)c;}
 	template <class type> void Append(type t, sf::Packet& p){p<<t;}
 	template <class type> void Append(Command c, type t, sf::Packet& p){Append(c,p);p<<t;}
 	template <class type> void Send(Command c, type t, sf::TcpSocket* sock, sf::Packet& p){p.Clear();Append(c,p);Append(t,p);Append(Command::EOP, p);Send(sock,p);}

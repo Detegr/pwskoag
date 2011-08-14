@@ -59,6 +59,8 @@ namespace Network
 									case Command::Disconnect:		
 										it=clients.erase(it);
 										selector.Remove(*client);
+										delete client;
+										client=NULL;
 										std::cout << "Client disconnected." << std::endl;
 										break;
 									case Command::EOP: goto EndOfPacket;
@@ -66,10 +68,13 @@ namespace Network
 								}
 							}
 							EndOfPacket:
-							sf::Packet toClient;
-							std::string str("Hi, this is server speaking.");
-							Send(Command::String, str, client, toClient);
-							std::cout << "Sent: " << str << std::endl;
+							if(client)
+							{
+								sf::Packet toClient;
+								std::string str("Hi, this is server speaking.");
+								Send(Command::String, str, client, toClient);
+								std::cout << "Sent: " << str << std::endl;
+							}
 						}
 					}
 				}
@@ -91,6 +96,7 @@ namespace Network
 		sf::Lock lock(selfMutex);
 		serverAddress=addr;
 		serverPort=port;
+		tcpSocket.SetBlocking(false);
 		tcpSocket.Connect(serverAddress, serverPort);
 		Send(Command::Connect);
 		Start();
@@ -104,30 +110,42 @@ namespace Network
 	}
 	void TcpClient::ClientLoop()
 	{
+		sf::Clock timer;
 		Send(Command::Heartbeat);
+		sf::Packet p;
 		while(!stopNow)
 		{
-			sf::Packet p;
-			tcpSocket.Receive(p);
-			uchar header=0;
-			for(;;)
+			if(timer.GetElapsedTime()>2000)
 			{
-				p>>header;
-				switch (header)
+				std::cout << "Sending heartbeat." << std::endl;
+				Send(Command::Heartbeat);
+				timer.Reset();
+			}
+			p.Clear();
+			uchar header=0;
+			if(tcpSocket.Receive(p)==sf::Socket::Done)
+			{
+				for(;;)
 				{
-					case Command::String:
+					p>>header;
+					switch (header)
 					{
-						std::string str;
-						p >> str;
-						std::cout << str << std::endl;
-						break;
+						case Command::String:
+						{
+							std::string str;
+							p >> str;
+							std::cout << str << std::endl;
+							break;
+						}
+						case Command::EOP:
+							goto EndOfPacket;
+						default:
+							std::cout << "Invalid packet, skipping..." << std::endl; break;
 					}
-					case Command::EOP: goto EndOfPacket;
 				}
-				std::cout << "Parsing..." << std::endl;
 			}
 			EndOfPacket:
-			sleep(1);
+			msSleep(TICK_WAITTIME_TCP);
 		}
 	}
 }

@@ -55,14 +55,14 @@ namespace Network
 	class UdpClient : public Client
 	{
 		private:
-			std::string 	serverAddress;
-			uint			serverPort;
+			sf::IpAddress 	serverAddress;
+			ushort			serverPort;
 			sf::UdpSocket 	udpSocket;
 			sf::Packet		packet;
 			void			ClientLoop();
 		public:
 			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
-			void SetServer(const char* addr, uint port);
+			void SetServer(const char* addr, ushort port);
 			void Clear() {udpSocket.Unbind();}
 	};
 

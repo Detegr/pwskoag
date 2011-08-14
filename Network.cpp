@@ -72,7 +72,7 @@ namespace Network
 							{
 								sf::Packet toClient;
 								std::string str("Hi, this is server speaking.");
-								Send(Command::String, str, client, toClient);
+								TcpSend(Command::String, str, client, toClient);
 								std::cout << "Sent: " << str << std::endl;
 							}
 						}

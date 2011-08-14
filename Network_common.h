@@ -6,18 +6,19 @@
 namespace Network
 {
 	// Functions for sending and appending.
-	static void Send(Command c, sf::TcpSocket* sock, sf::Packet& p)
+	static void Append(Command c, sf::Packet& p) {p<<(uchar)c;}
+	template <class type> void Append(type t, sf::Packet& p){p<<t;}
+	template <class type> void Append(Command c, type t, sf::Packet& p){Append(c,p);p<<t;}
+
+	static void TcpSend(Command c, sf::TcpSocket* sock, sf::Packet& p)
 	{
 		p<<(uchar)c;
 		p<<(uchar)Command::EOP;
 		sock->Send(p);
 		p.Clear();
 	}
-	static void Send(sf::TcpSocket* sock, sf::Packet& p) {sock->Send(p); p.Clear();}
-	static void Append(Command c, sf::Packet& p) {p<<(uchar)c;}
-	template <class type> void Append(type t, sf::Packet& p){p<<t;}
-	template <class type> void Append(Command c, type t, sf::Packet& p){Append(c,p);p<<t;}
-	template <class type> void Send(Command c, type t, sf::TcpSocket* sock, sf::Packet& p){p.Clear();Append(c,p);Append(t,p);Append(Command::EOP, p);Send(sock,p);}
+	static void TcpSend(sf::TcpSocket* sock, sf::Packet& p) {sock->Send(p); p.Clear();}
+	template <class type> void TcpSend(Command c, type t, sf::TcpSocket* sock, sf::Packet& p){p.Clear();Append(c,p);Append(t,p);Append(Command::EOP, p);TcpSend(sock,p);}
 
 	/*
 	 * Server class

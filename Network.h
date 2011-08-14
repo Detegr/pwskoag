@@ -49,7 +49,7 @@ namespace Network
 			void 				Append(Command c) {packet<<(uchar)c;}
 			template<class type> void 	Append(Command c, type t) {Append(c); packet<<t;}
 			void 				Send() {Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
-			void 				Send(Command c) {Network::Send(c, &tcpSocket, packet);}
+			void 				Send(Command c) {Network::TcpSend(c, &tcpSocket, packet);}
 	};
 
 	class Networking

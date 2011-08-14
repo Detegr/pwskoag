@@ -1,9 +1,27 @@
 #pragma once
 #include <SFML/Network.hpp>
 #include "Base.h"
+#include "Network_commands.h"
 
 namespace Network
 {
+	/*
+	 * Static sending and appending
+	 * primarily for Server to use.
+	 */
+	static void Send(Command c, sf::TcpSocket* sock, sf::Packet& p)
+	{
+		p<<(uchar)c;
+		p<<(uchar)Command::EOP;
+		sock->Send(p);
+		p.Clear();
+	}
+	static void Send(sf::TcpSocket* sock, sf::Packet& p) {sock->Send(p); p.Clear();}
+	static void Append(Command c, sf::Packet& p) {p<<(uint)c;}
+	template <class type> void Append(type t, sf::Packet& p){p<<t;}
+	template <class type> void Append(Command c, type t, sf::Packet& p){Append(c,p);p<<t;}
+	template <class type> void Send(Command c, type t, sf::TcpSocket* sock, sf::Packet& p){p.Clear();Append(c,p);Append(t,p);Append(Command::EOP, p);Send(sock,p);}
+
 	/*
 	 * Server class
 	 * Meant to be inherited. Includes routines for starting and

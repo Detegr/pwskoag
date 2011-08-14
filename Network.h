@@ -14,32 +14,6 @@ namespace Network
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
 	
-	enum Command
-	{
-		Heartbeat,
-		Connect,
-		Disconnect,
-		String,
-		EOP=255
-	};
-	
-	/*
-	 * Static sending and appending
-	 * primarily for Server to use.
-	 */
-	static void Send(Command c, sf::TcpSocket* sock, sf::Packet& p)
-	{
-		p<<(uchar)c;
-		p<<(uchar)Command::EOP;
-		sock->Send(p);
-		p.Clear();
-	}
-	static void Send(sf::TcpSocket* sock, sf::Packet& p) {sock->Send(p); p.Clear();}
-	static void Append(Command c, sf::Packet& p) {p<<(uint)c;}
-	template <class type> void Append(type t, sf::Packet& p){p<<t;}
-	template <class type> void Append(Command c, type t, sf::Packet& p){Append(c,p);p<<t;}
-	template <class type> void Send(Command c, type t, sf::TcpSocket* sock, sf::Packet& p){p.Clear();Append(c,p);Append(t,p);Append(Command::EOP, p);Send(sock,p);}
-
 	/*
 	 * TcpServer class
 	 *

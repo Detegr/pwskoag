@@ -52,6 +52,20 @@ namespace Network
 			void 				Send(Command c) {Network::Send(c, &tcpSocket, packet);}
 	};
 
+	class UdpClient : public Client
+	{
+		private:
+			std::string 	serverAddress;
+			uint			serverPort;
+			sf::UdpSocket 	udpSocket;
+			sf::Packet		packet;
+			void			ClientLoop();
+		public:
+			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
+			void	SetServer(const char* addr, uint port) : serverAddress(addr), serverPort(port) {udpSocket.Bind(sf::Socket::Anyport);}
+			void	Clear() {udpSocket.Unbind();}
+	};
+
 	class Networking
 	{
 		private:

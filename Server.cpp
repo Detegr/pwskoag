@@ -13,12 +13,12 @@ int main()
 {
 	signal(SIGINT, sighandler);
 	Network::TcpServer s(55555);
-	//Network::UdpServer u(&s, 55556);
+	Network::UdpServer u(&s, 55556);
 	std::cout << "Starting server." << std::endl;
 	s.Start();
-	//u.Start();
+	u.Start();
 	while(!stopNow) sleep((uint)~0);
 	s.Stop();
-	//u.Stop();
+	u.Stop();
 	return 0;
 }

@@ -1,6 +1,5 @@
 #pragma once
 #include <SFML/Network.hpp>
-#include <unordered_map>
 #include "Base.h"
 #include "Network_commands.h"
 
@@ -39,27 +38,6 @@ namespace Network
 		Append(c, t, p); Append(Command::EOP, p); UdpSend(sock, ip, port, p);
 	}
 
-	class AutoSender
-	{
-		protected:
-			bool								stopNow;
-			sf::Thread*							selfThread;
-			sf::Mutex							autoSendMutex;
-			sf::Mutex							selfMutex;
-			static void							AutoSendInitializer(void* args);
-			std::unordered_map<uchar, void*>	objectsToSend;
-			virtual void						AutoSendLoop()=0;
-			void								Start();
-			void								Stop();
-			void								ForceStop();
-			AutoSender() : stopNow(false), selfThread(NULL) {}
-		public:
-			template <class type> void AutoSend(Command c, type* t)
-			{
-				sf::Lock lock(autoSendMutex);
-				objectsToSend.insert(std::make_pair((uchar)c,t));
-			}
-	};
 	/*
 	 * Server class
 	 * Meant to be inherited. Includes routines for starting and
@@ -70,13 +48,13 @@ namespace Network
 	class Server
 	{
 		protected:
-			bool 			stopNow;
-			uint 			serverPort;
-			sf::Mutex 		selfMutex;
+			bool 		stopNow;
+			uint 		serverPort;
+			sf::Mutex 	selfMutex;
 			sf::Thread* 	selfThread;
 			static void 	ServerInitializer(void* args);
-			virtual 		~Server();
-			virtual void	ServerLoop()=0;
+			virtual 	~Server();
+			virtual 	void ServerLoop()=0;
 
 			Server(ushort port) : stopNow(false), serverPort(port), selfThread(NULL) {};
 		public:
@@ -96,12 +74,12 @@ namespace Network
 	class Client
 	{
 		protected:
-			bool			stopNow;
-			uint 			serverPort;
-			sf::Mutex		selfMutex;
-			sf::Thread*		selfThread;
-			static void		ClientInitializer(void* args);
-			virtual 		~Client();
+			bool		stopNow;
+			uint 		serverPort;
+			sf::Mutex	selfMutex;
+			sf::Thread*	selfThread;
+			static void	ClientInitializer(void* args);
+			virtual 	~Client();
 			virtual void 	ClientLoop()=0;
 
 			Client() : stopNow(false), serverPort(), selfThread(NULL) {};

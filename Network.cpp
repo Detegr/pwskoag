@@ -194,13 +194,13 @@ namespace Network
 				switch((Command)it->first)
 				{
 					case Command::String:
-						tmp << *(std::string*)(it->second);
+						Network::Append(Command::String, (*(std::string*)(it->second)), tmp);
 						break;
 				}
 			}
 			autoSendMutex.Unlock();
 			while(!IsSent() && !AutoSender::stopNow) {msSleep(TICK_WAITTIME_TCP/2);}
-			Append(Command::String, tmp);
+			while(!tmp.EndOfPacket()){uchar data; tmp>>data; packet<<data;}
 		}
 	}
 

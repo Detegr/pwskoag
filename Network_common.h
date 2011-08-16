@@ -8,8 +8,8 @@ namespace Network
 {
 	// Functions for sending and appending.
 	static void Append(Command c, sf::Packet& p) {p<<(uchar)c;}
-	template <class type> void Append(type t, sf::Packet& p){p<<t;}
-	template <class type> void Append(Command c, type t, sf::Packet& p){Append(c,p);p<<t;}
+	template <class type> void Append(type& t, sf::Packet& p){p<<t;}
+	template <class type> void Append(Command c, type& t, sf::Packet& p){Append(c,p);Append(t,p);}
 
 	// Tcp-functions
 	static void TcpSend(Command c, sf::TcpSocket* sock, sf::Packet& p)

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <signal.h>
 #include "Network.h"
+#include "Event.h"
 #include "Graphics.h"
 
 bool stopNow=false;
@@ -21,10 +22,15 @@ int main()
 	u.Disconnect();
 	std::cout << "Disconnected." << std::endl;
 	*/
-	sf::Texture t;
-	t.LoadFromFile("ball.png");
-	sf::Sprite img(t);
-	Graphics::Renderer r(640,480);
-	r.AddObject(img);
-	while(1) r.Draw();
+	//Graphics::Renderer r(640,480);
+	//EventManager e;
+	//while(1) r.Draw();
+	Network::TcpClient c;
+	std::string a="This string is sent automatically.";
+	c.AutoSend(Network::Command::String, &a);
+	c.Connect("localhost", 55555);
+	msSleep(5000);
+	a="MODIFIED STRING :O";
+	msSleep(5000);
+	c.Disconnect();
 }

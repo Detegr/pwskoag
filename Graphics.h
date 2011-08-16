@@ -30,4 +30,13 @@ namespace Graphics
 			void AddObject(sf::Drawable& obj) {impl->objectsToDraw.push_back(&obj);}
 			void Draw() {impl->Draw();}
 	};
+	/*
+	class EventManager
+	{
+		private:
+			sf::Event e;
+		public:
+			sf::Event& getEvent() {Renderer::impl->window.PollEvent(e); return e;}
+	};
+	*/
 }

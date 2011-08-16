@@ -52,6 +52,13 @@ namespace Network
 								p>>header;
 								switch (header)
 								{
+									case Command::String:
+									{
+										std::string str;
+										p>>str;
+										std::cout << "Str: " << str << std::endl;
+										break;
+									}
 									case Command::Heartbeat:
 										lastHeartBeat.Reset();
 										std::cout << "Beat from " << client->GetRemoteAddress() << ":" << client->GetRemotePort() << std::endl;
@@ -112,18 +119,26 @@ namespace Network
 	}
 	void TcpClient::Connect(const char* addr, ushort port)
 	{
-		sf::Lock lock(selfMutex);
+		sf::Lock lock(Client::selfMutex);
 		serverAddress=addr;
 		serverPort=port;
 		tcpSocket.SetBlocking(false);
+		/*
+		if(tcpSocket.Connect(serverAddress, serverPort)!=sf::Socket::Done)
+		{
+			std::cerr << "Couldn't connect to " << addr << ":" << port << std::endl;
+			return;
+		}*/
 		tcpSocket.Connect(serverAddress, serverPort);
 		Send(Command::Connect);
-		Start();
+		Client::Start();
+		AutoSender::Start();
 	}
 	void TcpClient::Disconnect()
 	{
-		Stop();
-		sf::Lock lock(selfMutex);
+		Client::Stop();
+		AutoSender::Stop();
+		sf::Lock lock(Client::selfMutex);
 		Send(Command::Disconnect);
 		tcpSocket.Disconnect();
 	}
@@ -132,14 +147,8 @@ namespace Network
 		sf::Clock timer;
 		Send(Command::Heartbeat);
 		sf::Packet p;
-		while(!stopNow)
+		while(!Client::stopNow)
 		{
-			if(timer.GetElapsedTime()>2000)
-			{
-				std::cout << "Sending heartbeat." << std::endl;
-				Send(Command::Heartbeat);
-				timer.Reset();
-			}
 			p.Clear();
 			uchar header=0;
 			if(tcpSocket.Receive(p)==sf::Socket::Done)
@@ -165,8 +174,36 @@ namespace Network
 			}
 			EndOfPacket:
 			msSleep(TICK_WAITTIME_TCP);
+			if(timer.GetElapsedTime()>2000)
+			{
+				Append(Command::Heartbeat);
+				timer.Reset();
+			}
+			Send();
 		}
 	}
+	void TcpClient::AutoSendLoop()
+	{
+		while(!AutoSender::stopNow)
+		{
+			sf::Packet tmp;
+			
+			autoSendMutex.Lock();
+			for(auto it=objectsToSend.begin(); it!=objectsToSend.end(); ++it)
+			{
+				switch((Command)it->first)
+				{
+					case Command::String:
+						tmp << *(std::string*)(it->second);
+						break;
+				}
+			}
+			autoSendMutex.Unlock();
+			while(!IsSent() && !AutoSender::stopNow) {msSleep(TICK_WAITTIME_TCP/2);}
+			Append(Command::String, tmp);
+		}
+	}
+
 	void UdpClient::Connect(const char* addr, ushort port)
 	{
 		serverAddress = sf::IpAddress(addr);

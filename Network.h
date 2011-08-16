@@ -22,13 +22,13 @@ namespace Network
 	class TcpServer : public Server
 	{	
 		private:
-			sf::TcpListener 					tcpListener;
+			sf::TcpListener 									tcpListener;
 			std::list<std::pair<sf::TcpSocket*, sf::Clock> > 	clients;
-			void							ServerLoop();
+			void												ServerLoop();
 		public:
 			TcpServer(ushort port) : Server(port) {}
 			~TcpServer();
-			std::list<std::pair<sf::TcpSocket*, sf::Clock> >& GetClients() { return clients; }
+			const std::list<std::pair<sf::TcpSocket*, sf::Clock> >& GetClients() const { return clients; }
 	};
 
 	class UdpServer : public Server
@@ -45,22 +45,25 @@ namespace Network
 	/*
 	 * TcpClient class
 	 */
-	class TcpClient : public Client
+	class TcpClient : public Client, public AutoSender
 	{
 		private:
-			std::string	serverAddress;
-			uint 		serverPort;
-			sf::TcpSocket 	tcpSocket;
-			sf::Packet	packet;
-			void 		ClientLoop();
+			std::string			serverAddress;
+			uint 				serverPort;
+			sf::Mutex			canAppend;
+			sf::TcpSocket 		tcpSocket;
+			sf::Packet			packet;
+			void 				ClientLoop();
+			void				AutoSendLoop();
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
-			void 				Connect(const char* addr, ushort port);
-			void 				Disconnect();
-			void 				Append(Command c) {packet<<(uchar)c;}
-			template<class type> void 	Append(Command c, type t) {Append(c); packet<<t;}
-			void 				Send() {Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
-			void 				Send(Command c) {Network::TcpSend(c, &tcpSocket, packet);}
+			void 						Connect(const char* addr, ushort port);
+			void 						Disconnect();
+			void 						Append(Command c) {sf::Lock l(canAppend); packet<<(uchar)c;}
+			template<class type> void 	Append(Command c, type t) {sf::Lock l(canAppend); Append(c); packet<<t;}
+			void 						Send() {sf::Lock l(canAppend); Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
+			void 						Send(Command c) {sf::Lock l(canAppend); Network::TcpSend(c, &tcpSocket, packet);}
+			bool						IsSent() const {return packet.EndOfPacket();}
 	};
 
 	class UdpClient : public Client

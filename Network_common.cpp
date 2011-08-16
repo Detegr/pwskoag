@@ -2,7 +2,35 @@
 #include <iostream>
 
 namespace Network
-{
+{ 
+	void AutoSender::AutoSendInitializer(void* args)
+	{
+		AutoSender* s=(AutoSender*) args;
+		s->AutoSendLoop();
+	}
+	void AutoSender::Start()
+	{
+		sf::Lock lock(selfMutex);
+		if(!selfThread)
+		{
+			stopNow=false;
+			selfThread = new sf::Thread(AutoSendInitializer, this);
+			selfThread->Launch();
+		}
+		else std::cerr << "AutoSender already running!" << std::endl;
+	}
+	void AutoSender::Stop()
+	{
+		sf::Lock lock(selfMutex);
+		stopNow=true;
+		if(selfThread) {delete selfThread; selfThread=NULL;}
+		else std::cerr << "AutoSender already stopped!" << std::endl;
+	}
+	void AutoSender::ForceStop()
+	{
+		sf::Lock lock(selfMutex);
+		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
+	}
 	void Server::Start()
 	{
 		sf::Lock lock(selfMutex);

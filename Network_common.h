@@ -42,22 +42,22 @@ namespace Network
 	class AutoSender
 	{
 		protected:
-			bool								stopNow;
-			sf::Thread*							selfThread;
-			sf::Mutex							autoSendMutex;
-			sf::Mutex							selfMutex;
-			static void							AutoSendInitializer(void* args);
-			std::unordered_map<uchar, void*>	objectsToSend;
-			virtual void						AutoSendLoop()=0;
-			void								Start();
-			void								Stop();
-			void								ForceStop();
+			bool											stopNow;
+			sf::Thread*										selfThread;
+			sf::Mutex										autoSendMutex;
+			sf::Mutex										selfMutex;
+			static void										AutoSendInitializer(void* args);
+			std::unordered_map<uchar, std::vector <void*> >	objectsToSend;
+			virtual void									AutoSendLoop()=0;
+			void											Start();
+			void											Stop();
+			void											ForceStop();
 			AutoSender() : stopNow(false), selfThread(NULL) {}
 		public:
 			template <class type> void AutoSend(Command c, type* t)
 			{
 				sf::Lock lock(autoSendMutex);
-				objectsToSend.insert(std::make_pair((uchar)c,t));
+				objectsToSend[(uchar)c].push_back(t);
 			}
 	};
 	/*

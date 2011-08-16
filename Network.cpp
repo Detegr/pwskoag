@@ -194,7 +194,8 @@ namespace Network
 				switch((Command)it->first)
 				{
 					case Command::String:
-						Network::Append(Command::String, (*(std::string*)(it->second)), tmp);
+						for(auto values=it->second.begin(); values!=it->second.end(); ++values)
+							Network::Append(Command::String, (*(std::string*)(*values)), tmp);
 						break;
 				}
 			}

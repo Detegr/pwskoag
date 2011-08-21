@@ -23,4 +23,16 @@ namespace Concurrency
 			~Thread() {if(thread){pthread_detach(thread); thread=NULL;}}
 			void Join() {pthread_join(thread, NULL);}
 	};
+
+	class Mutex
+	{
+		private:
+			pthread_mutex_t mutex;
+			pthread_mutexattr_t attr;
+		public:
+			Mutex();
+			~Mutex() {pthread_mutex_destroy(&mutex);}
+			void Lock() {pthread_mutex_lock(&mutex);}
+			void Unlock() {pthread_mutex_unlock(&mutex);}
+	};
 }

@@ -15,4 +15,11 @@ namespace Concurrency
 			throw std::runtime_error("Error creating a thread.");
 		}
 	}
+	Mutex::Mutex()
+	{
+		pthread_mutexattr_init(&attr);
+		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+		pthread_mutex_init(&mutex, &attr);
+		pthread_mutexattr_destroy(&attr);
+	}
 }

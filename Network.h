@@ -45,7 +45,7 @@ namespace Network
 			void operator<<(const char* str) {Append(str, strlen(str)+1);}
 			void operator<<(const std::string& str){Append(str.c_str(), str.length()+1);}
 			void operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1);}
-			void operator>>(std::string& str) {str.clear(); str=(char*)&data[0]; Pop(str.length()+1);}
+			void operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1);}
 			template <class type> void operator<<(type x) {Append(&x, sizeof(type));}
 			template <class type> void operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type));}
 	};

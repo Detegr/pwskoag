@@ -5,6 +5,9 @@
 #include "Base.h"
 #include <list>
 #include <stdexcept>
+#include <arpa/inet.h>
+#include <string.h>
+#include <iostream>
 
 namespace Network
 {
@@ -19,9 +22,15 @@ namespace Network
 	{
 		private:
 			struct in_addr addr;
+			void StrToAddr(const char* a);
 		public:
-			IpAddress() : addr(nullptr) {}
-			IpAddress(char* a) {if(inet_aton(a, &addr)==0) throw std::runtime_error("IpAddress is not a valid address.");}
+			IpAddress(const char* a) {StrToAddr(a);}
+			IpAddress(const IpAddress& rhs) {addr=rhs.addr;}
+			const IpAddress& operator=(const char* a) {StrToAddr(a);}
+			bool operator==(const IpAddress& rhs) const {return strncmp(toString().c_str(), rhs.toString().c_str(), 15)==0;}
+			bool operator==(const char* rhs) const {return strncmp(toString().c_str(), rhs, 15)==0;}
+			std::string toString() const {return std::string(inet_ntoa(addr));}
+			friend std::ostream& operator<<(std::ostream& o, const IpAddress& rhs) {o << rhs.toString(); return o;}
 	};
 
 	/*

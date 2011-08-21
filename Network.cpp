@@ -201,6 +201,7 @@ namespace Network
 			}
 			autoSendMutex.Unlock();
 			while(!IsSent() && !AutoSender::stopNow) {msSleep(TICK_WAITTIME_TCP/2);}
+			sf::Lock l(canAppend); 
 			while(!tmp.EndOfPacket()){uchar data; tmp>>data; packet<<data;}
 		}
 	}

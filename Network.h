@@ -4,16 +4,26 @@
 #include "Network_common.h"
 #include "Base.h"
 #include <list>
+#include <stdexcept>
 
 namespace Network
 {
 	const uint TIMEOUTMS=10000;
-	const uint TICKS_PER_SEC_TCP=4;
+	const uint TICKS_PER_SEC_TCP=1;
 	const uint TICK_WAITTIME_TCP=1000/TICKS_PER_SEC_TCP;
 
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
 	
+	class IpAddress
+	{
+		private:
+			struct in_addr addr;
+		public:
+			IpAddress() : addr(nullptr) {}
+			IpAddress(char* a) {if(inet_aton(a, &addr)==0) throw std::runtime_error("IpAddress is not a valid address.");}
+	};
+
 	/*
 	 * TcpServer class
 	 *

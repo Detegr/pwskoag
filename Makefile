@@ -2,7 +2,7 @@ CC=g++
 OPTS=-std=c++0x -ggdb
 SOURCES=Network.cpp Network_common.cpp
 HEADERS=Network.h Network_common.h Network_commands.h Base.h
-LIBS=-lsfml-network -lsfml-system -lsfml-graphics
+LIBS=-lsfml-network -lsfml-system
 EXE=a.out
 SERVER=server
 CLIENT=client

@@ -26,6 +26,7 @@ namespace Concurrency
 
 	class Mutex
 	{
+		friend class CondVar;
 		private:
 			pthread_mutex_t mutex;
 			pthread_mutexattr_t attr;
@@ -34,5 +35,18 @@ namespace Concurrency
 			~Mutex() {pthread_mutex_destroy(&mutex);}
 			void Lock() {pthread_mutex_lock(&mutex);}
 			void Unlock() {pthread_mutex_unlock(&mutex);}
+	};
+
+	class CondVar
+	{
+		private:
+			Mutex mutex;
+			pthread_cond_t cond;
+		public:
+			CondVar() : cond(PTHREAD_COND_INITIALIZER) {}
+			~CondVar() {pthread_cond_destroy(&cond);}
+			void Wait() {mutex.Lock(); pthread_cond_wait(&cond, &mutex.mutex); mutex.Unlock();}
+			void SignalOne() {pthread_cond_signal(&cond);}
+			void Signal() {pthread_cond_broadcast(&cond);}
 	};
 }

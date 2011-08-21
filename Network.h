@@ -36,16 +36,19 @@ namespace Network
 	class Packet
 	{
 		private:
-			std::basic_string<uchar> data;
+			std::vector<uchar> data;
 			std::vector<size_t> sizes;
-			void Append(const void* d, size_t len) {data.append((const uchar*)d); sizes.push_back(len);}
-			void Pop() {data.erase(0, sizes[0]); sizes.erase(sizes.begin());}
-			void* GetData() {return (void*)data.substr(0, sizes[0]).c_str();}
+			void Append(const void* d, size_t len) {data.resize(data.size()+len); memcpy(&data[data.size()-len], d, len); sizes.push_back(len);}
+			void Pop() {data.erase(data.begin(), data.begin()+sizes[0]); sizes.erase(sizes.begin());}
 		public:
-			void operator<<(const char* str) {Append(str, strlen(str));}
-			void operator<<(const std::string& str){Append(str.c_str(), str.length());}
-			void operator>>(char* str) {strcpy(str, (char*)GetData()); Pop();}
-			void operator>>(std::string& str) {str.clear(); str=(char*)GetData(); Pop();}
+			void* RawData() const {return (void*)&data[0];}
+			void Clear() {data.clear(); sizes.clear();}
+			void operator<<(const char* str) {Append(str, strlen(str)+1);}
+			void operator<<(const std::string& str){Append(str.c_str(), str.length()+1);}
+			void operator>>(char* str) {strncpy(str, (char*)&data[0], sizes[0]); Pop();}
+			void operator>>(std::string& str) {str.clear(); str=(char*)&data[0]; Pop();}
+			template <class type> void operator<<(type x) {Append(&x, sizeof(type)); std::cout << sizeof(type) << std::endl;}
+			template <class type> void operator>>(type& x) {x=*(type*)&data[0]; Pop();}
 	};
 
 	/*

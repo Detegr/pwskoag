@@ -33,6 +33,21 @@ namespace Network
 			friend std::ostream& operator<<(std::ostream& o, const IpAddress& rhs) {o << rhs.toString(); return o;}
 	};
 
+	class Packet
+	{
+		private:
+			std::basic_string<uchar> data;
+			std::vector<size_t> sizes;
+			void Append(const void* d, size_t len) {data.append((const uchar*)d); sizes.push_back(len);}
+			void Pop() {data.erase(0, sizes[0]); sizes.erase(sizes.begin());}
+			void* GetData() {return (void*)data.substr(0, sizes[0]).c_str();}
+		public:
+			void operator<<(const char* str) {Append(str, strlen(str));}
+			void operator<<(const std::string& str){Append(str.c_str(), str.length());}
+			void operator>>(char* str) {strcpy(str, (char*)GetData()); Pop();}
+			void operator>>(std::string& str) {str.clear(); str=(char*)GetData(); Pop();}
+	};
+
 	/*
 	 * TcpServer class
 	 *

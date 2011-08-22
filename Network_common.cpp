@@ -3,6 +3,16 @@
 
 namespace Network
 { 
+	void IpAddress::StrToAddr(const char* a)
+	{
+		if(inet_aton(a, &addr)==0)
+		{
+			std::string errmsg=("IpAddress  is not a valid address.");
+			errmsg.insert(10, a);
+			throw std::runtime_error(errmsg);
+		}
+	}
+
 	void AutoSender::AutoSendInitializer(void* args)
 	{
 		AutoSender* s=(AutoSender*) args;

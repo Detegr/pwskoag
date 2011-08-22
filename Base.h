@@ -16,3 +16,12 @@ inline void msSleep(uint ms)
 		usleep(ms*1000);
 	#endif
 }
+
+inline std::string Error(const char* err)
+{
+	std::string error;
+	error+=err;
+	error+=": ";
+	error+=strerror(errno);
+	return error;
+}

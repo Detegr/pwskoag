@@ -5,7 +5,6 @@
 #include "Base.h"
 #include <list>
 #include <stdexcept>
-#include <arpa/inet.h>
 #include <string.h>
 #include <iostream>
 
@@ -18,38 +17,6 @@ namespace Network
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
 	
-	class IpAddress
-	{
-		private:
-			struct in_addr addr;
-			void StrToAddr(const char* a);
-		public:
-			IpAddress(const char* a) {StrToAddr(a);}
-			IpAddress(const IpAddress& rhs) {addr=rhs.addr;}
-			const IpAddress& operator=(const char* a) {StrToAddr(a);}
-			bool operator==(const IpAddress& rhs) const {return strncmp(toString().c_str(), rhs.toString().c_str(), 15)==0;}
-			bool operator==(const char* rhs) const {return strncmp(toString().c_str(), rhs, 15)==0;}
-			std::string toString() const {return std::string(inet_ntoa(addr));}
-			friend std::ostream& operator<<(std::ostream& o, const IpAddress& rhs) {o << rhs.toString(); return o;}
-	};
-
-	class Packet
-	{
-		private:
-			std::vector<uchar> data;
-			void Append(const void* d, size_t len) {data.resize(data.size()+len); memcpy(&data[data.size()-len], d, len);}
-			void Pop(size_t bytes) {data.erase(data.begin(), data.begin()+bytes);}
-		public:
-			void* RawData() const {return (void*)&data[0];}
-			void Clear() {data.clear();}
-			void operator<<(const char* str) {Append(str, strlen(str)+1);}
-			void operator<<(const std::string& str){Append(str.c_str(), str.length()+1);}
-			void operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1);}
-			void operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1);}
-			template <class type> void operator<<(type x) {Append(&x, sizeof(type));}
-			template <class type> void operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type));}
-	};
-
 	/*
 	 * TcpServer class
 	 *

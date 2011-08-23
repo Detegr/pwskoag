@@ -27,49 +27,6 @@ namespace Network
 			friend std::ostream& operator<<(std::ostream& o, const IpAddress& rhs) {o << rhs.toString(); return o;}
 	};
 
-	class Socket
-	{
-		protected:
-			IpAddress	ip;
-			ushort		port;
-			int			fd;
-			int			type;
-			sockaddr_in	addr;
-		public:
-			enum Type
-			{
-				TCP=SOCK_STREAM,
-				UDP=SOCK_DGRAM
-			};
-			Socket(IpAddress& ip, ushort port, Type type) : ip(ip), port(port), fd(0), type(type)
-			{
-				if(fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP)<0) throw std::runtime_error("Failed to create socket.");
-				addr.sin_family=AF_INET;
-				addr.sin_port=htons(port);
-				addr.sin_addr=ip.addr;
-			}
-			Socket(ushort port, Type type) : ip(), port(port), fd(0), type(type)
-			{
-				fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
-				if(fd<0) throw std::runtime_error(Error("Socket"));
-				addr.sin_family=AF_INET;
-				addr.sin_port=htons(port);
-				addr.sin_addr.s_addr=INADDR_ANY;
-			}
-			void SetBlocking(bool b) {int flags; if(flags=(fcntl(fd, F_GETFL, 0))==-1) flags=0; fcntl(fd, F_SETFL, b?flags&O_NONBLOCK:flags|O_NONBLOCK);}
-	};
-
-	class TcpSocket : public Socket
-	{
-		public:
-			TcpSocket(IpAddress& ip, ushort port, Socket::Type type) : Socket(ip, port, type) {}
-			TcpSocket(ushort port, Socket::Type type) : Socket(port, type) {}
-			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (sockaddr*)&addr, len)<0) throw std::runtime_error(Error("Bind"));}
-			void Listen(int buffer=10) {if(listen(fd,buffer)<0) throw std::runtime_error(Error("Listen"));}
-			void Accept() {socklen_t len=sizeof(addr); if(accept(fd, (sockaddr*)&addr, &len)<0) throw std::runtime_error(Error("Accept"));}
-			void Read(Packet& p) {}
-	};
-
 	class Packet
 	{
 		private:
@@ -85,6 +42,36 @@ namespace Network
 			void operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1);}
 			template <class type> void operator<<(type x) {Append(&x, sizeof(type));}
 			template <class type> void operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type));}
+	};
+
+	class Socket
+	{
+		protected:
+			IpAddress	ip;
+			ushort		port;
+			int			fd;
+			int			type;
+			sockaddr_in	addr;
+		public:
+			enum Type
+			{
+				TCP=SOCK_STREAM,
+				UDP=SOCK_DGRAM
+			};
+			Socket(IpAddress& ip, ushort port, Type type);
+			Socket(ushort port, Type type);
+			void SetBlocking(bool b) {int flags; if(flags=(fcntl(fd, F_GETFL, 0))==-1) flags=0; fcntl(fd, F_SETFL, b?flags&O_NONBLOCK:flags|O_NONBLOCK);}
+	};
+
+	class TcpSocket : public Socket
+	{
+		public:
+			TcpSocket(IpAddress& ip, ushort port, Socket::Type type) : Socket(ip, port, type) {}
+			TcpSocket(ushort port, Socket::Type type) : Socket(port, type) {}
+			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (sockaddr*)&addr, len)<0) throw std::runtime_error(Error("Bind"));}
+			void Listen(int buffer=10) {if(listen(fd,buffer)<0) throw std::runtime_error(Error("Listen"));}
+			void Accept() {socklen_t len=sizeof(addr); if(accept(fd, (sockaddr*)&addr, &len)<0) throw std::runtime_error(Error("Accept"));}
+			void Read(Packet& p) {}
 	};
 
 	// Functions for sending and appending.

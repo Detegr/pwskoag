@@ -3,6 +3,22 @@
 
 namespace Network
 { 
+	Socket::Socket(IpAddress& ip, ushort port, Type type) : ip(ip), port(port), fd(0), type(type)
+	{
+		if(fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP)<0) throw std::runtime_error("Failed to create socket.");
+		addr.sin_family=AF_INET;
+		addr.sin_port=htons(port);
+		addr.sin_addr=ip.addr;
+	}
+
+	Socket::Socket(ushort port, Type type) : ip(), port(port), fd(0), type(type)
+	{
+		fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
+		if(fd<0) throw std::runtime_error(Error("Socket"));
+		addr.sin_family=AF_INET;
+		addr.sin_port=htons(port);
+		addr.sin_addr.s_addr=INADDR_ANY;
+	}
 	void IpAddress::StrToAddr(const char* a)
 	{
 		if(inet_aton(a, &addr)==0)

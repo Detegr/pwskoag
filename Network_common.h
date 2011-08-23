@@ -34,7 +34,7 @@ namespace Network
 			void Append(const void* d, size_t len) {data.resize(data.size()+len); memcpy(&data[data.size()-len], d, len);}
 			void Pop(size_t bytes) {data.erase(data.begin(), data.begin()+bytes);}
 		public:
-			void* RawData() const {return (void*)&data[0];}
+			const uchar* RawData() const {return &data[0];}
 			void Clear() {data.clear();}
 			void operator<<(const char* str) {Append(str, strlen(str)+1);}
 			void operator<<(const std::string& str){Append(str.c_str(), str.length()+1);}

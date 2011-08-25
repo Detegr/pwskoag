@@ -37,6 +37,15 @@ namespace Concurrency
 			void Unlock() {pthread_mutex_unlock(&mutex);}
 	};
 
+	class Lock
+	{
+		private:
+			Mutex* m;
+		public:
+			Lock(Mutex& m) : m(&m) {m.Lock();}
+			~Lock() {m->Unlock();}
+	};
+
 	class CondVar
 	{
 		private:

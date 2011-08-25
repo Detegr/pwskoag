@@ -26,19 +26,19 @@ namespace Network
 	{	
 		private:
 			sf::TcpListener 									tcpListener;
-			std::list<std::pair<sf::TcpSocket*, sf::Clock> > 	clients;
+			std::list<std::pair<TcpSocket*, sf::Clock> > 	clients;
 			void												ServerLoop();
 		public:
 			TcpServer(ushort port) : Server(port) {}
 			~TcpServer();
-			const std::list<std::pair<sf::TcpSocket*, sf::Clock> >& GetClients() const { return clients; }
+			const std::list<std::pair<TcpSocket*, sf::Clock> >& GetClients() const { return clients; }
 	};
 
 	class UdpServer : public Server
 	{
 		private:
 			TcpServer*		master;
-			sf::UdpSocket	udpSocket;
+			UdpSocket		udpSocket;
 			void			ServerLoop();
 		public:
 			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp)
@@ -53,9 +53,9 @@ namespace Network
 		private:
 			std::string			serverAddress;
 			uint 				serverPort;
-			sf::Mutex			canAppend;
-			sf::TcpSocket 		tcpSocket;
-			sf::Packet			packet;
+			Mutex				canAppend;
+			TcpSocket 			tcpSocket;
+			Packet				packet;
 			void 				ClientLoop();
 			void				AutoSendLoop();
 		public:

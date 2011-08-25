@@ -78,7 +78,7 @@ namespace Network
 			TcpSocket(IpAddress& ip, ushort port, Socket::Type type) : Socket(ip, port, type) {}
 			TcpSocket(ushort port, Socket::Type type) : Socket(port, type) {}
 			void Listen(int buffer=10) {if(listen(fd,buffer)<0) throw std::runtime_error(Error("Listen"));}
-			TcpSocket Accept(); 
+			TcpSocket* Accept(); 
 	};
 
 	struct UdpSocket : public Socket

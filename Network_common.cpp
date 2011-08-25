@@ -33,12 +33,12 @@ namespace Network
 		p.Clear();
 	}
 
-	TcpSocket TcpSocket::Accept()
+	TcpSocket* TcpSocket::Accept()
 	{
 		socklen_t len=sizeof(addr);
 		int newfd=accept(fd, (sockaddr*)&addr, &len);
 		if(newfd<0) throw std::runtime_error(Error("Accept"));
-		return TcpSocket(ip, port, Socket::Type::TCP, newfd);
+		return new TcpSocket(ip, port, Socket::Type::TCP, newfd);
 	}
 
 	void IpAddress::StrToAddr(const char* a)

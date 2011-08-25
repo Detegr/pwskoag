@@ -19,6 +19,14 @@ namespace Network
 		addr.sin_port=htons(port);
 		addr.sin_addr.s_addr=INADDR_ANY;
 	}
+
+	Socket::Receive(Packet& p)
+	{
+		uchar buf[Socket::MAXSIZE];
+		recv(fd, buf, Socket::MAXSIZE, 0);
+		p<<buf;
+	}
+
 	void IpAddress::StrToAddr(const char* a)
 	{
 		if(inet_aton(a, &addr)==0)

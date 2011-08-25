@@ -20,28 +20,31 @@ namespace Network
 			IpAddress() : addr() {}
 			IpAddress(const char* a) {StrToAddr(a);}
 			IpAddress(const IpAddress& rhs) {addr=rhs.addr;}
-			const IpAddress& operator=(const char* a) {StrToAddr(a);}
-			bool operator==(const IpAddress& rhs) const {return strncmp(toString().c_str(), rhs.toString().c_str(), 15)==0;}
-			bool operator==(const char* rhs) const {return strncmp(toString().c_str(), rhs, 15)==0;}
-			std::string toString() const {return std::string(inet_ntoa(addr));}
-			friend std::ostream& operator<<(std::ostream& o, const IpAddress& rhs) {o << rhs.toString(); return o;}
+			const					IpAddress& operator=(const char* a) {StrToAddr(a);}
+			bool					operator==(const IpAddress& rhs) const {return strncmp(toString().c_str(), rhs.toString().c_str(), 15)==0;}
+			bool					operator==(const char* rhs) const {return strncmp(toString().c_str(), rhs, 15)==0;}
+			std::string 			toString() const {return std::string(inet_ntoa(addr));}
+			friend std::ostream& 	operator<<(std::ostream& o, const IpAddress& rhs) {o << rhs.toString(); return o;}
 	};
 
 	class Packet
 	{
+		friend class Socket;
 		private:
-			std::vector<uchar> data;
-			void Append(const void* d, size_t len) {data.resize(data.size()+len); memcpy(&data[data.size()-len], d, len);}
-			void Pop(size_t bytes) {data.erase(data.begin(), data.begin()+bytes);}
+			static size_t		MAXSIZE=4096;
+			std::vector<uchar>	data;
+			void 				Append(const void* d, size_t len) {data.resize(data.size()+len); memcpy(&data[data.size()-len], d, len);}
+			void				Pop(size_t bytes) {data.erase(data.begin(), data.begin()+bytes);}
 		public:
-			const uchar* RawData() const {return &data[0];}
-			void Clear() {data.clear();}
-			void operator<<(const char* str) {Append(str, strlen(str)+1);}
-			void operator<<(const std::string& str){Append(str.c_str(), str.length()+1);}
-			void operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1);}
-			void operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1);}
-			template <class type> void operator<<(type x) {Append(&x, sizeof(type));}
-			template <class type> void operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type));}
+			const uchar* 				RawData() const {return &data[0];}
+			void 						Clear() {data.clear();}
+			size_t						Size() const {return data.length();}
+			void 						operator<<(const char* str) {Append(str, strlen(str)+1);}
+			void 						operator<<(const std::string& str){Append(str.c_str(), str.length()+1);}
+			void 						operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1);}
+			void 						operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1);}
+			template <class type> void	operator<<(type x) {Append(&x, sizeof(type));}
+			template <class type> void	operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type));}
 	};
 
 	class Socket
@@ -61,6 +64,9 @@ namespace Network
 			Socket(IpAddress& ip, ushort port, Type type);
 			Socket(ushort port, Type type);
 			void SetBlocking(bool b) {int flags; if(flags=(fcntl(fd, F_GETFL, 0))==-1) flags=0; fcntl(fd, F_SETFL, b?flags&O_NONBLOCK:flags|O_NONBLOCK);}
+			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (sockaddr*)&addr, len)<0) throw std::runtime_error(Error("Bind"));}
+			void Receive(Packet& p); 
+			void Send(Packet& p) {send(fd, p.RawData(), p.Size(), 0); p.Clear();}
 	};
 
 	class TcpSocket : public Socket
@@ -68,26 +74,28 @@ namespace Network
 		public:
 			TcpSocket(IpAddress& ip, ushort port, Socket::Type type) : Socket(ip, port, type) {}
 			TcpSocket(ushort port, Socket::Type type) : Socket(port, type) {}
-			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (sockaddr*)&addr, len)<0) throw std::runtime_error(Error("Bind"));}
 			void Listen(int buffer=10) {if(listen(fd,buffer)<0) throw std::runtime_error(Error("Listen"));}
 			void Accept() {socklen_t len=sizeof(addr); if(accept(fd, (sockaddr*)&addr, &len)<0) throw std::runtime_error(Error("Accept"));}
-			void Read(Packet& p) {}
+	};
+
+	class UdpSocket : public Socket
+	{
 	};
 
 	// Functions for sending and appending.
-	static void Append(Command c, sf::Packet& p) {p<<(uchar)c;}
-	template <class type> void Append(type& t, sf::Packet& p){p<<t;}
-	template <class type> void Append(Command c, type& t, sf::Packet& p){Append(c,p);Append(t,p);}
+	static void Append(Command c, Packet& p) {p<<(uchar)c;}
+	template <class type> void Append(type& t, Packet& p){p<<t;}
+	template <class type> void Append(Command c, type& t, Packet& p){Append(c,p);Append(t,p);}
 
 	// Tcp-functions
-	static void TcpSend(Command c, sf::TcpSocket* sock, sf::Packet& p)
+	static void TcpSend(Command c, TcpSocket* sock, Packet& p)
 	{
 		p << (uchar)c << (uchar)Command::EOP;
 		sock->Send(p);
 		p.Clear();
 	}
-	static void TcpSend(sf::TcpSocket* sock, sf::Packet& p) {sock->Send(p); p.Clear();}
-	template <class type> void TcpSend(Command c, type t, sf::TcpSocket* sock, sf::Packet& p)
+	static void TcpSend(TcpSocket* sock, Packet& p) {sock->Send(p); p.Clear();}
+	template <class type> void TcpSend(Command c, type t, TcpSocket* sock, Packet& p)
 	{
 			p.Clear();
 			Append(c,t,p); Append(Command::EOP, p); TcpSend(sock,p);

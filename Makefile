@@ -7,8 +7,7 @@ EXE=a.out
 SERVER=server
 CLIENT=client
 
-all: main.cpp $(SOURCES) $(HEADERS)
-	$(CC) -o $(EXE) main.cpp $(SOURCES) $(OPTS) $(LIBS)
+all: server client
 server: Server.cpp $(SOURCES) $(HEADERS)
 	$(CC) -o $(SERVER) Server.cpp $(SOURCES) $(OPTS) $(LIBS)
 client: Client.cpp $(SOURCES) $(HEADERS)

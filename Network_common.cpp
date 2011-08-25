@@ -20,11 +20,25 @@ namespace Network
 		addr.sin_addr.s_addr=INADDR_ANY;
 	}
 
-	Socket::Receive(Packet& p)
+	void Socket::Receive(Packet& p)
 	{
 		uchar buf[Socket::MAXSIZE];
 		recv(fd, buf, Socket::MAXSIZE, 0);
 		p<<buf;
+	}
+
+	Socket::Send(Packet& p)
+	{
+		send(fd, p.RawData(), p.Size(), 0);
+		p.Clear();
+	}
+
+	TcpSocket TcpSocket::Accept()
+	{
+		socklen_t len=sizeof(addr);
+		int newfd=accept(fd, (sockaddr*)&addr, &len);
+		if(newfd<0) throw std::runtime_error(Error("Accept"));
+		return TcpSocket(ip, port, Socket::Type::TCP, newfd);
 	}
 
 	void IpAddress::StrToAddr(const char* a)

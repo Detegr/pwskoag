@@ -31,21 +31,22 @@ namespace Network
 	{
 		friend class Socket;
 		private:
-			static size_t		MAXSIZE=4096;
+			static size_t		MAXSIZE;
 			std::vector<uchar>	data;
 			void 				Append(const void* d, size_t len) {data.resize(data.size()+len); memcpy(&data[data.size()-len], d, len);}
 			void				Pop(size_t bytes) {data.erase(data.begin(), data.begin()+bytes);}
 		public:
-			const uchar* 				RawData() const {return &data[0];}
-			void 						Clear() {data.clear();}
-			size_t						Size() const {return data.length();}
-			void 						operator<<(const char* str) {Append(str, strlen(str)+1);}
-			void 						operator<<(const std::string& str){Append(str.c_str(), str.length()+1);}
-			void 						operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1);}
-			void 						operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1);}
-			template <class type> void	operator<<(type x) {Append(&x, sizeof(type));}
-			template <class type> void	operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type));}
+			const uchar* 					RawData() const {return &data[0];}
+			void 							Clear() {data.clear();}
+			size_t							Size() const {return data.size();}
+			Packet&							operator<<(const char* str) {Append(str, strlen(str)+1);}
+			Packet&							operator<<(const std::string& str){Append(str.c_str(), str.length()+1); return *this;}
+			Packet&							operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1); return *this;}
+			Packet&							operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1); return *this;}
+			template <class type> Packet&	operator<<(type x) {Append(&x, sizeof(type)); return *this;}
+			template <class type> Packet&	operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type)); return *this;}
 	};
+	size_t Packet::MAXSIZE=4096;
 
 	class Socket
 	{
@@ -66,19 +67,21 @@ namespace Network
 			void SetBlocking(bool b) {int flags; if(flags=(fcntl(fd, F_GETFL, 0))==-1) flags=0; fcntl(fd, F_SETFL, b?flags&O_NONBLOCK:flags|O_NONBLOCK);}
 			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (sockaddr*)&addr, len)<0) throw std::runtime_error(Error("Bind"));}
 			void Receive(Packet& p); 
-			void Send(Packet& p) {send(fd, p.RawData(), p.Size(), 0); p.Clear();}
+			void Send(Packet& p); 
 	};
 
 	class TcpSocket : public Socket
 	{
+		private:
+			TcpSocket(IpAddress& ip, ushort port, Type type, int fd) : Socket(ip, port, type) {this->fd=fd;}
 		public:
 			TcpSocket(IpAddress& ip, ushort port, Socket::Type type) : Socket(ip, port, type) {}
 			TcpSocket(ushort port, Socket::Type type) : Socket(port, type) {}
 			void Listen(int buffer=10) {if(listen(fd,buffer)<0) throw std::runtime_error(Error("Listen"));}
-			void Accept() {socklen_t len=sizeof(addr); if(accept(fd, (sockaddr*)&addr, &len)<0) throw std::runtime_error(Error("Accept"));}
+			TcpSocket Accept(); 
 	};
 
-	class UdpSocket : public Socket
+	struct UdpSocket : public Socket
 	{
 	};
 
@@ -102,14 +105,14 @@ namespace Network
 	}
 
 	// Udp-functions
-	static void UdpSend(Command c, sf::UdpSocket* sock, sf::IpAddress& ip, ushort port, sf::Packet& p)
+	static void UdpSend(Command c, UdpSocket* sock, sf::IpAddress& ip, ushort port, Packet& p)
 	{
 		p << (uchar)c << (uchar)Command::EOP;
 		sock->Send(p, ip, port);
 	}
-	static void UdpSend(sf::UdpSocket* sock, sf::IpAddress& ip, ushort port, sf::Packet& p) {sock->Send(p,ip,port); p.Clear();}
+	static void UdpSend(UdpSocket* sock, IpAddress& ip, ushort port, Packet& p) {sock->Send(p,ip,port); p.Clear();}
 	template <class type>
-	void UdpSend(Command c, type t, sf::UdpSocket* sock, sf::IpAddress& ip, ushort port, sf::Packet& p)
+	void UdpSend(Command c, type t, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
 	{
 		p.Clear();
 		Append(c, t, p); Append(Command::EOP, p); UdpSend(sock, ip, port, p);

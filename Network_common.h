@@ -7,12 +7,15 @@
 #include <fcntl.h>
 #include "Base.h"
 #include "Network_commands.h"
+#include "Concurrency.h"
 
 namespace Network
 {
 	class IpAddress
 	{
 		friend class Socket;
+		friend class TcpSocket;
+		friend class UdpSocket;
 		private:
 			struct in_addr addr;
 			void StrToAddr(const char* a);
@@ -20,7 +23,7 @@ namespace Network
 			IpAddress() : addr() {}
 			IpAddress(const char* a) {StrToAddr(a);}
 			IpAddress(const IpAddress& rhs) {addr=rhs.addr;}
-			const					IpAddress& operator=(const char* a) {StrToAddr(a);}
+			const IpAddress&		operator=(const char* a) {StrToAddr(a); return *this;}
 			bool					operator==(const IpAddress& rhs) const {return strncmp(toString().c_str(), rhs.toString().c_str(), 15)==0;}
 			bool					operator==(const char* rhs) const {return strncmp(toString().c_str(), rhs, 15)==0;}
 			std::string 			toString() const {return std::string(inet_ntoa(addr));}
@@ -31,11 +34,11 @@ namespace Network
 	{
 		friend class Socket;
 		private:
-			static size_t		MAXSIZE;
 			std::vector<uchar>	data;
 			void 				Append(const void* d, size_t len) {data.resize(data.size()+len); memcpy(&data[data.size()-len], d, len);}
 			void				Pop(size_t bytes) {data.erase(data.begin(), data.begin()+bytes);}
 		public:
+			static const size_t				MAXSIZE;
 			const uchar* 					RawData() const {return &data[0];}
 			void 							Clear() {data.clear();}
 			size_t							Size() const {return data.size();}
@@ -46,16 +49,18 @@ namespace Network
 			template <class type> Packet&	operator<<(type x) {Append(&x, sizeof(type)); return *this;}
 			template <class type> Packet&	operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type)); return *this;}
 	};
-	size_t Packet::MAXSIZE=4096;
 
 	class Socket
 	{
+		friend class Selector;
 		protected:
 			IpAddress	ip;
 			ushort		port;
 			int			fd;
 			int			type;
 			sockaddr_in	addr;
+
+			Socket() {}
 		public:
 			enum Type
 			{
@@ -64,10 +69,14 @@ namespace Network
 			};
 			Socket(IpAddress& ip, ushort port, Type type);
 			Socket(ushort port, Type type);
+			Socket(const Socket& s) {*this=s;}
+			const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
 			void SetBlocking(bool b) {int flags; if(flags=(fcntl(fd, F_GETFL, 0))==-1) flags=0; fcntl(fd, F_SETFL, b?flags&O_NONBLOCK:flags|O_NONBLOCK);}
-			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (sockaddr*)&addr, len)<0) throw std::runtime_error(Error("Bind"));}
-			void Receive(Packet& p); 
-			void Send(Packet& p); 
+			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));}
+			void Close() {close(fd);}
+			void ForceClose() {shutdown(fd, SHUT_RDWR);Close();}
+			const IpAddress&	GetIp() const {return ip;}
+			const ushort		GetPort() const {return port;}
 	};
 
 	class TcpSocket : public Socket
@@ -75,14 +84,37 @@ namespace Network
 		private:
 			TcpSocket(IpAddress& ip, ushort port, Type type, int fd) : Socket(ip, port, type) {this->fd=fd;}
 		public:
-			TcpSocket(IpAddress& ip, ushort port, Socket::Type type) : Socket(ip, port, type) {}
-			TcpSocket(ushort port, Socket::Type type) : Socket(port, type) {}
-			void Listen(int buffer=10) {if(listen(fd,buffer)<0) throw std::runtime_error(Error("Listen"));}
+			TcpSocket() {}
+			TcpSocket(IpAddress& ip, ushort port) : Socket(ip, port, Type::TCP) {}
+			TcpSocket(IpAddress&& ip, ushort port) : Socket(ip, port, Type::TCP) {}
+			TcpSocket(ushort port) : Socket(port, Type::TCP) {}
+			void Listen(int buffer=5) {if(listen(fd,buffer)!=0) throw std::runtime_error(Error("Listen"));}
+			void Connect();
+			void Disconnect() {Close();}
 			TcpSocket* Accept(); 
+			void Send(Packet& p); 
+			bool Receive(Packet& p); 
 	};
 
 	struct UdpSocket : public Socket
 	{
+		UdpSocket() {}
+		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, Type::UDP) {}
+		void Send(Packet& p, IpAddress& ip, ushort port);
+		bool Receive(Packet& p, IpAddress& ip, ushort port); 
+	};
+
+	class Selector
+	{
+		private:
+			int highest;
+			fd_set fds;
+		public:
+			Selector() : highest(0) {FD_ZERO(&fds);}
+			void Add(Socket& s) {if(s.fd>highest) s.fd=highest; FD_SET(s.fd, &fds);}
+			bool IsReady(Socket& s) {return FD_ISSET(s.fd, &fds)==0;}
+			void Wait(uint timeoutms);
+			void Remove(Socket& s) {FD_CLR(s.fd, &fds);}
 	};
 
 	// Functions for sending and appending.
@@ -105,7 +137,7 @@ namespace Network
 	}
 
 	// Udp-functions
-	static void UdpSend(Command c, UdpSocket* sock, sf::IpAddress& ip, ushort port, Packet& p)
+	static void UdpSend(Command c, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
 	{
 		p << (uchar)c << (uchar)Command::EOP;
 		sock->Send(p, ip, port);
@@ -123,8 +155,8 @@ namespace Network
 		protected:
 			bool											stopNow;
 			sf::Thread*										selfThread;
-			sf::Mutex										autoSendMutex;
-			sf::Mutex										selfMutex;
+			Concurrency::Mutex											autoSendMutex;
+			Concurrency::Mutex											selfMutex;
 			static void										AutoSendInitializer(void* args);
 			std::unordered_map<uchar, std::vector <void*> >	objectsToSend;
 			virtual void									AutoSendLoop()=0;
@@ -135,7 +167,7 @@ namespace Network
 		public:
 			template <class type> void AutoSend(Command c, type* t)
 			{
-				sf::Lock lock(autoSendMutex);
+				Concurrency::Lock lock(autoSendMutex);
 				objectsToSend[(uchar)c].push_back(t);
 			}
 	};
@@ -151,7 +183,7 @@ namespace Network
 		protected:
 			bool 			stopNow;
 			uint 			serverPort;
-			sf::Mutex 		selfMutex;
+			Concurrency::Mutex	 		selfMutex;
 			sf::Thread* 	selfThread;
 			static void 	ServerInitializer(void* args);
 			virtual 		~Server();
@@ -177,7 +209,7 @@ namespace Network
 		protected:
 			bool			stopNow;
 			uint 			serverPort;
-			sf::Mutex		selfMutex;
+			Concurrency::Mutex			selfMutex;
 			sf::Thread*		selfThread;
 			static void		ClientInitializer(void* args);
 			virtual 		~Client();

@@ -26,12 +26,13 @@ int main()
 	Network::TcpClient c;
 	std::string a="This string is sent automatically.";
 	std::string b="String no. 2";
+	/*
 	c.AutoSend(Network::Command::String, &a);
 	c.AutoSend(Network::Command::String, &b);
+	*/
 	c.Connect("localhost", 55555);
-	msSleep(5000);
-	a="MODIFIED STRING :O";
-	b="FUUUUUUU!";
-	msSleep(5000);
+	msSleep(2000);
+	std::cout << "Jee" << std::endl;
+	msSleep(2000);
 	c.Disconnect();
 }

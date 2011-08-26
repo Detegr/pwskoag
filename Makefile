@@ -1,7 +1,7 @@
 CC=g++
 OPTS=-std=c++0x -ggdb
-SOURCES=Network.cpp Network_common.cpp
-HEADERS=Network.h Network_common.h Network_commands.h Base.h
+SOURCES=Network.cpp Network_common.cpp Concurrency.cpp
+HEADERS=Network.h Network_common.h Network_commands.h Concurrency.h Base.h
 LIBS=-lsfml-network -lsfml-system
 EXE=a.out
 SERVER=server

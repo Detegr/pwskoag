@@ -3,6 +3,7 @@
 #include <SFML/Network.hpp>
 #include "Network_common.h"
 #include "Base.h"
+#include "Concurrency.h"
 #include <list>
 #include <stdexcept>
 #include <string.h>
@@ -25,11 +26,11 @@ namespace Network
 	class TcpServer : public Server
 	{	
 		private:
-			sf::TcpListener 									tcpListener;
-			std::list<std::pair<TcpSocket*, sf::Clock> > 	clients;
+			TcpSocket 											tcpListener;
+			std::list<std::pair<TcpSocket*, sf::Clock> > 		clients;
 			void												ServerLoop();
 		public:
-			TcpServer(ushort port) : Server(port) {}
+			TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
 			~TcpServer();
 			const std::list<std::pair<TcpSocket*, sf::Clock> >& GetClients() const { return clients; }
 	};
@@ -42,7 +43,7 @@ namespace Network
 			void			ServerLoop();
 		public:
 			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp)
-			{udpSocket.SetBlocking(false); udpSocket.Bind(port);}
+			{udpSocket.SetBlocking(false); udpSocket.Bind();}
 	};
 
 	/*
@@ -51,9 +52,9 @@ namespace Network
 	class TcpClient : public Client, public AutoSender
 	{
 		private:
-			std::string			serverAddress;
+			IpAddress			serverAddress;
 			uint 				serverPort;
-			Mutex				canAppend;
+			Concurrency::Mutex	canAppend;
 			TcpSocket 			tcpSocket;
 			Packet				packet;
 			void 				ClientLoop();
@@ -62,25 +63,25 @@ namespace Network
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
 			void 						Connect(const char* addr, ushort port);
 			void 						Disconnect();
-			void 						Append(Command c) {sf::Lock l(canAppend); packet<<(uchar)c;}
-			template<class type> void 	Append(Command c, type t) {sf::Lock l(canAppend); Append(c); packet<<t;}
-			void 						Send() {sf::Lock l(canAppend); Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
-			void 						Send(Command c) {sf::Lock l(canAppend); Network::TcpSend(c, &tcpSocket, packet);}
-			bool						IsSent() const {return packet.EndOfPacket();}
+			void 						Append(Command c) {Concurrency::Lock l(canAppend); packet<<(uchar)c;}
+			template<class type> void 	Append(Command c, type t) {Concurrency::Lock l(canAppend); Append(c); packet<<t;}
+			void 						Send() {Concurrency::Lock l(canAppend); Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
+			void 						Send(Command c) {Concurrency::Lock l(canAppend); Network::TcpSend(c, &tcpSocket, packet);}
+			bool						IsSent() const {return packet.Size()==0;}
 	};
 
 	class UdpClient : public Client
 	{
 		private:
-			sf::IpAddress 	serverAddress;
+			IpAddress 		serverAddress;
 			ushort			serverPort;
-			sf::UdpSocket 	udpSocket;
-			sf::Packet		packet;
+			UdpSocket 		udpSocket;
+			Packet			packet;
 			void			ClientLoop();
 		public:
 			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
 			void Connect(const char* addr, ushort port);
-			void Disconnect() {udpSocket.Unbind(); Stop();}
+			void Disconnect() {udpSocket.Close(); Stop();}
 	};
 
 	class Networking

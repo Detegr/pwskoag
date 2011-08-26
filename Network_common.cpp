@@ -1,35 +1,97 @@
 #include "Network_common.h"
+#include <signal.h>
 #include <iostream>
 
 namespace Network
 { 
+	const size_t Packet::MAXSIZE=4096;
+
 	Socket::Socket(IpAddress& ip, ushort port, Type type) : ip(ip), port(port), fd(0), type(type)
 	{
-		if(fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP)<0) throw std::runtime_error("Failed to create socket.");
+		fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
+		std::cout << (type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP) << std::endl;
+		if(fd<=0) throw std::runtime_error("Failed to create socket.");
+		memset(&addr, 0, sizeof(addr));
 		addr.sin_family=AF_INET;
 		addr.sin_port=htons(port);
 		addr.sin_addr=ip.addr;
+		int yes=1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	}
 
 	Socket::Socket(ushort port, Type type) : ip(), port(port), fd(0), type(type)
 	{
-		fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
-		if(fd<0) throw std::runtime_error(Error("Socket"));
+		//fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
+		fd=socket(AF_INET, SOCK_STREAM, 0);
+		if(fd<=0) throw std::runtime_error(Error("Socket"));
+		memset(&addr, 0, sizeof(addr));
 		addr.sin_family=AF_INET;
 		addr.sin_port=htons(port);
-		addr.sin_addr.s_addr=INADDR_ANY;
+		addr.sin_addr.s_addr=htonl(INADDR_ANY);
+
+		int yes=1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	}
 
-	void Socket::Receive(Packet& p)
+	bool TcpSocket::Receive(Packet& p)
 	{
-		uchar buf[Socket::MAXSIZE];
-		recv(fd, buf, Socket::MAXSIZE, 0);
+		uchar buf[Packet::MAXSIZE];
+		int r=recv(fd, buf, Packet::MAXSIZE, 0);
+		if(r<0) return false;
 		p<<buf;
+		return true;
+	}
+	bool UdpSocket::Receive(Packet& p, IpAddress& ip, ushort port)
+	{
+		uchar buf[Packet::MAXSIZE];
+		struct sockaddr_in a;
+		a.sin_family=AF_INET;
+		a.sin_port=port;
+		a.sin_addr=ip.addr;
+		socklen_t len=sizeof(a);
+		int r=recvfrom(fd, buf, Packet::MAXSIZE, NULL, (struct sockaddr*)&a, &len);
+		if(r<0) return false;
+		p<<buf;
+		return true;
 	}
 
-	Socket::Send(Packet& p)
+	void TcpSocket::Connect()
+ 	{
+		fd_set set;
+		FD_ZERO(&set);
+		FD_SET(fd, &set);
+		socklen_t len=sizeof(addr);
+		while(select(fd+1, NULL, &set, NULL, NULL)<=0) {}
+		if(connect(fd, (sockaddr*)&addr, len)!=0 && errno!=EINPROGRESS) throw std::runtime_error(Error("Connect:",type));
+		while(select(fd+1, NULL, &set, NULL, NULL)<=0) {}
+		std::cout << "Connected!" << std::endl;
+	}
+
+	void TcpSocket::Send(Packet& p)
 	{
-		send(fd, p.RawData(), p.Size(), 0);
+		fd_set set;
+		FD_ZERO(&set);
+		FD_SET(fd, &set);
+		while(true)
+		{
+			int ret=select(fd+1, NULL, &set, NULL, NULL);
+			if(ret>0)
+			{
+				send(fd, p.RawData(), p.Size(), 0);
+				break;
+			}
+		}
+		p.Clear();
+	}
+
+	void UdpSocket::Send(Packet& p, IpAddress& ip, ushort port)
+	{
+		struct sockaddr_in a;
+		a.sin_family=AF_INET;
+		a.sin_port=port;
+		a.sin_addr=ip.addr;
+		socklen_t len=sizeof(addr);
+		sendto(fd, p.RawData(), p.Size(), NULL, (struct sockaddr*)&a, len);
 		p.Clear();
 	}
 
@@ -37,16 +99,24 @@ namespace Network
 	{
 		socklen_t len=sizeof(addr);
 		int newfd=accept(fd, (sockaddr*)&addr, &len);
-		if(newfd<0) throw std::runtime_error(Error("Accept"));
+		if(newfd<0) return NULL;
 		return new TcpSocket(ip, port, Socket::Type::TCP, newfd);
 	}
 
+	void Selector::Wait(uint timeoutms)
+	{
+		struct timeval tv;
+		tv.tv_sec=timeoutms/1000;
+		tv.tv_usec=(timeoutms%1000)*1000;
+		int ret=select(highest+1, &fds, NULL, NULL, &tv);
+	};
+
 	void IpAddress::StrToAddr(const char* a)
 	{
+		if(std::string(a)=="localhost") a="127.0.0.1";
 		if(inet_aton(a, &addr)==0)
 		{
 			std::string errmsg=("IpAddress  is not a valid address.");
-			errmsg.insert(10, a);
 			throw std::runtime_error(errmsg);
 		}
 	}
@@ -58,7 +128,7 @@ namespace Network
 	}
 	void AutoSender::Start()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		if(!selfThread)
 		{
 			stopNow=false;
@@ -69,19 +139,19 @@ namespace Network
 	}
 	void AutoSender::Stop()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {delete selfThread; selfThread=NULL;}
 		else std::cerr << "AutoSender already stopped!" << std::endl;
 	}
 	void AutoSender::ForceStop()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Server::Start()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		if(!selfThread)
 		{
 			stopNow=false;
@@ -92,14 +162,14 @@ namespace Network
 	}
 	void Server::Stop()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {delete selfThread; selfThread=NULL;}
 		else std::cerr << "Server already stopped!" << std::endl;
 	}
 	void Server::ForceStop()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Server::ServerInitializer(void* args)
@@ -114,7 +184,7 @@ namespace Network
 	
 	void Client::Start()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		if(!selfThread)
 		{
 			selfThread = new sf::Thread(Client::ClientInitializer, this);
@@ -124,14 +194,14 @@ namespace Network
 	}
 	void Client::Stop()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {selfThread->Wait(); delete selfThread; selfThread=NULL;}
 		else std::cerr << "Client already stopped!" << std::endl;
 	}
 	void Client::ForceStop()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Client::ClientInitializer(void* args)

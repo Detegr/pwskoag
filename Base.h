@@ -1,6 +1,7 @@
 /* Base header for pwskoag.
  * Includes basic typedefs etc.
  */
+#include <arpa/inet.h>
 
 #pragma once
 
@@ -17,11 +18,13 @@ inline void msSleep(uint ms)
 	#endif
 }
 
-inline std::string Error(const char* err)
+inline std::string Error(const char* err, int type=-1)
 {
 	std::string error;
 	error+=err;
 	error+=": ";
 	error+=strerror(errno);
+	error+=" (Type: ";
+	error+=type==SOCK_STREAM?"TCP)":"UDP)";
 	return error;
 }

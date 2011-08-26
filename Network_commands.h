@@ -3,7 +3,7 @@ namespace Network
 {	
 	enum Command
 	{
-		Heartbeat,
+		Heartbeat=1,
 		Connect,
 		Disconnect,
 		String,

@@ -5,21 +5,26 @@ namespace Network
 {
 	void TcpServer::ServerLoop()
 	{
-		tcpListener.Listen(serverPort);
+		tcpListener.Bind();
+		tcpListener.Listen();
 		tcpListener.SetBlocking(false);
-		sf::SocketSelector selector;
+		Selector selector;
 		selector.Add(tcpListener);
 		while(!stopNow)
 		{
 			selector.Wait(TICK_WAITTIME_TCP);
+			std::cout << "Waited" << std::endl;
 			if(selector.IsReady(tcpListener))
 			{
-				sf::TcpSocket* client = new sf::TcpSocket;
-				if(tcpListener.Accept(*client) == sf::Socket::Done)
+				std::cout << "Listener ready" << std::endl;
+				TcpSocket* client = tcpListener.Accept();
+				if(client)
 				{
-					sf::Packet p;
-					if(client->Receive(p)==sf::Socket::Done)
+					std::cout << "Accept successful." << std::endl;
+					Packet p;
+					if(client->Receive(p))
 					{
+						std::cout << "Receive successful." << std::endl;
 						uchar header; p>>header;
 						if(header==Command::Connect)
 						{
@@ -34,7 +39,7 @@ namespace Network
 			{
 				for(auto it=clients.begin(); it!=clients.end(); ++it)
 				{
-					sf::TcpSocket* client = it->first;
+					TcpSocket* client = it->first;
 					sf::Clock& lastHeartBeat = it->second;
 					if(lastHeartBeat.GetElapsedTime() > TIMEOUTMS)
 					{
@@ -43,8 +48,8 @@ namespace Network
 					}
 					if(selector.IsReady(*client))
 					{
-						sf::Packet p;
-						if(client->Receive(p)==sf::Socket::Done)
+						Packet p;
+						if(client->Receive(p))
 						{
 							uchar header=0;
 							for(;;)
@@ -61,7 +66,7 @@ namespace Network
 									}
 									case Command::Heartbeat:
 										lastHeartBeat.Reset();
-										std::cout << "Beat from " << client->GetRemoteAddress() << ":" << client->GetRemotePort() << std::endl;
+										std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
 										break;
 									case Command::Disconnect:		
 										it=clients.erase(it);
@@ -77,7 +82,7 @@ namespace Network
 							EndOfPacket:
 							if(client)
 							{
-								sf::Packet toClient;
+								Packet toClient;
 								std::string str("Hi, this is server speaking.");
 								TcpSend(Command::String, str, client, toClient);
 								std::cout << "Sent: " << str << std::endl;
@@ -94,18 +99,18 @@ namespace Network
 	}
 	void UdpServer::ServerLoop()
 	{
-		sf::Packet p;
+		Packet p;
 		while(!stopNow)
 		{
 			auto clients = master->GetClients();
 			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
 				p.Clear();
-				sf::IpAddress ip = it->first->GetRemoteAddress();
-				ushort port = it->first->GetRemotePort();
-				if(udpSocket.Receive(p, ip, port)==sf::Socket::Done)
+				IpAddress ip = it->first->GetIp();
+				ushort port = it->first->GetPort();
+				if(udpSocket.Receive(p, ip, port))
 				{
-					std::cout << "Got data from: " << it->first->GetRemoteAddress() << std::endl;
+					std::cout << "Got data from: " << it->first->GetIp() << std::endl;
 				}
 			}
 			msSleep(TICK_WAITTIME_UDP);
@@ -114,31 +119,26 @@ namespace Network
 		
 	TcpServer::~TcpServer()
 	{
-		sf::Lock lock(selfMutex);
+		Concurrency::Lock lock(selfMutex);
 		for(auto it=clients.begin(); it!=clients.end(); ++it) delete it->first;
 	}
 	void TcpClient::Connect(const char* addr, ushort port)
 	{
-		sf::Lock lock(Client::selfMutex);
+		Concurrency::Lock lock(Client::selfMutex);
 		serverAddress=addr;
 		serverPort=port;
+		tcpSocket=TcpSocket(IpAddress(addr), port);
 		tcpSocket.SetBlocking(false);
-		/*
-		if(tcpSocket.Connect(serverAddress, serverPort)!=sf::Socket::Done)
-		{
-			std::cerr << "Couldn't connect to " << addr << ":" << port << std::endl;
-			return;
-		}*/
-		tcpSocket.Connect(serverAddress, serverPort);
+		tcpSocket.Connect();
 		Send(Command::Connect);
 		Client::Start();
-		AutoSender::Start();
+		//AutoSender::Start();
 	}
 	void TcpClient::Disconnect()
 	{
 		Client::Stop();
-		AutoSender::Stop();
-		sf::Lock lock(Client::selfMutex);
+		//AutoSender::Stop();
+		Concurrency::Lock lock(Client::selfMutex);
 		Send(Command::Disconnect);
 		tcpSocket.Disconnect();
 	}
@@ -146,12 +146,12 @@ namespace Network
 	{
 		sf::Clock timer;
 		Send(Command::Heartbeat);
-		sf::Packet p;
+		Packet p;
 		while(!Client::stopNow)
 		{
 			p.Clear();
 			uchar header=0;
-			if(tcpSocket.Receive(p)==sf::Socket::Done)
+			if(tcpSocket.Receive(p))
 			{
 				for(;;)
 				{
@@ -186,7 +186,7 @@ namespace Network
 	{
 		while(!AutoSender::stopNow)
 		{
-			sf::Packet tmp;
+			Packet tmp;
 			
 			autoSendMutex.Lock();
 			for(auto it=objectsToSend.begin(); it!=objectsToSend.end(); ++it)
@@ -201,22 +201,22 @@ namespace Network
 			}
 			autoSendMutex.Unlock();
 			while(!IsSent() && !AutoSender::stopNow) {msSleep(TICK_WAITTIME_TCP/2);}
-			sf::Lock l(canAppend); 
-			while(!tmp.EndOfPacket()){uchar data; tmp>>data; packet<<data;}
+			Concurrency::Lock l(canAppend); 
+			while(!tmp.Size()){uchar data; tmp>>data; packet<<data;}
 		}
 	}
 
 	void UdpClient::Connect(const char* addr, ushort port)
 	{
-		serverAddress = sf::IpAddress(addr);
+		serverAddress = IpAddress(addr);
 		serverPort = port;
 		udpSocket.SetBlocking(false);
-		udpSocket.Bind(sf::Socket::AnyPort);
+		udpSocket.Bind();
 		Start();
 	}
 	void UdpClient::ClientLoop()
 	{
-		sf::Packet p;
+		Packet p;
 		while(!stopNow)
 		{
 			UdpSend(Command::String, std::string("UDP Data."), &udpSocket, serverAddress, serverPort, p);

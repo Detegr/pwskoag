@@ -108,7 +108,10 @@ namespace Network
 		struct timeval tv;
 		tv.tv_sec=timeoutms/1000;
 		tv.tv_usec=(timeoutms%1000)*1000;
+		fd_set tmp = fds;
+		std::cout << "Highest to select: " << highest+1 << std::endl;
 		int ret=select(highest+1, &fds, NULL, NULL, &tv);
+		if(ret==0) fds=tmp;
 		std::cout << "Select returned: " << ret << std::endl;
 	};
 

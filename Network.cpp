@@ -13,10 +13,8 @@ namespace Network
 		while(!stopNow)
 		{
 			bool data=selector.Wait(TICK_WAITTIME_TCP);
-			std::cout << "Waited" << std::endl;
 			if(selector.IsReady(tcpListener))
 			{
-				std::cout << "Listener ready." << std::endl;
 				TcpSocket* client = tcpListener.Accept();
 				if(client)
 				{
@@ -33,61 +31,59 @@ namespace Network
 					}
 				}
 			}
+
+			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
-				std::cout << "Iterating through clients..." << std::endl;
-				for(auto it=clients.begin(); it!=clients.end(); ++it)
+				TcpSocket* client = it->first;
+				sf::Clock& lastHeartBeat = it->second;
+				if(lastHeartBeat.GetElapsedTime() > TIMEOUTMS)
 				{
-					TcpSocket* client = it->first;
-					sf::Clock& lastHeartBeat = it->second;
-					if(lastHeartBeat.GetElapsedTime() > TIMEOUTMS)
+					TcpSocket* s=it->first;
+					selector.Remove(*it->first);
+					it=clients.erase(it);
+					delete(s);
+					std::cout << "Client timed out." << std::endl;
+				}
+				if(selector.IsReady(*client))
+				{
+					Packet p;
+					if(client->Receive(p))
 					{
-						TcpSocket* s=it->first;
-						selector.Remove(*it->first);
-						it=clients.erase(it);
-						delete(s);
-						std::cout << "Client timed out." << std::endl;
-					}
-					if(selector.IsReady(*client))
-					{
-						Packet p;
-						if(client->Receive(p))
+						uchar header=0;
+						while(p.Size())
 						{
-							uchar header=0;
-							while(p.Size())
+							p>>header;
+							switch (header)
 							{
-								p>>header;
-								switch (header)
-								{
-									case Command::String:
+								case Command::String:
 									{
 										std::string str;
 										p>>str;
 										std::cout << "Str: " << str << std::endl;
 										break;
 									}
-									case Command::Heartbeat:
-										lastHeartBeat.Reset();
-										std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
-										break;
-									case Command::Disconnect:		
-										it=clients.erase(it);
-										selector.Remove(*client);
-										delete client;
-										client=NULL;
-										std::cout << "Client disconnected." << std::endl;
-										break;
-									case Command::EOP: goto EndOfPacket;
-									default: break;
-								}
+								case Command::Heartbeat:
+									lastHeartBeat.Reset();
+									std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
+									break;
+								case Command::Disconnect:		
+									it=clients.erase(it);
+									selector.Remove(*client);
+									delete client;
+									client=NULL;
+									std::cout << "Client disconnected." << std::endl;
+									break;
+								case Command::EOP: goto EndOfPacket;
+								default: break;
 							}
-							EndOfPacket:
-							if(client)
-							{
-								Packet toClient;
-								std::string str("Hi, this is server speaking.");
-								TcpSend(Command::String, str, client, toClient);
-								std::cout << "Sent: " << str << std::endl;
-							}
+						}
+						EndOfPacket:
+						if(client)
+						{
+							Packet toClient;
+							std::string str("Hi, this is server speaking.");
+							TcpSend(Command::String, str, client, toClient);
+							std::cout << "Sent: " << str << std::endl;
 						}
 					}
 				}

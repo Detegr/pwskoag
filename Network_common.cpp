@@ -78,7 +78,6 @@ namespace Network
 		struct timeval tv;
 		tv.tv_sec=2;
 		tv.tv_usec=0;
-		//signal(SIGPIPE, SIG_IGN);
 		while(true)
 		{
 			int ret=select(fd+1, NULL, &set, NULL, &tv);
@@ -98,6 +97,7 @@ namespace Network
 				}
 				break;
 			}
+			else {std::cout << "Something went wrong." << std::endl; close(fd); exit(1);}
 		}
 		p.Clear();
 	}

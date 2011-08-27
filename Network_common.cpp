@@ -94,8 +94,7 @@ namespace Network
 						std::cout << "Connection refused." << std::endl;
 						exit(1);
 					}
-					if(errno==EAGAIN || errno==EWOULDBLOCK) continue;
-					perror("send");
+					if(errno==EAGAIN || errno==EWOULDBLOCK || errno==EINPROGRESS) {msSleep(1);continue;}
 				}
 				break;
 			}

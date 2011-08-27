@@ -37,8 +37,8 @@ namespace Network
 	{
 		uchar buf[Packet::MAXSIZE];
 		int r=recv(fd, buf, Packet::MAXSIZE, 0);
-		if(r<0) return false;
-		p<<buf;
+		if(r<=0) return false;
+		for(int i=0;i<r;++i)p<<buf[i];
 		return true;
 	}
 	bool UdpSocket::Receive(Packet& p, IpAddress& ip, ushort port)
@@ -61,10 +61,13 @@ namespace Network
 		FD_ZERO(&set);
 		FD_SET(fd, &set);
 		socklen_t len=sizeof(addr);
-		while(select(fd+1, NULL, &set, NULL, NULL)<=0) {}
-		if(connect(fd, (sockaddr*)&addr, len)!=0 && errno!=EINPROGRESS) throw std::runtime_error(Error("Connect:",type));
-		while(select(fd+1, NULL, &set, NULL, NULL)<=0) {}
-		std::cout << "Connected!" << std::endl;
+		int ret=-1;
+		while(ret!=0)
+		{
+			ret=connect(fd, (sockaddr*)&addr, len);
+			if(errno!=EINPROGRESS) throw std::runtime_error(Error("Connect:",type));
+			msSleep(1);
+		}
 	}
 
 	void TcpSocket::Send(Packet& p)
@@ -72,12 +75,28 @@ namespace Network
 		fd_set set;
 		FD_ZERO(&set);
 		FD_SET(fd, &set);
+		struct timeval tv;
+		tv.tv_sec=2;
+		tv.tv_usec=0;
+		//signal(SIGPIPE, SIG_IGN);
 		while(true)
 		{
-			int ret=select(fd+1, NULL, &set, NULL, NULL);
-			if(ret>0)
+			int ret=select(fd+1, NULL, &set, NULL, &tv);
+			if(ret>0 && FD_ISSET(fd, &set))
 			{
-				if(send(fd, p.RawData(), p.Size(), 0)<=0) throw std::runtime_error(Error("Send", type));
+				FD_CLR(fd, &set);
+				int ret=-1;
+				while(ret<0)
+				{
+					ret=send(fd, p.RawData(), p.Size(), 0);
+					if(errno==ECONNREFUSED)
+					{
+						std::cout << "Connection refused." << std::endl;
+						exit(1);
+					}
+					if(errno==EAGAIN || errno==EWOULDBLOCK) continue;
+					perror("send");
+				}
 				break;
 			}
 		}
@@ -103,16 +122,15 @@ namespace Network
 		return new TcpSocket(ip, port, Socket::Type::TCP, newfd);
 	}
 
-	void Selector::Wait(uint timeoutms)
+	bool Selector::Wait(uint timeoutms)
 	{
 		struct timeval tv;
 		tv.tv_sec=timeoutms/1000;
 		tv.tv_usec=(timeoutms%1000)*1000;
-		fd_set tmp = fds;
-		std::cout << "Highest to select: " << highest+1 << std::endl;
-		int ret=select(highest+1, &fds, NULL, NULL, &tv);
-		if(ret==0) fds=tmp;
-		std::cout << "Select returned: " << ret << std::endl;
+		FD_ZERO(&fds);
+		for(auto it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+		int ret=select(fd_ints.back()+1, &fds, NULL, NULL, &tv);
+		return ret!=0;
 	};
 
 	void IpAddress::StrToAddr(const char* a)

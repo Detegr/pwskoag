@@ -12,19 +12,17 @@ namespace Network
 		selector.Add(tcpListener);
 		while(!stopNow)
 		{
-			selector.Wait(TICK_WAITTIME_TCP);
+			bool data=selector.Wait(TICK_WAITTIME_TCP);
 			std::cout << "Waited" << std::endl;
 			if(selector.IsReady(tcpListener))
 			{
-				std::cout << "Listener ready" << std::endl;
+				std::cout << "Listener ready." << std::endl;
 				TcpSocket* client = tcpListener.Accept();
 				if(client)
 				{
-					std::cout << "Accept successful." << std::endl;
 					Packet p;
 					if(client->Receive(p))
 					{
-						std::cout << "Receive successful." << std::endl;
 						uchar header; p>>header;
 						if(header==Command::Connect)
 						{
@@ -35,15 +33,18 @@ namespace Network
 					}
 				}
 			}
-			else
 			{
+				std::cout << "Iterating through clients..." << std::endl;
 				for(auto it=clients.begin(); it!=clients.end(); ++it)
 				{
 					TcpSocket* client = it->first;
 					sf::Clock& lastHeartBeat = it->second;
 					if(lastHeartBeat.GetElapsedTime() > TIMEOUTMS)
 					{
+						TcpSocket* s=it->first;
+						selector.Remove(*it->first);
 						it=clients.erase(it);
+						delete(s);
 						std::cout << "Client timed out." << std::endl;
 					}
 					if(selector.IsReady(*client))
@@ -52,7 +53,7 @@ namespace Network
 						if(client->Receive(p))
 						{
 							uchar header=0;
-							for(;;)
+							while(p.Size())
 							{
 								p>>header;
 								switch (header)
@@ -90,6 +91,7 @@ namespace Network
 						}
 					}
 				}
+				if(data) msSleep(10); // Prevent 100% cpu.
 			}
 		}
 		tcpListener.Close();
@@ -168,7 +170,7 @@ namespace Network
 						case Command::EOP:
 							goto EndOfPacket;
 						default:
-							std::cout << "Invalid packet, skipping..." << std::endl; break;
+							std::cout << "Invalid packet. Terminating." << std::endl; break;
 					}
 				}
 			}

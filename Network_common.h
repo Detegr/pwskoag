@@ -47,7 +47,7 @@ namespace Network
 			Packet&							operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1); return *this;}
 			Packet&							operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1); return *this;}
 			template <class type> Packet&	operator<<(type x) {Append(&x, sizeof(type)); return *this;}
-			template <class type> Packet&	operator>>(type& x) {x=*(type*)&data[0]; Pop(sizeof(type)); return *this;}
+			template <class type> Packet&	operator>>(type& x) {if(Size()){x=*(type*)&data[0]; Pop(sizeof(type));} return *this;}
 	};
 
 	class Socket
@@ -107,14 +107,14 @@ namespace Network
 	class Selector
 	{
 		private:
-			int highest;
+			std::vector<int> fd_ints;
 			fd_set fds;
 		public:
-			Selector() : highest(0) {FD_ZERO(&fds);}
-			void Add(Socket& s) {if(s.fd>highest)highest=s.fd; FD_SET(s.fd, &fds);}
-			bool IsReady(Socket& s) {return FD_ISSET(s.fd, &fds)!=0;}
-			void Wait(uint timeoutms);
-			void Remove(Socket& s) {FD_CLR(s.fd, &fds);}
+			Selector() {FD_ZERO(&fds);}
+			void Add(Socket& s) {fd_ints.push_back(s.fd); std::sort(fd_ints.begin(), fd_ints.end());}
+			bool IsReady(Socket& s) {return FD_ISSET(s.fd, &fds);}
+			void Remove(Socket& s) {for(auto it=fd_ints.begin(); it!=fd_ints.end(); ++it) if(*it==s.fd){std::cout << "Erasing: " << *it << std::endl; it=fd_ints.erase(it); break;} std::sort(fd_ints.begin(), fd_ints.end());}
+			bool Wait(uint timeoutms);
 	};
 
 	// Functions for sending and appending.

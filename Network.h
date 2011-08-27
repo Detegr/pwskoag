@@ -67,7 +67,7 @@ namespace Network
 			template<class type> void 	Append(Command c, type t) {Concurrency::Lock l(canAppend); Append(c); packet<<t;}
 			void 						Send() {Concurrency::Lock l(canAppend); Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
 			void 						Send(Command c) {Concurrency::Lock l(canAppend); Network::TcpSend(c, &tcpSocket, packet);}
-			bool						IsSent() const {return packet.Size()==0;}
+			bool						IsSent() const {return packet.Size()!=0;}
 	};
 
 	class UdpClient : public Client

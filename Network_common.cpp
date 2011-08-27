@@ -77,7 +77,7 @@ namespace Network
 			int ret=select(fd+1, NULL, &set, NULL, NULL);
 			if(ret>0)
 			{
-				send(fd, p.RawData(), p.Size(), 0);
+				if(send(fd, p.RawData(), p.Size(), 0)<=0) throw std::runtime_error(Error("Send", type));
 				break;
 			}
 		}
@@ -109,6 +109,7 @@ namespace Network
 		tv.tv_sec=timeoutms/1000;
 		tv.tv_usec=(timeoutms%1000)*1000;
 		int ret=select(highest+1, &fds, NULL, NULL, &tv);
+		std::cout << "Select returned: " << ret << std::endl;
 	};
 
 	void IpAddress::StrToAddr(const char* a)

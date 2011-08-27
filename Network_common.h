@@ -56,12 +56,12 @@ namespace Network
 		protected:
 			IpAddress	ip;
 			ushort		port;
-			int			fd;
 			int			type;
 			sockaddr_in	addr;
 
 			Socket() {}
 		public:
+			int			fd;
 			enum Type
 			{
 				TCP=SOCK_STREAM,
@@ -111,8 +111,8 @@ namespace Network
 			fd_set fds;
 		public:
 			Selector() : highest(0) {FD_ZERO(&fds);}
-			void Add(Socket& s) {if(s.fd>highest) s.fd=highest; FD_SET(s.fd, &fds);}
-			bool IsReady(Socket& s) {return FD_ISSET(s.fd, &fds)==0;}
+			void Add(Socket& s) {if(s.fd>highest){highest=s.fd; std::cout << "Highest: " << s.fd << std::endl;} FD_SET(s.fd, &fds);}
+			bool IsReady(Socket& s) {return FD_ISSET(s.fd, &fds)!=0;}
 			void Wait(uint timeoutms);
 			void Remove(Socket& s) {FD_CLR(s.fd, &fds);}
 	};

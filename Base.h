@@ -14,7 +14,14 @@ inline void msSleep(uint ms)
 	#ifdef _WIN32
 		Sleep(ms);
 	#else
-		usleep(ms*1000);
+		struct timespec ts;
+		if(ms==0){sched_yield(); return;}
+		else
+		{
+			ts.tv_sec=ms/1000;
+			ts.tv_nsec=ms%1000*1000000;
+		}
+		nanosleep(&ts, NULL);
 	#endif
 }
 

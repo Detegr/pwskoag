@@ -73,8 +73,7 @@ namespace Network
 			const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
 			void SetBlocking(bool b) {int flags; if(flags=(fcntl(fd, F_GETFL, 0))==-1) flags=0; fcntl(fd, F_SETFL, b?flags&O_NONBLOCK:flags|O_NONBLOCK);}
 			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));}
-			void Close() {close(fd);}
-			void ForceClose() {shutdown(fd, SHUT_RDWR);Close();}
+			void Close() {shutdown(fd,SHUT_RDWR);close(fd);}
 			const IpAddress&	GetIp() const {return ip;}
 			const ushort		GetPort() const {return port;}
 	};
@@ -92,7 +91,7 @@ namespace Network
 			void Connect();
 			void Disconnect() {Close();}
 			TcpSocket* Accept(); 
-			void Send(Packet& p); 
+			bool Send(Packet& p); 
 			bool Receive(Packet& p); 
 	};
 
@@ -100,7 +99,7 @@ namespace Network
 	{
 		UdpSocket() {}
 		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, Type::UDP) {}
-		void Send(Packet& p, IpAddress& ip, ushort port);
+		bool Send(Packet& p, IpAddress& ip, ushort port);
 		bool Receive(Packet& p, IpAddress& ip, ushort port); 
 	};
 
@@ -123,31 +122,32 @@ namespace Network
 	template <class type> void Append(Command c, type& t, Packet& p){Append(c,p);Append(t,p);}
 
 	// Tcp-functions
-	static void TcpSend(Command c, TcpSocket* sock, Packet& p)
+	static bool TcpSend(Command c, TcpSocket* sock, Packet& p)
 	{
 		p << (uchar)c << (uchar)Command::EOP;
-		sock->Send(p);
-		p.Clear();
+		return sock->Send(p);
 	}
-	static void TcpSend(TcpSocket* sock, Packet& p) {sock->Send(p); p.Clear();}
-	template <class type> void TcpSend(Command c, type t, TcpSocket* sock, Packet& p)
+	static bool TcpSend(TcpSocket* sock, Packet& p) {return sock->Send(p);}
+	template <class type> bool TcpSend(Command c, type t, TcpSocket* sock, Packet& p)
 	{
 			p.Clear();
-			Append(c,t,p); Append(Command::EOP, p); TcpSend(sock,p);
+			Append(c,t,p); Append(Command::EOP, p);
+			return TcpSend(sock,p);
 	}
 
 	// Udp-functions
-	static void UdpSend(Command c, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
+	static bool UdpSend(Command c, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
 	{
 		p << (uchar)c << (uchar)Command::EOP;
-		sock->Send(p, ip, port);
+		return sock->Send(p, ip, port);
 	}
-	static void UdpSend(UdpSocket* sock, IpAddress& ip, ushort port, Packet& p) {sock->Send(p,ip,port); p.Clear();}
+	static bool UdpSend(UdpSocket* sock, IpAddress& ip, ushort port, Packet& p) {return sock->Send(p,ip,port);}
 	template <class type>
-	void UdpSend(Command c, type t, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
+	bool UdpSend(Command c, type t, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
 	{
 		p.Clear();
-		Append(c, t, p); Append(Command::EOP, p); UdpSend(sock, ip, port, p);
+		Append(c, t, p); Append(Command::EOP, p);
+		return UdpSend(sock, ip, port, p);
 	}
 
 	class AutoSender

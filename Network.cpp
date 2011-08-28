@@ -82,12 +82,19 @@ namespace Network
 						{
 							Packet toClient;
 							std::string str("Hi, this is server speaking.");
-							TcpSend(Command::String, str, client, toClient);
+							if(!TcpSend(Command::String, str, client, toClient))
+							{
+								it=clients.erase(it);
+								selector.Remove(*client);
+								delete client;
+								client=NULL;
+								std::cout << "Client disconnected: Terminated the connection." << std::endl;
+								continue;
+							}
 							std::cout << "Sent: " << str << std::endl;
 						}
 					}
 				}
-				if(data) msSleep(10); // Prevent 100% cpu.
 			}
 		}
 		tcpListener.Close();

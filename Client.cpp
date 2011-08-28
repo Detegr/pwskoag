@@ -33,5 +33,4 @@ int main()
 	c.Connect("localhost", 55555);
 	msSleep(4000);
 	c.Disconnect();
-	msSleep(500);
 }

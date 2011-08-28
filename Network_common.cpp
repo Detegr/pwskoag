@@ -70,7 +70,7 @@ namespace Network
 		}
 	}
 
-	void TcpSocket::Send(Packet& p)
+	bool TcpSocket::Send(Packet& p)
 	{
 		fd_set set;
 		FD_ZERO(&set);
@@ -85,24 +85,32 @@ namespace Network
 			{
 				FD_CLR(fd, &set);
 				int ret=-1;
-				while(ret<0)
+				int sent=0;
+				while(sent<p.Size())
 				{
-					ret=send(fd, p.RawData(), p.Size(), 0);
+					ret=send(fd, p.RawData(), p.Size(), MSG_NOSIGNAL);
+					sent+=ret;
+					std::cout << "Sent " << sent << " bytes from " << p.Size() << std::endl;
+					if(errno==0) continue; // Success.
 					if(errno==ECONNREFUSED)
 					{
 						std::cout << "Connection refused." << std::endl;
 						exit(1);
 					}
-					if(errno==EAGAIN || errno==EWOULDBLOCK || errno==EINPROGRESS) {msSleep(1);continue;}
+					if(errno==EPIPE){std::cout << "Pipe got broken :(" << std::endl; return false;}
+					if(errno==ECONNRESET || errno==ENOTCONN){std::cout << "Connection lost." << std::endl; return false;}
+					if(errno==EAGAIN || errno==EWOULDBLOCK || errno==EINPROGRESS){continue;}
+					perror("SEND");
 				}
 				break;
 			}
 			else {std::cout << "Something went wrong." << std::endl; close(fd); exit(1);}
 		}
 		p.Clear();
+		return true;
 	}
 
-	void UdpSocket::Send(Packet& p, IpAddress& ip, ushort port)
+	bool UdpSocket::Send(Packet& p, IpAddress& ip, ushort port)
 	{
 		struct sockaddr_in a;
 		a.sin_family=AF_INET;
@@ -111,6 +119,7 @@ namespace Network
 		socklen_t len=sizeof(addr);
 		sendto(fd, p.RawData(), p.Size(), NULL, (struct sockaddr*)&a, len);
 		p.Clear();
+		return true;
 	}
 
 	TcpSocket* TcpSocket::Accept()

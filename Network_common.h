@@ -154,9 +154,9 @@ namespace Network
 	{
 		protected:
 			bool											stopNow;
-			sf::Thread*										selfThread;
-			Concurrency::Mutex											autoSendMutex;
-			Concurrency::Mutex											selfMutex;
+			Concurrency::Thread*							selfThread;
+			Concurrency::Mutex								autoSendMutex;
+			Concurrency::Mutex								selfMutex;
 			static void										AutoSendInitializer(void* args);
 			std::unordered_map<uchar, std::vector <void*> >	objectsToSend;
 			virtual void									AutoSendLoop()=0;
@@ -184,7 +184,7 @@ namespace Network
 			bool 			stopNow;
 			uint 			serverPort;
 			Concurrency::Mutex	 		selfMutex;
-			sf::Thread* 	selfThread;
+			Concurrency::Thread* 	selfThread;
 			static void 	ServerInitializer(void* args);
 			virtual 		~Server();
 			virtual void	ServerLoop()=0;
@@ -210,7 +210,7 @@ namespace Network
 			bool			stopNow;
 			uint 			serverPort;
 			Concurrency::Mutex			selfMutex;
-			sf::Thread*		selfThread;
+			Concurrency::Thread*		selfThread;
 			static void		ClientInitializer(void* args);
 			virtual 		~Client();
 			virtual void 	ClientLoop()=0;

@@ -20,7 +20,7 @@ namespace Concurrency
 			static void* threadInit(void* args);
 		public:
 			Thread(threadFunc f, void* args=NULL);
-			~Thread() {if(thread){pthread_detach(thread); thread=NULL;}}
+			~Thread() {if(thread){Join(); pthread_detach(thread); thread=NULL;}}
 			void Join() {pthread_join(thread, NULL);}
 	};
 

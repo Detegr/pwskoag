@@ -90,7 +90,6 @@ namespace Network
 				{
 					ret=send(fd, p.RawData(), p.Size(), MSG_NOSIGNAL);
 					sent+=ret;
-					std::cout << "Sent " << sent << " bytes from " << p.Size() << std::endl;
 					if(errno==0) continue; // Success.
 					if(errno==ECONNREFUSED)
 					{
@@ -162,8 +161,7 @@ namespace Network
 		if(!selfThread)
 		{
 			stopNow=false;
-			selfThread = new sf::Thread(AutoSendInitializer, this);
-			selfThread->Launch();
+			selfThread = new Concurrency::Thread(AutoSendInitializer, this);
 		}
 		else std::cerr << "AutoSender already running!" << std::endl;
 	}
@@ -176,8 +174,8 @@ namespace Network
 	}
 	void AutoSender::ForceStop()
 	{
-		Concurrency::Lock lock(selfMutex);
-		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
+		//Concurrency::Lock lock(selfMutex);
+		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Server::Start()
 	{
@@ -185,8 +183,7 @@ namespace Network
 		if(!selfThread)
 		{
 			stopNow=false;
-			selfThread = new sf::Thread(Server::ServerInitializer, this);
-			selfThread->Launch();
+			selfThread = new Concurrency::Thread(Server::ServerInitializer, this);
 		}
 		else std::cerr << "Server already running!" << std::endl;
 	}
@@ -199,8 +196,8 @@ namespace Network
 	}
 	void Server::ForceStop()
 	{
-		Concurrency::Lock lock(selfMutex);
-		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
+		//Concurrency::Lock lock(selfMutex);
+		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Server::ServerInitializer(void* args)
 	{
@@ -217,8 +214,7 @@ namespace Network
 		Concurrency::Lock lock(selfMutex);
 		if(!selfThread)
 		{
-			selfThread = new sf::Thread(Client::ClientInitializer, this);
-			selfThread->Launch();
+			selfThread = new Concurrency::Thread(Client::ClientInitializer, this);
 		}
 		else std::cerr << "Client already running!" << std::endl;
 	}
@@ -226,13 +222,13 @@ namespace Network
 	{
 		Concurrency::Lock lock(selfMutex);
 		stopNow=true;
-		if(selfThread) {selfThread->Wait(); delete selfThread; selfThread=NULL;}
+		if(selfThread) {delete selfThread; selfThread=NULL;}
 		else std::cerr << "Client already stopped!" << std::endl;
 	}
 	void Client::ForceStop()
 	{
-		Concurrency::Lock lock(selfMutex);
-		if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
+		//Concurrency::Lock lock(selfMutex);
+		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Client::ClientInitializer(void* args)
 	{

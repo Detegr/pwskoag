@@ -26,13 +26,13 @@ namespace Network
 	class TcpServer : public Server
 	{	
 		private:
-			TcpSocket 											tcpListener;
-			std::list<std::pair<TcpSocket*, sf::Clock> > 		clients;
-			void												ServerLoop();
+			TcpSocket 												tcpListener;
+			std::list<std::pair<Concurrency::Thread*, sf::Clock> > 	clients;
+			void													ServerLoop();
 		public:
 			TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
 			~TcpServer();
-			const std::list<std::pair<TcpSocket*, sf::Clock> >& GetClients() const { return clients; }
+			const std::list<std::pair<Concurrency::Thread*, sf::Clock> >& GetClients() const { return clients; }
 	};
 
 	class UdpServer : public Server
@@ -43,7 +43,7 @@ namespace Network
 			void			ServerLoop();
 		public:
 			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp)
-			{udpSocket.SetBlocking(false); udpSocket.Bind();}
+			{udpSocket.SetBlocking(true); udpSocket.Bind();}
 	};
 
 	/*
@@ -67,7 +67,8 @@ namespace Network
 			template<class type> void 	Append(Command c, type t) {Concurrency::Lock l(canAppend); Append(c); packet<<t;}
 			void 						Send() {Concurrency::Lock l(canAppend); Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
 			void 						Send(Command c) {Concurrency::Lock l(canAppend); Network::TcpSend(c, &tcpSocket, packet);}
-			bool						IsSent() const {return packet.Size()!=0;}
+			bool						IsSent() const {return packet.Size()==0;}
+			int							DataSize() const {return packet.Size();}
 	};
 
 	class UdpClient : public Client

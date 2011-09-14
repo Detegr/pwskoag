@@ -7,7 +7,7 @@ namespace Concurrency
 		Thread::Data* d=(Thread::Data*)args;
 		d->func(d->arg);
 	}
-	Thread::Thread(threadFunc f, void* args) : thread(NULL), data(Data(f, args))
+	Thread::Thread(threadFunc f, void* args) : thread(0), data(Data(f, args))
 	{
 		int ret=pthread_create(&thread, NULL, threadInit, &data);
 		if(ret)

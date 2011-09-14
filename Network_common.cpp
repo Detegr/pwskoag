@@ -49,7 +49,7 @@ namespace Network
 		a.sin_port=port;
 		a.sin_addr=ip.addr;
 		socklen_t len=sizeof(a);
-		int r=recvfrom(fd, buf, Packet::MAXSIZE, NULL, (struct sockaddr*)&a, &len);
+		int r=recvfrom(fd, buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
 		if(r<0) return false;
 		p<<buf;
 		return true;
@@ -62,12 +62,8 @@ namespace Network
 		FD_SET(fd, &set);
 		socklen_t len=sizeof(addr);
 		int ret=-1;
-		while(ret!=0)
-		{
-			ret=connect(fd, (sockaddr*)&addr, len);
-			if(errno!=EINPROGRESS) throw std::runtime_error(Error("Connect:",type));
-			msSleep(1);
-		}
+		ret=connect(fd, (sockaddr*)&addr, len);
+		if(ret<0)Error("Connect:",type);
 	}
 
 	bool TcpSocket::Send(Packet& p)
@@ -89,8 +85,8 @@ namespace Network
 				while(sent<p.Size())
 				{
 					ret=send(fd, p.RawData(), p.Size(), MSG_NOSIGNAL);
-					sent+=ret;
-					if(errno==0) continue; // Success.
+					if(ret>=0) sent+=ret;
+					if(errno==0) break; // Success.
 					if(errno==ECONNREFUSED)
 					{
 						std::cout << "Connection refused." << std::endl;
@@ -98,7 +94,7 @@ namespace Network
 					}
 					if(errno==EPIPE){std::cout << "Pipe got broken :(" << std::endl; return false;}
 					if(errno==ECONNRESET || errno==ENOTCONN){std::cout << "Connection lost." << std::endl; return false;}
-					if(errno==EAGAIN || errno==EWOULDBLOCK || errno==EINPROGRESS){continue;}
+					if(errno==EAGAIN || errno==EWOULDBLOCK || errno==EINPROGRESS) continue;
 					perror("SEND");
 				}
 				break;
@@ -116,7 +112,7 @@ namespace Network
 		a.sin_port=port;
 		a.sin_addr=ip.addr;
 		socklen_t len=sizeof(addr);
-		sendto(fd, p.RawData(), p.Size(), NULL, (struct sockaddr*)&a, len);
+		sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&a, len);
 		p.Clear();
 		return true;
 	}

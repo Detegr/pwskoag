@@ -99,10 +99,11 @@ namespace Network
 			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
 				it->second.lock.Lock();
-				if(it->second.timer.GetElapsedTime()>3000)
+				uint lastheartbeat=it->second.timer.GetElapsedTime();
+				it->second.lock.Unlock();
+				if(lastheartbeat>5000)
 				{
 					std::cout << "Client " << it->second.socket->GetIp() << " timed out." << std::endl;
-					it->second.lock.Unlock();
 					shutdown(it->second.socket->fd, SHUT_RDWR);
 					it->first->Join();
 					delete it->first;
@@ -170,8 +171,10 @@ namespace Network
 
 	void ReceiveThread_Client(void *args)
 	{
-		TcpSocket* tcpSocket=(TcpSocket*)args;
-		while(true)
+		ThreadData* data=(ThreadData*)args;
+		TcpSocket* tcpSocket=data->socket;
+		bool* stopNow=data->stopNow;
+		while(!*stopNow)
 		{
 			Packet p;
 			uchar header=0;
@@ -199,14 +202,14 @@ namespace Network
 					if(end) break;
 				}
 			}
-			std::cout << "Eop" << std::endl;
 		}
 	}
 
 	void TcpClient::ClientLoop()
 	{
 		sf::Clock timer;
-		Concurrency::Thread t(ReceiveThread_Client, &tcpSocket);
+		ThreadData* data=new ThreadData(nullptr, nullptr, &tcpSocket, &(Client::stopNow));
+		Concurrency::Thread t(ReceiveThread_Client, data);
 		while(!Client::stopNow)
 		{
 			msSleep(TICK_WAITTIME_TCP);

@@ -98,10 +98,16 @@ namespace Network
 			
 			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
+				if(!it->second.socket)
+				{
+					std::cout << "Removed disconnected client from clients." << std::endl;
+					it=clients.erase(it);
+					delete it->first;
+				}
 				it->second.lock.Lock();
 				uint lastheartbeat=it->second.timer.GetElapsedTime();
 				it->second.lock.Unlock();
-				if(lastheartbeat>5000)
+				if(lastheartbeat>8000)
 				{
 					std::cout << "Client " << it->second.socket->GetIp() << " timed out." << std::endl;
 					shutdown(it->second.socket->fd, SHUT_RDWR);
@@ -110,7 +116,6 @@ namespace Network
 					it=clients.erase(it);
 				}
 			}
-			
 		}
 		for(auto it=clients.begin(); it!=clients.end(); ++it)
 		{
@@ -162,10 +167,10 @@ namespace Network
 	}
 	void TcpClient::Disconnect()
 	{
+		Send(Command::Disconnect);
 		Client::Stop();
 		//AutoSender::Stop();
 		Concurrency::Lock lock(Client::selfMutex);
-		Send(Command::Disconnect);
 		tcpSocket.Disconnect();
 	}
 
@@ -220,6 +225,7 @@ namespace Network
 			}
 			if(DataSize()) Send();
 		}
+		shutdown(tcpSocket.fd, SHUT_RDWR);
 	}
 	void TcpClient::AutoSendLoop()
 	{

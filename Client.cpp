@@ -31,6 +31,6 @@ int main()
 	c.AutoSend(Network::Command::String, &b);
 	*/
 	c.Connect("localhost", 55555);
-	msSleep(8000);
+	msSleep(4000);
 	c.Disconnect();
 }

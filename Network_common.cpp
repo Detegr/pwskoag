@@ -218,7 +218,7 @@ namespace Network
 	{
 		Concurrency::Lock lock(selfMutex);
 		stopNow=true;
-		if(selfThread) {delete selfThread; selfThread=NULL;}
+		if(selfThread) {std::cout << "Disconnecting...";std::cout.flush(); delete selfThread; selfThread=NULL;std::cout<<"DONE!"<<std::endl;}
 		else std::cerr << "Client already stopped!" << std::endl;
 	}
 	void Client::ForceStop()

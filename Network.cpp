@@ -3,10 +3,16 @@
 
 namespace Network
 {
-	void ReceiveThread(void *socket)
+	void ReceiveThread(void *args)
 	{
-		TcpSocket* client=(TcpSocket*) socket;
-		while(true)
+		ThreadData* data=(ThreadData*)args;
+		Concurrency::Mutex* lock=data->lock;
+		sf::Clock* timer=data->timer;
+		TcpSocket* client=data->socket;
+		bool* stopNow=data->stopNow;
+		delete data;
+
+		while(!*stopNow)
 		{
 			Packet p;
 			if(client->Receive(p))
@@ -25,7 +31,9 @@ namespace Network
 								break;
 							}
 						case Command::Heartbeat:
-							//lastHeartBeat.Reset();
+							lock->Lock();
+							timer->Reset();
+							lock->Unlock();
 							std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
 							break;
 						case Command::Disconnect:		
@@ -61,7 +69,7 @@ namespace Network
 	{
 		tcpListener.Bind();
 		tcpListener.Listen();
-		tcpListener.SetBlocking(false);
+		tcpListener.SetBlocking(true);
 		Selector selector;
 		selector.Add(tcpListener);
 		while(!stopNow)
@@ -79,76 +87,33 @@ namespace Network
 						if(header==Command::Connect)
 						{
 							std::cout << "Client connected" << std::endl;
-							clients.push_back(std::make_pair(new Concurrency::Thread(ReceiveThread, (void*)client), sf::Clock()));
+							clients.push_back(std::make_pair(nullptr, LocalThreadData(client)));
+							ThreadData* data=new ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
+							Concurrency::Thread* run=new Concurrency::Thread(ReceiveThread, (void*)data);
+							clients.back().first=run;
 						}
 					}
 				}
 			}
-			/*
+			
 			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
-				TcpSocket* client = it->first;
-				sf::Clock& lastHeartBeat = it->second;
-				if(lastHeartBeat.GetElapsedTime() > TIMEOUTMS)
+				it->second.lock.Lock();
+				if(it->second.timer.GetElapsedTime()>3000)
 				{
-					TcpSocket* s=it->first;
-					selector.Remove(*it->first);
+					std::cout << "Client " << it->second.socket->GetIp() << " timed out." << std::endl;
+					it->second.lock.Unlock();
+					shutdown(it->second.socket->fd, SHUT_RDWR);
+					it->first->Join();
+					delete it->first;
 					it=clients.erase(it);
-					delete(s);
-					std::cout << "Client timed out." << std::endl;
 				}
-				if(selector.IsReady(*client))
-				{
-					Packet p;
-					if(client->Receive(p))
-					{
-						uchar header=0;
-						while(p.Size())
-						{
-							p>>header;
-							switch (header)
-							{
-								case Command::String:
-									{
-										std::string str;
-										p>>str;
-										std::cout << "Str: " << str << std::endl;
-										break;
-									}
-								case Command::Heartbeat:
-									lastHeartBeat.Reset();
-									std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
-									break;
-								case Command::Disconnect:		
-									it=clients.erase(it);
-									selector.Remove(*client);
-									delete client;
-									client=NULL;
-									std::cout << "Client disconnected." << std::endl;
-									break;
-								case Command::EOP: goto EndOfPacket;
-								default: break;
-							}
-						}
-						EndOfPacket:
-						if(client)
-						{
-							Packet toClient;
-							std::string str("Hi, this is server speaking.");
-							if(!TcpSend(Command::String, str, client, toClient))
-							{
-								it=clients.erase(it);
-								selector.Remove(*client);
-								delete client;
-								client=NULL;
-								std::cout << "Client disconnected: Terminated the connection." << std::endl;
-								continue;
-							}
-							std::cout << "Sent: " << str << std::endl;
-						}
-					}
-				}
-			}*/
+			}
+			
+		}
+		for(auto it=clients.begin(); it!=clients.end(); ++it)
+		{
+			shutdown(it->second.socket->fd, SHUT_RDWR);
 		}
 		tcpListener.Close();
 
@@ -210,6 +175,7 @@ namespace Network
 		{
 			Packet p;
 			uchar header=0;
+			bool end=false;
 			if(tcpSocket->Receive(p))
 			{
 				for(;;)
@@ -225,13 +191,14 @@ namespace Network
 							break;
 						}
 						case Command::EOP:
-							goto EndOfPacket; 
+							end=true;
+							break;
 						default:
 							std::cout << "Invalid packet. Terminating." << std::endl; break;
 					}
+					if(end) break;
 				}
 			}
-			EndOfPacket:
 			std::cout << "Eop" << std::endl;
 		}
 	}

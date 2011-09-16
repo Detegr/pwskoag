@@ -18,6 +18,8 @@ namespace Network
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
 	
+	struct TcpData;
+	struct LocalThreadData;
 	/*
 	 * TcpServer class
 	 *
@@ -27,12 +29,12 @@ namespace Network
 	{	
 		private:
 			TcpSocket 												tcpListener;
-			std::list<std::pair<Concurrency::Thread*, sf::Clock> > 	clients;
+			std::list<std::pair<Concurrency::Thread*, LocalThreadData> > 	clients;
 			void													ServerLoop();
 		public:
 			TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
 			~TcpServer();
-			const std::list<std::pair<Concurrency::Thread*, sf::Clock> >& GetClients() const { return clients; }
+			const std::list<std::pair<Concurrency::Thread*, LocalThreadData> >& GetClients() const { return clients; }
 	};
 
 	class UdpServer : public Server
@@ -44,6 +46,24 @@ namespace Network
 		public:
 			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp)
 			{udpSocket.SetBlocking(true); udpSocket.Bind();}
+	};
+	
+	struct ThreadData
+	{
+		Concurrency::Mutex* lock;
+		TcpSocket*			socket;
+		sf::Clock*			timer;
+		bool*				stopNow;
+		ThreadData(Concurrency::Mutex *l, sf::Clock* t, TcpSocket* sock, bool* stop) :
+			lock(l), timer(t), socket(sock), stopNow(stop) {}
+	};
+
+	struct LocalThreadData
+	{
+		TcpSocket*			socket;
+		sf::Clock			timer;
+		Concurrency::Mutex	lock;
+		LocalThreadData(TcpSocket* s) : socket(s), timer(sf::Clock()) {}
 	};
 
 	/*

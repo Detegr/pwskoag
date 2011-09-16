@@ -39,7 +39,9 @@ namespace Network
 						case Command::Disconnect:		
 							//it=clients.erase(it);
 							//selector.Remove(*client);
+							lock->Lock();
 							delete client;
+							lock->Unlock();
 							client=NULL;
 							std::cout << "Client disconnected." << std::endl;
 							pthread_exit(0);

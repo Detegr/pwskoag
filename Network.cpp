@@ -44,9 +44,8 @@ namespace Network
 								std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
 								break;
 							case Command::Disconnect:		
-								//it=clients.erase(it);
-								//selector.Remove(*client);
 								lock->Lock();
+								client->Clear();
 								delete client;
 								lock->Unlock();
 								client=NULL;
@@ -62,11 +61,9 @@ namespace Network
 					std::string str("Hi, this is server speaking.");
 					if(!TcpSend(Command::String, str, client, toClient))
 					{
-						//it=clients.erase(it);
-						//selector.Remove(*client);
 						delete client;
 						client=NULL;
-						std::cout << "Client disconnected: Terminated the connection." << std::endl;
+						std::cout << "Client disconnected: Terminating the connection." << std::endl;
 						pthread_exit(0);
 					}
 					std::cout << "Sent: " << str << std::endl;
@@ -108,11 +105,14 @@ namespace Network
 			
 			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
-				if(!it->second.socket)
+				if(!it->second.socket->Initialized())
 				{
+					it->second.lock.Lock();
 					std::cout << "Removed disconnected client from clients." << std::endl;
-					it=clients.erase(it);
 					delete it->first;
+					it->second.lock.Unlock();
+					it=clients.erase(it);
+					continue;
 				}
 				it->second.lock.Lock();
 				uint lastheartbeat=it->second.timer.GetElapsedTime();

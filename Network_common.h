@@ -73,7 +73,7 @@ namespace Network
 			const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
 			void SetBlocking(bool b) {int flags; if(flags=(fcntl(fd, F_GETFL, 0))==-1) flags=0; fcntl(fd, F_SETFL, b?flags&O_NONBLOCK:flags|O_NONBLOCK);}
 			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));}
-			void Close() {shutdown(fd,SHUT_RDWR);close(fd);}
+			void Close() {close(fd);}
 			const IpAddress&	GetIp() const {return ip;}
 			const ushort		GetPort() const {return port;}
 	};
@@ -90,9 +90,11 @@ namespace Network
 			void Listen(int buffer=5) {if(listen(fd,buffer)!=0) throw std::runtime_error(Error("Listen"));}
 			void Connect();
 			void Disconnect() {Close();}
+			void Clear() {Close(); this->fd=0;}
+			bool Initialized() const {return this->fd!=0;}
 			TcpSocket* Accept(); 
 			bool Send(Packet& p); 
-			bool Receive(Packet& p); 
+			bool Receive(Packet& p);
 	};
 
 	struct UdpSocket : public Socket

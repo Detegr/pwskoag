@@ -187,7 +187,7 @@ namespace Network
 	{
 		Concurrency::Lock lock(selfMutex);
 		stopNow=true;
-		if(selfThread) {delete selfThread; selfThread=NULL;}
+		if(selfThread) {selfThread->Join(); delete selfThread; selfThread=NULL;}
 		else std::cerr << "Server already stopped!" << std::endl;
 	}
 	void Server::ForceStop()

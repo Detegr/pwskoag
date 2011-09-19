@@ -46,9 +46,7 @@ namespace Network
 							case Command::Disconnect:		
 								lock->Lock();
 								client->Clear();
-								delete client;
 								lock->Unlock();
-								client=NULL;
 								std::cout << "Client disconnected." << std::endl;
 								pthread_exit(0);
 								break;
@@ -61,8 +59,6 @@ namespace Network
 					std::string str("Hi, this is server speaking.");
 					if(!TcpSend(Command::String, str, client, toClient))
 					{
-						delete client;
-						client=NULL;
 						std::cout << "Client disconnected: Terminating the connection." << std::endl;
 						pthread_exit(0);
 					}
@@ -105,11 +101,17 @@ namespace Network
 			
 			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
-				if(!it->second.socket->Initialized())
+				it->second.lock.Lock();
+				bool init=it->second.socket->Initialized();
+				it->second.lock.Unlock();
+				if(!init)
 				{
 					it->second.lock.Lock();
 					std::cout << "Removed disconnected client from clients." << std::endl;
+					it->first->Join();
+					it->second.socket->Close();
 					delete it->first;
+					delete it->second.socket;
 					it->second.lock.Unlock();
 					it=clients.erase(it);
 					continue;
@@ -184,6 +186,7 @@ namespace Network
 		ThreadData* data=(ThreadData*)args;
 		TcpSocket* tcpSocket=data->socket;
 		bool* stopNow=data->stopNow;
+		delete data;
 		fd_set set;
 		struct timeval tv;
 		while(!*stopNow)
@@ -223,6 +226,7 @@ namespace Network
 				}
 			}
 		}
+		pthread_exit(0);
 	}
 
 	void TcpClient::ClientLoop()

@@ -13,7 +13,7 @@ namespace Network
 {
 	const uint TIMEOUTMS=10000;
 	const uint TICKS_PER_SEC_TCP=1;
-	const uint TICK_WAITTIME_TCP=1000/TICKS_PER_SEC_TCP;
+	const uint TICK_WAITTIME_TCP=250/TICKS_PER_SEC_TCP;
 
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
@@ -45,7 +45,7 @@ namespace Network
 			void			ServerLoop();
 		public:
 			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp)
-			{udpSocket.SetBlocking(true); udpSocket.Bind();}
+			{udpSocket.Bind();}
 	};
 	
 	struct ThreadData

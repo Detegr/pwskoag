@@ -72,7 +72,6 @@ namespace Network
 	{
 		tcpListener.Bind();
 		tcpListener.Listen();
-		tcpListener.SetBlocking(true);
 		Selector selector;
 		selector.Add(tcpListener);
 		while(!stopNow)
@@ -102,14 +101,13 @@ namespace Network
 			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
 				it->second.lock.Lock();
-				bool init=it->second.socket->Initialized();
+				bool closed=it->second.socket->Closed();
 				it->second.lock.Unlock();
-				if(!init)
+				if(closed)
 				{
-					it->second.lock.Lock();
 					std::cout << "Removed disconnected client from clients." << std::endl;
 					it->first->Join();
-					it->second.socket->Close();
+					it->second.lock.Lock();
 					delete it->first;
 					delete it->second.socket;
 					it->second.lock.Unlock();
@@ -166,10 +164,9 @@ namespace Network
 		serverAddress=addr;
 		serverPort=port;
 		tcpSocket=TcpSocket(IpAddress(addr), port);
-		tcpSocket.SetBlocking(true);
 		tcpSocket.Connect();
-		Send(Command::Connect);
 		Client::Start();
+		Send(Command::Connect);
 		//AutoSender::Start();
 	}
 	void TcpClient::Disconnect()
@@ -237,6 +234,7 @@ namespace Network
 		while(!Client::stopNow)
 		{
 			msSleep(TICK_WAITTIME_TCP);
+			Append(Command::String, std::string(":))"));
 			if(timer.GetElapsedTime()>2000)
 			{
 				Append(Command::Heartbeat);
@@ -273,7 +271,6 @@ namespace Network
 	{
 		serverAddress = IpAddress(addr);
 		serverPort = port;
-		udpSocket.SetBlocking(true);
 		udpSocket.Bind();
 		Start();
 	}

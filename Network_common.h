@@ -100,6 +100,7 @@ namespace Network
 	{
 		UdpSocket() {}
 		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, Type::UDP) {}
+		UdpSocket(ushort port) : Socket(port, Type::UDP) {}
 		bool Send(Packet& p, IpAddress& ip, ushort port);
 		bool Receive(Packet& p, IpAddress& ip, ushort port); 
 	};

@@ -9,7 +9,6 @@ namespace Network
 	Socket::Socket(IpAddress& ip, ushort port, Type type) : ip(ip), port(port), fd(0), type(type)
 	{
 		fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
-		std::cout << (type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP) << std::endl;
 		if(fd<=0) throw std::runtime_error("Failed to create socket.");
 		memset(&addr, 0, sizeof(addr));
 		addr.sin_family=AF_INET;
@@ -21,14 +20,12 @@ namespace Network
 
 	Socket::Socket(ushort port, Type type) : ip(), port(port), fd(0), type(type)
 	{
-		//fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
-		fd=socket(AF_INET, SOCK_STREAM, 0);
+		fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error(Error("Socket"));
 		memset(&addr, 0, sizeof(addr));
 		addr.sin_family=AF_INET;
 		addr.sin_port=htons(port);
 		addr.sin_addr.s_addr=htonl(INADDR_ANY);
-
 		int yes=1;
 		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	}

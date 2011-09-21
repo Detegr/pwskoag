@@ -44,8 +44,7 @@ namespace Network
 			UdpSocket		udpSocket;
 			void			ServerLoop();
 		public:
-			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp)
-			{udpSocket.Bind();}
+			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp), udpSocket(UdpSocket(port)) {udpSocket.Bind();}
 	};
 	
 	struct ThreadData

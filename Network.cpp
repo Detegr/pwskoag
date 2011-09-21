@@ -1,5 +1,6 @@
 #include "Network.h"
 #include <iostream>
+#include <sys/time.h>
 
 namespace Network
 {
@@ -13,12 +14,16 @@ namespace Network
 		delete data;
 
 		fd_set set;
-
+		int recv=0;
+		struct timeval tv;
 		while(!*stopNow)
 		{
+			tv.tv_sec=4;
+			tv.tv_usec=0;
 			Packet p;
+			FD_ZERO(&set);
 			FD_SET(client->fd, &set);
-			int recv=select(client->fd+1, &set, nullptr, nullptr, nullptr);
+			recv=select(client->fd+1, &set, nullptr, nullptr, &tv);
 			if(recv)
 			{
 				if(client->Receive(p))
@@ -64,6 +69,22 @@ namespace Network
 					}
 					std::cout << "Sent: " << str << std::endl;
 				}
+				else
+				{
+					lock->Lock();
+					client->Clear();
+					lock->Unlock();
+					std::cout << "Client disconnected." << std::endl;
+					pthread_exit(0);
+				}
+			}
+			else
+			{
+				lock->Lock();
+				client->Clear();
+				lock->Unlock();
+				std::cout << "Client timed out" << std::endl;
+				pthread_exit(0);
 			}
 		}
 	}
@@ -114,16 +135,6 @@ namespace Network
 					it=clients.erase(it);
 					continue;
 				}
-				it->second.lock.Lock();
-				uint lastheartbeat=it->second.timer.GetElapsedTime();
-				it->second.lock.Unlock();
-				if(lastheartbeat>8000)
-				{
-					std::cout << "Client " << it->second.socket->GetIp() << " timed out." << std::endl;
-					it->first->Join();
-					delete it->first;
-					it=clients.erase(it);
-				}
 			}
 		}
 		tcpListener.Close();
@@ -131,9 +142,11 @@ namespace Network
 		if(clients.size()>0) {std::cout << "There were " << clients.size() << " clients connected." << std::endl;}
 		std::cout << "Shut down successful." << std::endl;
 	}
+	void ReceiveThread_UDP(void *args)
+	{
+	}
 	void UdpServer::ServerLoop()
 	{
-		/*
 		Packet p;
 		while(!stopNow)
 		{
@@ -141,16 +154,15 @@ namespace Network
 			for(auto it=clients.begin(); it!=clients.end(); ++it)
 			{
 				p.Clear();
-				IpAddress ip = it->first->GetIp();
-				ushort port = it->first->GetPort();
+				IpAddress ip = it->second.socket->GetIp();
+				ushort port = it->second.socket->GetPort();
 				if(udpSocket.Receive(p, ip, port))
 				{
-					std::cout << "Got data from: " << it->first->GetIp() << std::endl;
+					std::cout << "Got data from: " << it->second.socket->GetIp() << std::endl;
 				}
 			}
 			msSleep(TICK_WAITTIME_UDP);
 		}
-		*/
 	}
 		
 	TcpServer::~TcpServer()
@@ -186,6 +198,8 @@ namespace Network
 		delete data;
 		fd_set set;
 		struct timeval tv;
+		tv.tv_sec=1;
+		tv.tv_usec=0;
 		while(!*stopNow)
 		{
 			Packet p;
@@ -271,6 +285,7 @@ namespace Network
 	{
 		serverAddress = IpAddress(addr);
 		serverPort = port;
+		udpSocket=UdpSocket(serverAddress, port);
 		udpSocket.Bind();
 		Start();
 	}

@@ -2,6 +2,8 @@
 #include <iostream>
 #include <signal.h>
 
+using namespace pwskoag;
+
 bool stopNow=false;
 
 void sighandler(int)
@@ -12,7 +14,7 @@ void sighandler(int)
 int main()
 {
 	signal(SIGINT, sighandler);
-	Network::TcpServer s(55555);
+	TcpServer s(55555);
 	//Network::UdpServer u(&s, 55556);
 	std::cout << "Starting server." << std::endl;
 	s.Start();

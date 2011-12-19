@@ -2,13 +2,13 @@
 #include <signal.h>
 #include <iostream>
 
-namespace Network
+namespace pwskoag
 { 
 	const size_t Packet::MAXSIZE=4096;
 
 	Socket::Socket(IpAddress& ip, ushort port, Type type) : ip(ip), port(port), fd(0), type(type)
 	{
-		fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
+		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error("Failed to create socket.");
 		memset(&addr, 0, sizeof(addr));
 		addr.sin_family=AF_INET;
@@ -20,7 +20,7 @@ namespace Network
 
 	Socket::Socket(ushort port, Type type) : ip(), port(port), fd(0), type(type)
 	{
-		fd=socket(AF_INET, type, type==Type::TCP ? IPPROTO_TCP : IPPROTO_UDP);
+		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error(Error("Socket"));
 		memset(&addr, 0, sizeof(addr));
 		addr.sin_family=AF_INET;
@@ -81,7 +81,7 @@ namespace Network
 				int sent=0;
 				while(sent<p.Size())
 				{
-					ret=send(fd, p.RawData(), p.Size(), MSG_NOSIGNAL);
+					ret=send(fd, p.RawData(), p.Size(),0/*,MSG_NOSIGNAL*/);
 					if(ret>=0) sent+=ret;
 					if(errno==0) break; // Success.
 					if(errno==ECONNREFUSED)
@@ -119,7 +119,7 @@ namespace Network
 		socklen_t len=sizeof(addr);
 		int newfd=accept(fd, (sockaddr*)&addr, &len);
 		if(newfd<0) return NULL;
-		return new TcpSocket(ip, port, Socket::Type::TCP, newfd);
+		return new TcpSocket(ip, port, Socket::TCP, newfd);
 	}
 
 	bool Selector::Wait(uint timeoutms)
@@ -128,7 +128,7 @@ namespace Network
 		tv.tv_sec=timeoutms/1000;
 		tv.tv_usec=(timeoutms%1000)*1000;
 		FD_ZERO(&fds);
-		for(auto it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+		for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
 		int ret=select(fd_ints.back()+1, &fds, NULL, NULL, &tv);
 		return ret!=0;
 	};
@@ -143,53 +143,26 @@ namespace Network
 		}
 	}
 
-	void AutoSender::AutoSendInitializer(void* args)
-	{
-		AutoSender* s=(AutoSender*) args;
-		s->AutoSendLoop();
-	}
-	void AutoSender::Start()
-	{
-		Concurrency::Lock lock(selfMutex);
-		if(!selfThread)
-		{
-			stopNow=false;
-			selfThread = new Concurrency::Thread(AutoSendInitializer, this);
-		}
-		else std::cerr << "AutoSender already running!" << std::endl;
-	}
-	void AutoSender::Stop()
-	{
-		Concurrency::Lock lock(selfMutex);
-		stopNow=true;
-		if(selfThread) {delete selfThread; selfThread=NULL;}
-		else std::cerr << "AutoSender already stopped!" << std::endl;
-	}
-	void AutoSender::ForceStop()
-	{
-		//Concurrency::Lock lock(selfMutex);
-		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
-	}
 	void Server::Start()
 	{
-		Concurrency::Lock lock(selfMutex);
+		Lock lock(selfMutex);
 		if(!selfThread)
 		{
 			stopNow=false;
-			selfThread = new Concurrency::Thread(Server::ServerInitializer, this);
+			selfThread = new Thread(Server::ServerInitializer, this);
 		}
 		else std::cerr << "Server already running!" << std::endl;
 	}
 	void Server::Stop()
 	{
-		Concurrency::Lock lock(selfMutex);
+		Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {selfThread->Join(); delete selfThread; selfThread=NULL;}
 		else std::cerr << "Server already stopped!" << std::endl;
 	}
 	void Server::ForceStop()
 	{
-		//Concurrency::Lock lock(selfMutex);
+		//Lock lock(selfMutex);
 		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Server::ServerInitializer(void* args)
@@ -204,23 +177,23 @@ namespace Network
 	
 	void Client::Start()
 	{
-		Concurrency::Lock lock(selfMutex);
+		Lock lock(selfMutex);
 		if(!selfThread)
 		{
-			selfThread = new Concurrency::Thread(Client::ClientInitializer, this);
+			selfThread = new Thread(Client::ClientInitializer, this);
 		}
 		else std::cerr << "Client already running!" << std::endl;
 	}
 	void Client::Stop()
 	{
-		Concurrency::Lock lock(selfMutex);
+		Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {std::cout << "Disconnecting...";std::cout.flush(); delete selfThread; selfThread=NULL;std::cout<<"DONE!"<<std::endl;}
 		else std::cerr << "Client already stopped!" << std::endl;
 	}
 	void Client::ForceStop()
 	{
-		//Concurrency::Lock lock(selfMutex);
+		//Lock lock(selfMutex);
 		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
 	void Client::ClientInitializer(void* args)

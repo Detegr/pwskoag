@@ -1,6 +1,7 @@
 #include "Concurrency.h"
 #include <stdexcept>
-namespace Concurrency
+
+namespace pwskoag
 {
 	void* Thread::threadInit(void* args)
 	{

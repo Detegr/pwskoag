@@ -1,14 +1,15 @@
 #include "Network.h"
+#include "Network_common.h"
 #include <iostream>
 #include <sys/time.h>
 
-namespace Network
+namespace pwskoag
 {
 	void ReceiveThread(void *args)
 	{
 		ThreadData* data=(ThreadData*)args;
-		Concurrency::Mutex* lock=data->lock;
-		sf::Clock* timer=data->timer;
+		Mutex* lock=data->lock;
+		C_Timer* timer=data->timer;
 		TcpSocket* client=data->socket;
 		bool* stopNow=data->stopNow;
 		delete data;
@@ -23,7 +24,7 @@ namespace Network
 			Packet p;
 			FD_ZERO(&set);
 			FD_SET(client->fd, &set);
-			recv=select(client->fd+1, &set, nullptr, nullptr, &tv);
+			recv=select(client->fd+1, &set, NULL, NULL, &tv);
 			if(recv)
 			{
 				if(client->Receive(p))
@@ -35,34 +36,34 @@ namespace Network
 						p>>header;
 						switch (header)
 						{
-							case Command::String:
+							case String:
 								{
 									std::string str;
 									p>>str;
 									std::cout << "Str: " << str << std::endl;
 									break;
 								}
-							case Command::Heartbeat:
+							case Heartbeat:
 								lock->Lock();
-								timer->Reset();
+								timer->M_Reset();
 								lock->Unlock();
 								std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
 								break;
-							case Command::Disconnect:		
+							case Disconnect:		
 								lock->Lock();
 								client->Clear();
 								lock->Unlock();
 								std::cout << "Client disconnected." << std::endl;
 								pthread_exit(0);
 								break;
-							case Command::EOP: goto EndOfPacket;
+							case EOP: goto EndOfPacket;
 							default: break;
 						}
 					}
 					EndOfPacket:
 					Packet toClient;
 					std::string str("Hi, this is server speaking.");
-					if(!TcpSend(Command::String, str, client, toClient))
+					if(!TcpSend(String, str, client, toClient))
 					{
 						std::cout << "Client disconnected: Terminating the connection." << std::endl;
 						pthread_exit(0);
@@ -107,19 +108,19 @@ namespace Network
 					if(client->Receive(p))
 					{
 						uchar header; p>>header;
-						if(header==Command::Connect)
+						if(header==Connect)
 						{
 							std::cout << "Client connected" << std::endl;
-							clients.push_back(std::make_pair(nullptr, LocalThreadData(client)));
+							clients.push_back(std::make_pair((Thread *)NULL, LocalThreadData(client)));
 							ThreadData* data=new ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
-							Concurrency::Thread* run=new Concurrency::Thread(ReceiveThread, (void*)data);
+							Thread* run=new Thread(ReceiveThread, (void*)data);
 							clients.back().first=run;
 						}
 					}
 				}
 			}
 			
-			for(auto it=clients.begin(); it!=clients.end(); ++it)
+			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
 			{
 				it->second.lock.Lock();
 				bool closed=it->second.socket->Closed();
@@ -150,8 +151,8 @@ namespace Network
 		Packet p;
 		while(!stopNow)
 		{
-			auto clients = master->GetClients();
-			for(auto it=clients.begin(); it!=clients.end(); ++it)
+			t_Clients clients = master->GetClients();
+			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
 			{
 				p.Clear();
 				IpAddress ip = it->second.socket->GetIp();
@@ -167,26 +168,24 @@ namespace Network
 		
 	TcpServer::~TcpServer()
 	{
-		Concurrency::Lock lock(selfMutex);
-		for(auto it=clients.begin(); it!=clients.end(); ++it) delete it->first;
+		Lock lock(selfMutex);
+		for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) delete it->first;
 	}
-	void TcpClient::Connect(const char* addr, ushort port)
+	void TcpClient::M_Connect(const char* addr, ushort port)
 	{
-		Concurrency::Lock lock(Client::selfMutex);
+		Lock lock(Client::selfMutex);
 		serverAddress=addr;
 		serverPort=port;
 		tcpSocket=TcpSocket(IpAddress(addr), port);
 		tcpSocket.Connect();
 		Client::Start();
-		Send(Command::Connect);
-		//AutoSender::Start();
+		Send(Connect);
 	}
-	void TcpClient::Disconnect()
+	void TcpClient::M_Disconnect()
 	{
-		Send(Command::Disconnect);
+		Send(Disconnect);
 		Client::Stop();
-		//AutoSender::Stop();
-		Concurrency::Lock lock(Client::selfMutex);
+		Lock lock(Client::selfMutex);
 		tcpSocket.Disconnect();
 	}
 
@@ -208,7 +207,7 @@ namespace Network
 			FD_SET(tcpSocket->fd, &set);
 			tv.tv_sec=1;
 			tv.tv_usec=0;
-			int recv=select(tcpSocket->fd+1, &set, nullptr, nullptr, &tv);
+			int recv=select(tcpSocket->fd+1, &set, NULL, NULL, &tv);
 			if(recv)
 			{
 				if(tcpSocket->Receive(p))
@@ -219,14 +218,14 @@ namespace Network
 						p>>header;
 						switch (header)
 						{
-							case Command::String:
+							case String:
 							{
 								std::string str;
 								p >> str;
 								std::cout << str << std::endl;
 								break;
 							}
-							case Command::EOP:
+							case EOP:
 								end=true;
 								break;
 							default:
@@ -242,46 +241,22 @@ namespace Network
 
 	void TcpClient::ClientLoop()
 	{
-		sf::Clock timer;
-		ThreadData* data=new ThreadData(nullptr, nullptr, &tcpSocket, &(Client::stopNow));
-		Concurrency::Thread t(ReceiveThread_Client, data);
+		C_Timer timer;
+		ThreadData* data=new ThreadData(NULL, NULL, &tcpSocket, &(Client::stopNow));
+		Thread t(ReceiveThread_Client, data);
 		while(!Client::stopNow)
 		{
 			msSleep(TICK_WAITTIME_TCP);
-			Append(Command::String, std::string(":))"));
-			if(timer.GetElapsedTime()>2000)
+			Append(String, std::string(":))"));
+			if(timer.M_Get()>2000)
 			{
-				Append(Command::Heartbeat);
-				timer.Reset();
+				Append(Heartbeat);
+				timer.M_Reset();
 			}
 			if(DataSize()) Send();
 		}
 	}
-	void TcpClient::AutoSendLoop()
-	{
-		while(!AutoSender::stopNow)
-		{
-			Packet tmp;
-			
-			autoSendMutex.Lock();
-			for(auto it=objectsToSend.begin(); it!=objectsToSend.end(); ++it)
-			{
-				switch((Command)it->first)
-				{
-					case Command::String:
-						for(auto values=it->second.begin(); values!=it->second.end(); ++values)
-							Network::Append(Command::String, (*(std::string*)(*values)), tmp);
-						break;
-				}
-			}
-			autoSendMutex.Unlock();
-			while(!IsSent() && !AutoSender::stopNow) {msSleep(TICK_WAITTIME_TCP/2);}
-			Concurrency::Lock l(canAppend); 
-			while(!tmp.Size()){uchar data; tmp>>data; packet<<data;}
-		}
-	}
-
-	void UdpClient::Connect(const char* addr, ushort port)
+	void UdpClient::M_Connect(const char* addr, ushort port)
 	{
 		serverAddress = IpAddress(addr);
 		serverPort = port;
@@ -294,7 +269,7 @@ namespace Network
 		Packet p;
 		while(!stopNow)
 		{
-			UdpSend(Command::String, std::string("UDP Data."), &udpSocket, serverAddress, serverPort, p);
+			UdpSend(String, std::string("UDP Data."), &udpSocket, serverAddress, serverPort, p);
 			msSleep(100);
 		}
 	}

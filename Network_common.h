@@ -1,16 +1,25 @@
 #pragma once
-#include <SFML/Network.hpp>
-#include <unordered_map>
-#include <stdexcept>
-#include <arpa/inet.h>
-#include <string.h>
-#include <fcntl.h>
 #include "Base.h"
 #include "Network_commands.h"
 #include "Concurrency.h"
 
-namespace Network
+#include <vector>
+#include <stdexcept>
+#include <arpa/inet.h>
+#include <string.h>
+#include <fcntl.h>
+
+namespace pwskoag
 {
+	enum e_Command
+	{
+		Heartbeat=1,
+		Connect,
+		Disconnect,
+		String,
+		EOP=255
+	};
+
 	class IpAddress
 	{
 		friend class Socket;
@@ -83,9 +92,9 @@ namespace Network
 			TcpSocket(IpAddress& ip, ushort port, Type type, int fd) : Socket(ip, port, type) {this->fd=fd;}
 		public:
 			TcpSocket() {}
-			TcpSocket(IpAddress& ip, ushort port) : Socket(ip, port, Type::TCP) {}
-			TcpSocket(IpAddress&& ip, ushort port) : Socket(ip, port, Type::TCP) {}
-			TcpSocket(ushort port) : Socket(port, Type::TCP) {}
+			TcpSocket(IpAddress ip, ushort port) : Socket(ip, port, TCP) {}
+			TcpSocket(IpAddress& ip, ushort port) : Socket(ip, port, TCP) {}
+			TcpSocket(ushort port) : Socket(port, TCP) {}
 			void Listen(int buffer=5) {if(listen(fd,buffer)!=0) throw std::runtime_error(Error("Listen"));}
 			void Connect();
 			void Disconnect() {if(fd>0)Close();}
@@ -99,8 +108,8 @@ namespace Network
 	struct UdpSocket : public Socket
 	{
 		UdpSocket() {}
-		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, Type::UDP) {}
-		UdpSocket(ushort port) : Socket(port, Type::UDP) {}
+		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, UDP) {}
+		UdpSocket(ushort port) : Socket(port, UDP) {}
 		bool Send(Packet& p, IpAddress& ip, ushort port);
 		bool Receive(Packet& p, IpAddress& ip, ushort port); 
 	};
@@ -114,65 +123,56 @@ namespace Network
 			Selector() {FD_ZERO(&fds);}
 			void Add(Socket& s) {fd_ints.push_back(s.fd); std::sort(fd_ints.begin(), fd_ints.end());}
 			bool IsReady(Socket& s) {return FD_ISSET(s.fd, &fds);}
-			void Remove(Socket& s) {for(auto it=fd_ints.begin(); it!=fd_ints.end(); ++it) if(*it==s.fd){std::cout << "Erasing: " << *it << std::endl; it=fd_ints.erase(it); break;} std::sort(fd_ints.begin(), fd_ints.end());}
+			void Remove(Socket& s)
+			{
+				for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it)
+				{
+					if(*it==s.fd)
+					{
+						std::cout << "Erasing: " << *it << std::endl;
+						it=fd_ints.erase(it);
+						break;
+					}
+				}
+				std::sort(fd_ints.begin(), fd_ints.end());
+			}
 			bool Wait(uint timeoutms);
 	};
 
 	// Functions for sending and appending.
-	static void Append(Command c, Packet& p) {p<<(uchar)c;}
+	static void Append(e_Command c, Packet& p) {p<<(uchar)c;}
 	template <class type> void Append(type& t, Packet& p){p<<t;}
-	template <class type> void Append(Command c, type& t, Packet& p){Append(c,p);Append(t,p);}
+	template <class type> void Append(e_Command c, type& t, Packet& p){Append(c,p);Append(t,p);}
 
 	// Tcp-functions
-	static bool TcpSend(Command c, TcpSocket* sock, Packet& p)
+	static bool TcpSend(e_Command c, TcpSocket* sock, Packet& p)
 	{
-		p << (uchar)c << (uchar)Command::EOP;
+		p << (uchar)c << (uchar)EOP;
 		return sock->Send(p);
 	}
 	static bool TcpSend(TcpSocket* sock, Packet& p) {return sock->Send(p);}
-	template <class type> bool TcpSend(Command c, type t, TcpSocket* sock, Packet& p)
+	template <class type> bool TcpSend(e_Command c, type t, TcpSocket* sock, Packet& p)
 	{
 			p.Clear();
-			Append(c,t,p); Append(Command::EOP, p);
+			Append(c,t,p); Append(EOP, p);
 			return TcpSend(sock,p);
 	}
 
 	// Udp-functions
-	static bool UdpSend(Command c, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
+	static bool UdpSend(e_Command c, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
 	{
-		p << (uchar)c << (uchar)Command::EOP;
+		p << (uchar)c << (uchar)EOP;
 		return sock->Send(p, ip, port);
 	}
 	static bool UdpSend(UdpSocket* sock, IpAddress& ip, ushort port, Packet& p) {return sock->Send(p,ip,port);}
 	template <class type>
-	bool UdpSend(Command c, type t, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
+	bool UdpSend(e_Command c, type t, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
 	{
 		p.Clear();
-		Append(c, t, p); Append(Command::EOP, p);
+		Append(c, t, p); Append(EOP, p);
 		return UdpSend(sock, ip, port, p);
 	}
 
-	class AutoSender
-	{
-		protected:
-			bool											stopNow;
-			Concurrency::Thread*							selfThread;
-			Concurrency::Mutex								autoSendMutex;
-			Concurrency::Mutex								selfMutex;
-			static void										AutoSendInitializer(void* args);
-			std::unordered_map<uchar, std::vector <void*> >	objectsToSend;
-			virtual void									AutoSendLoop()=0;
-			void											Start();
-			void											Stop();
-			void											ForceStop();
-			AutoSender() : stopNow(false), selfThread(NULL) {}
-		public:
-			template <class type> void AutoSend(Command c, type* t)
-			{
-				Concurrency::Lock lock(autoSendMutex);
-				objectsToSend[(uchar)c].push_back(t);
-			}
-	};
 	/*
 	 * Server class
 	 * Meant to be inherited. Includes routines for starting and
@@ -185,8 +185,8 @@ namespace Network
 		protected:
 			bool 			stopNow;
 			uint 			serverPort;
-			Concurrency::Mutex	 		selfMutex;
-			Concurrency::Thread* 	selfThread;
+			Mutex	 		selfMutex;
+			Thread* 	selfThread;
 			static void 	ServerInitializer(void* args);
 			virtual 		~Server();
 			virtual void	ServerLoop()=0;
@@ -211,8 +211,8 @@ namespace Network
 		protected:
 			bool			stopNow;
 			uint 			serverPort;
-			Concurrency::Mutex			selfMutex;
-			Concurrency::Thread*		selfThread;
+			Mutex			selfMutex;
+			Thread*		selfThread;
 			static void		ClientInitializer(void* args);
 			virtual 		~Client();
 			virtual void 	ClientLoop()=0;
@@ -222,8 +222,8 @@ namespace Network
 			virtual void 	Start();
 			virtual void 	Stop();
 			virtual void 	ForceStop();
-			virtual void 	Connect(const char* addr, ushort port)=0;
-			virtual void 	Disconnect()=0;
+			virtual void 	M_Connect(const char* addr, ushort port)=0;
+			virtual void 	M_Disconnect()=0;
 			bool 	     	IsRunning() const { return selfThread!=NULL; }
 	};
 

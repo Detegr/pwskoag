@@ -1,16 +1,20 @@
 #pragma once
 
-#include <SFML/Network.hpp>
 #include "Network_common.h"
 #include "Base.h"
 #include "Concurrency.h"
+#include "Timer.h"
 #include <list>
 #include <stdexcept>
 #include <string.h>
 #include <iostream>
 
-namespace Network
+
+namespace pwskoag
 {
+	class Thread; class LocalThreadData;
+	typedef std::list<std::pair<Thread*, LocalThreadData> > t_Clients;
+
 	const uint TIMEOUTMS=10000;
 	const uint TICKS_PER_SEC_TCP=1;
 	const uint TICK_WAITTIME_TCP=250/TICKS_PER_SEC_TCP;
@@ -23,18 +27,18 @@ namespace Network
 	/*
 	 * TcpServer class
 	 *
-	 * Listens Tcp-connections.
+	 * Listens Tcp-M_Connections.
 	 */
 	class TcpServer : public Server
 	{	
 		private:
 			TcpSocket 												tcpListener;
-			std::list<std::pair<Concurrency::Thread*, LocalThreadData> > 	clients;
+			std::list<std::pair<Thread*, LocalThreadData> > 	clients;
 			void													ServerLoop();
 		public:
 			TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
 			~TcpServer();
-			const std::list<std::pair<Concurrency::Thread*, LocalThreadData> >& GetClients() const { return clients; }
+			const std::list<std::pair<Thread*, LocalThreadData> >& GetClients() const { return clients; }
 	};
 
 	class UdpServer : public Server
@@ -49,43 +53,42 @@ namespace Network
 	
 	struct ThreadData
 	{
-		Concurrency::Mutex* lock;
+		Mutex* lock;
 		TcpSocket*			socket;
-		sf::Clock*			timer;
+		C_Timer*			timer;
 		bool*				stopNow;
-		ThreadData(Concurrency::Mutex *l, sf::Clock* t, TcpSocket* sock, bool* stop) :
+		ThreadData(Mutex *l, C_Timer* t, TcpSocket* sock, bool* stop) :
 			lock(l), timer(t), socket(sock), stopNow(stop) {}
 	};
 
 	struct LocalThreadData
 	{
 		TcpSocket*			socket;
-		sf::Clock			timer;
-		Concurrency::Mutex	lock;
-		LocalThreadData(TcpSocket* s) : socket(s), timer(sf::Clock()) {}
+		C_Timer				timer;
+		Mutex	lock;
+		LocalThreadData(TcpSocket* s) : socket(s), timer(C_Timer()) {}
 	};
 
 	/*
 	 * TcpClient class
 	 */
-	class TcpClient : public Client, public AutoSender
+	class TcpClient : public Client
 	{
 		private:
 			IpAddress			serverAddress;
 			uint 				serverPort;
-			Concurrency::Mutex	canAppend;
+			Mutex	canAppend;
 			TcpSocket 			tcpSocket;
 			Packet				packet;
 			void 				ClientLoop();
-			void				AutoSendLoop();
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
-			void 						Connect(const char* addr, ushort port);
-			void 						Disconnect();
-			void 						Append(Command c) {Concurrency::Lock l(canAppend); packet<<(uchar)c;}
-			template<class type> void 	Append(Command c, type t) {Concurrency::Lock l(canAppend); Append(c); packet<<t;}
-			void 						Send() {Concurrency::Lock l(canAppend); Append(Command::EOP);tcpSocket.Send(packet); packet.Clear();}
-			void 						Send(Command c) {Concurrency::Lock l(canAppend); Network::TcpSend(c, &tcpSocket, packet);}
+			void 						M_Connect(const char* addr, ushort port);
+			void 						M_Disconnect();
+			void 						Append(e_Command c) {Lock l(canAppend); packet<<(uchar)c;}
+			template<class type> void 	Append(e_Command c, type t) {Lock l(canAppend); Append(c); packet<<t;}
+			void 						Send() {Lock l(canAppend); Append(EOP);tcpSocket.Send(packet); packet.Clear();}
+			void 						Send(e_Command c) {Lock l(canAppend); TcpSend(c, &tcpSocket, packet);}
 			bool						IsSent() const {return packet.Size()==0;}
 			int							DataSize() const {return packet.Size();}
 	};
@@ -100,8 +103,8 @@ namespace Network
 			void			ClientLoop();
 		public:
 			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
-			void Connect(const char* addr, ushort port);
-			void Disconnect() {udpSocket.Close(); Stop();}
+			void M_Connect(const char* addr, ushort port);
+			void M_Disconnect() {udpSocket.Close(); Stop();}
 	};
 
 	class Networking

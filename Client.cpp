@@ -2,6 +2,8 @@
 #include <signal.h>
 #include "Network.h"
 
+using namespace pwskoag;
+
 bool stopNow=false;
 void sighandler(int)
 {
@@ -26,11 +28,11 @@ int main()
 	c.AutoSend(Network::Command::String, &a);
 	c.AutoSend(Network::Command::String, &b);
 	*/
-	Network::TcpClient c;
+	TcpClient c;
 	//Network::UdpClient u;
-	c.Connect("localhost", 55555);
+	c.M_Connect("localhost", 55555);
 	//u.Connect("localhost", 55556);
 	msSleep(4000);
 	//u.Disconnect();
-	c.Disconnect();
+	c.M_Disconnect();
 }

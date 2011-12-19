@@ -1,7 +1,8 @@
 #pragma once
 #include <pthread.h>
 #include <iostream>
-namespace Concurrency
+
+namespace pwskoag
 {
 	class Thread
 	{
@@ -52,7 +53,7 @@ namespace Concurrency
 			Mutex mutex;
 			pthread_cond_t cond;
 		public:
-			CondVar() : cond(PTHREAD_COND_INITIALIZER) {}
+			CondVar() {pthread_cond_init(&cond,NULL);}
 			~CondVar() {pthread_cond_destroy(&cond);}
 			void Wait() {mutex.Lock(); pthread_cond_wait(&cond, &mutex.mutex); mutex.Unlock();}
 			void SignalOne() {pthread_cond_signal(&cond);}

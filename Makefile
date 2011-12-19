@@ -1,7 +1,7 @@
 CC=g++
 OPTS=-ggdb
 SOURCES=Network.cpp Network_common.cpp Concurrency.cpp Timer.cpp
-HEADERS=Network.h Network_common.h Network_commands.h Concurrency.h Base.h Timer.h
+HEADERS=Network.h Network_common.h Concurrency.h Base.h Timer.h
 LIBS=
 EXE=a.out
 SERVER=server

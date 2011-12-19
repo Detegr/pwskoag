@@ -1,6 +1,7 @@
 #include "Network_common.h"
 #include <signal.h>
 #include <iostream>
+#include <assert.h>
 
 namespace pwskoag
 { 
@@ -71,33 +72,20 @@ namespace pwskoag
 		struct timeval tv;
 		tv.tv_sec=2;
 		tv.tv_usec=0;
-		while(true)
+		int bytes=-1;
+		int ret=select(fd+1, NULL, &set, NULL, &tv);
+		if(ret>0 && FD_ISSET(fd, &set))
 		{
-			int ret=select(fd+1, NULL, &set, NULL, &tv);
-			if(ret>0 && FD_ISSET(fd, &set))
+			FD_CLR(fd, &set);
+			bytes=send(fd, p.RawData(), p.Size(),0);
+			if(bytes==-1)
 			{
-				FD_CLR(fd, &set);
-				int ret=-1;
-				int sent=0;
-				while(sent<p.Size())
-				{
-					ret=send(fd, p.RawData(), p.Size(),0/*,MSG_NOSIGNAL*/);
-					if(ret>=0) sent+=ret;
-					if(errno==0) break; // Success.
-					if(errno==ECONNREFUSED)
-					{
-						std::cout << "Connection refused." << std::endl;
-						exit(1);
-					}
-					if(errno==EPIPE){std::cout << "Pipe got broken :(" << std::endl; return false;}
-					if(errno==ECONNRESET || errno==ENOTCONN){std::cout << "Connection lost." << std::endl; return false;}
-					if(errno==EAGAIN || errno==EWOULDBLOCK || errno==EINPROGRESS) continue;
-					perror("SEND");
-				}
-				break;
+				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN){std::cout << "Connection lost." << std::endl; return false;}
+				perror("SEND");
 			}
-			else {std::cout << "Something went wrong." << std::endl; close(fd); exit(1);}
 		}
+		else {std::cout << "Something went wrong." << std::endl; close(fd); exit(1);}
+		assert(bytes==p.Size());
 		p.Clear();
 		return true;
 	}

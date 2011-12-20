@@ -79,7 +79,11 @@ namespace pwskoag
 			Socket(ushort port, Type type);
 			Socket(const Socket& s) {*this=s;}
 			const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
-			void Bind() {socklen_t len=sizeof(addr); if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));}
+			void Bind()
+			{
+				socklen_t len=sizeof(addr);
+				if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));
+			}
 			void Close() {close(fd);}
 			const IpAddress&	GetIp() const {return ip;}
 			const ushort		GetPort() const {return port;}
@@ -109,8 +113,8 @@ namespace pwskoag
 		UdpSocket() {}
 		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, UDP) {}
 		UdpSocket(ushort port) : Socket(port, UDP) {}
-		bool Send(Packet& p, IpAddress& ip, ushort port);
-		bool Receive(Packet& p, IpAddress& ip, ushort port); 
+		bool Send(Packet& p);
+		bool Receive(Packet& p);
 	};
 
 	class Selector
@@ -158,18 +162,18 @@ namespace pwskoag
 	}
 
 	// Udp-functions
-	static bool UdpSend(e_Command c, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
+	static bool UdpSend(e_Command c, UdpSocket* sock, Packet& p)
 	{
 		p << (uchar)c << (uchar)EOP;
-		return sock->Send(p, ip, port);
+		return sock->Send(p);
 	}
-	static bool UdpSend(UdpSocket* sock, IpAddress& ip, ushort port, Packet& p) {return sock->Send(p,ip,port);}
+	static bool UdpSend(UdpSocket* sock, Packet& p) {return sock->Send(p);}
 	template <class type>
-	bool UdpSend(e_Command c, type t, UdpSocket* sock, IpAddress& ip, ushort port, Packet& p)
+	bool UdpSend(e_Command c, type t, UdpSocket* sock, Packet& p)
 	{
 		p.Clear();
 		Append(c, t, p); Append(EOP, p);
-		return UdpSend(sock, ip, port, p);
+		return UdpSend(sock, p);
 	}
 
 	/*
@@ -185,7 +189,7 @@ namespace pwskoag
 			bool 			stopNow;
 			uint 			serverPort;
 			Mutex	 		selfMutex;
-			Thread* 	selfThread;
+			Thread* 		selfThread;
 			static void 	ServerInitializer(void* args);
 			virtual 		~Server();
 			virtual void	ServerLoop()=0;

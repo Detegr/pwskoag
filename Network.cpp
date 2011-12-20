@@ -98,7 +98,7 @@ namespace pwskoag
 		selector.Add(tcpListener);
 		while(!stopNow)
 		{
-			bool data=selector.Wait(TICK_WAITTIME_TCP);
+			selector.Wait(TICK_WAITTIME_TCP);
 			if(selector.IsReady(tcpListener))
 			{
 				TcpSocket* client = tcpListener.Accept();
@@ -154,10 +154,11 @@ namespace pwskoag
 			t_Clients clients = master->GetClients();
 			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
 			{
+				std::cout << "Got some udp clients!" << std::endl;
 				p.Clear();
 				IpAddress ip = it->second.socket->GetIp();
 				ushort port = it->second.socket->GetPort();
-				if(udpSocket.Receive(p, ip, port))
+				if(udpSocket.Receive(p))
 				{
 					std::cout << "Got data from: " << it->second.socket->GetIp() << std::endl;
 				}
@@ -261,7 +262,6 @@ namespace pwskoag
 		serverAddress = IpAddress(addr);
 		serverPort = port;
 		udpSocket=UdpSocket(serverAddress, port);
-		udpSocket.Bind();
 		Start();
 	}
 	void UdpClient::ClientLoop()
@@ -269,7 +269,8 @@ namespace pwskoag
 		Packet p;
 		while(!stopNow)
 		{
-			UdpSend(String, std::string("UDP Data."), &udpSocket, serverAddress, serverPort, p);
+			std::cout << "Sending udp data to " << serverAddress << ":" << serverPort << std::endl;
+			UdpSend(String, std::string("UDP Data."), &udpSocket, p);
 			msSleep(100);
 		}
 	}

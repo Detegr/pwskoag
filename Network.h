@@ -32,13 +32,13 @@ namespace pwskoag
 	class TcpServer : public Server
 	{	
 		private:
-			TcpSocket 												tcpListener;
-			std::list<std::pair<Thread*, LocalThreadData> > 	clients;
-			void													ServerLoop();
+			TcpSocket 	tcpListener;
+			t_Clients	clients;
+			void		ServerLoop();
 		public:
 			TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
 			~TcpServer();
-			const std::list<std::pair<Thread*, LocalThreadData> >& GetClients() const { return clients; }
+			const t_Clients& GetClients() const {return clients;}
 	};
 
 	class UdpServer : public Server
@@ -77,7 +77,7 @@ namespace pwskoag
 		private:
 			IpAddress			serverAddress;
 			uint 				serverPort;
-			Mutex	canAppend;
+			Mutex				canAppend;
 			TcpSocket 			tcpSocket;
 			Packet				packet;
 			void 				ClientLoop();

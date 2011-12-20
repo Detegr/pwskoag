@@ -27,8 +27,8 @@ namespace pwskoag
 		addr.sin_family=AF_INET;
 		addr.sin_port=htons(port);
 		addr.sin_addr.s_addr=htonl(INADDR_ANY);
-		int yes=1;
-		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+		//int yes=1;
+		//setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	}
 
 	bool TcpSocket::Receive(Packet& p)
@@ -39,13 +39,10 @@ namespace pwskoag
 		for(int i=0;i<r;++i)p<<buf[i];
 		return true;
 	}
-	bool UdpSocket::Receive(Packet& p, IpAddress& ip, ushort port)
+	bool UdpSocket::Receive(Packet& p)
 	{
 		uchar buf[Packet::MAXSIZE];
 		struct sockaddr_in a;
-		a.sin_family=AF_INET;
-		a.sin_port=port;
-		a.sin_addr=ip.addr;
 		socklen_t len=sizeof(a);
 		int r=recvfrom(fd, buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
 		if(r<0) return false;
@@ -90,14 +87,15 @@ namespace pwskoag
 		return true;
 	}
 
-	bool UdpSocket::Send(Packet& p, IpAddress& ip, ushort port)
+	bool UdpSocket::Send(Packet& p)
 	{
-		struct sockaddr_in a;
-		a.sin_family=AF_INET;
-		a.sin_port=port;
-		a.sin_addr=ip.addr;
+		//struct sockaddr_in a;
+		//a.sin_family=AF_INET;
+		//a.sin_port=htons(port);
+		//a.sin_addr=ip.addr;
 		socklen_t len=sizeof(addr);
-		sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&a, len);
+		int r=sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&addr, len);
+		std::cout << "sent " << r << " bytes of " << p.Size() << std::endl;
 		p.Clear();
 		return true;
 	}
@@ -126,7 +124,7 @@ namespace pwskoag
 		if(std::string(a)=="localhost") a="127.0.0.1";
 		if(inet_aton(a, &addr)==0)
 		{
-			std::string errmsg=("IpAddress  is not a valid address.");
+			std::string errmsg=("IpAddress is not a valid address.");
 			throw std::runtime_error(errmsg);
 		}
 	}

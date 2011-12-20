@@ -29,10 +29,10 @@ int main()
 	c.AutoSend(Network::Command::String, &b);
 	*/
 	TcpClient c;
-	//Network::UdpClient u;
-	c.M_Connect("localhost", 55555);
-	//u.Connect("localhost", 55556);
+	UdpClient u;
+	c.M_Connect("127.0.0.1", 55555);
+	u.M_Connect("127.0.0.1", 55556);
 	msSleep(4000);
-	//u.Disconnect();
+	u.M_Disconnect();
 	c.M_Disconnect();
 }

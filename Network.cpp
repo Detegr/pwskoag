@@ -14,22 +14,18 @@ namespace pwskoag
 		bool* stopNow=data->stopNow;
 		delete data;
 
-		fd_set set;
-		int recv=0;
 		struct timeval tv;
+		Selector s;
 		while(!*stopNow)
 		{
-			tv.tv_sec=4;
-			tv.tv_usec=0;
 			Packet p;
-			FD_ZERO(&set);
-			FD_SET(client->fd, &set);
-			recv=select(client->fd+1, &set, NULL, NULL, &tv);
-			if(recv)
+			s.Clear();
+			s.Add(*client);
+			s.Wait(4000);
+			if(s.IsReady(*client))
 			{
 				if(client->Receive(p))
 				{
-					FD_CLR(client->fd, &set);
 					uchar header=0;
 					while(p.Size())
 					{
@@ -37,12 +33,12 @@ namespace pwskoag
 						switch (header)
 						{
 							case String:
-								{
-									std::string str;
-									p>>str;
-									std::cout << "Str: " << str << std::endl;
-									break;
-								}
+							{
+								std::string str;
+								p>>str;
+								std::cout << "Str: " << str << std::endl;
+								break;
+							}
 							case Heartbeat:
 								lock->Lock();
 								timer->M_Reset();
@@ -149,21 +145,52 @@ namespace pwskoag
 	void UdpServer::ServerLoop()
 	{
 		Packet p;
+		Selector s;
 		while(!stopNow)
 		{
+			s.Clear();
 			t_Clients clients = master->GetClients();
-			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
+			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) s.Add(udpSocket);
+			if(s.Wait(TICK_WAITTIME_UDP))
 			{
-				std::cout << "Got some udp clients!" << std::endl;
-				p.Clear();
-				IpAddress ip = it->second.socket->GetIp();
-				ushort port = it->second.socket->GetPort();
-				if(udpSocket.Receive(p))
+				for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
 				{
-					std::cout << "Got data from: " << it->second.socket->GetIp() << std::endl;
+					if(s.IsReady(udpSocket))
+					{
+						std::cout << "Got some udp clients!" << std::endl;
+						p.Clear();
+						IpAddress ip = it->second.socket->GetIp();
+						ushort port = it->second.socket->GetPort();
+						if(udpSocket.Receive(p))
+						{
+							while(p.Size())
+							{
+								uchar header=0;
+								std::cout << "UDP SIZE  : " << p.Size() << std::endl;
+								std::cout << "UDP HEADER: " << (int)header << std::endl;
+								while(p.Size())
+								{
+									p>>header;
+									switch (header)
+									{
+										case String:
+										{
+											std::string str;
+											p>>str;
+											std::cout << "Str: " << str << std::endl;
+											break;
+										}
+										case EOP: goto EndOfPacket;
+										default: break;
+									}
+								}
+								EndOfPacket:
+								continue;
+							}
+						}
+					}
 				}
 			}
-			msSleep(TICK_WAITTIME_UDP);
 		}
 	}
 		
@@ -196,34 +223,31 @@ namespace pwskoag
 		TcpSocket* tcpSocket=data->socket;
 		bool* stopNow=data->stopNow;
 		delete data;
-		fd_set set;
 		struct timeval tv;
-		tv.tv_sec=1;
-		tv.tv_usec=0;
+		Selector s;
 		while(!*stopNow)
 		{
 			Packet p;
 			uchar header=0;
 			bool end=false;
-			FD_SET(tcpSocket->fd, &set);
-			tv.tv_sec=1;
-			tv.tv_usec=0;
-			int recv=select(tcpSocket->fd+1, &set, NULL, NULL, &tv);
-			if(recv)
+			s.Clear();
+			s.Add(*tcpSocket);
+			s.Wait(1000);
+			if(s.IsReady(*tcpSocket))
 			{
 				if(tcpSocket->Receive(p))
 				{
-					FD_CLR(tcpSocket->fd, &set);
 					for(;;)
 					{
 						p>>header;
+						std::cout << "GOT HEADER: " << (int)header << std::endl;
 						switch (header)
 						{
 							case String:
 							{
 								std::string str;
 								p >> str;
-								std::cout << str << std::endl;
+								std::cout << "GOT: " << str << std::endl;
 								break;
 							}
 							case EOP:
@@ -269,6 +293,7 @@ namespace pwskoag
 		Packet p;
 		while(!stopNow)
 		{
+			p.Clear();
 			std::cout << "Sending udp data to " << serverAddress << ":" << serverPort << std::endl;
 			UdpSend(String, std::string("UDP Data."), &udpSocket, p);
 			msSleep(100);

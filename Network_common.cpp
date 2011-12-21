@@ -45,8 +45,9 @@ namespace pwskoag
 		struct sockaddr_in a;
 		socklen_t len=sizeof(a);
 		int r=recvfrom(fd, buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
+		std::cout << "Got " << r << " UDP bytes." << std::endl;
 		if(r<0) return false;
-		p<<buf;
+		for(int i=0;i<r;++i)p<<buf[i];
 		return true;
 	}
 
@@ -108,15 +109,22 @@ namespace pwskoag
 		return new TcpSocket(ip, port, Socket::TCP, newfd);
 	}
 
-	bool Selector::Wait(uint timeoutms)
+	int Selector::Wait(uint timeoutms)
 	{
-		struct timeval tv;
-		tv.tv_sec=timeoutms/1000;
-		tv.tv_usec=(timeoutms%1000)*1000;
-		FD_ZERO(&fds);
-		for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
-		int ret=select(fd_ints.back()+1, &fds, NULL, NULL, &tv);
-		return ret!=0;
+		if(fd_ints.size())
+		{
+			struct timeval tv;
+			tv.tv_sec=timeoutms/1000;
+			tv.tv_usec=(timeoutms%1000)*1000;
+			FD_ZERO(&fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+			return select(fd_ints.back()+1, &fds, NULL, NULL, &tv);
+		}
+		else
+		{
+			msSleep(timeoutms);
+			return 0;
+		}
 	};
 
 	void IpAddress::StrToAddr(const char* a)

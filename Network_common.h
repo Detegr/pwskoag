@@ -139,7 +139,8 @@ namespace pwskoag
 				}
 				std::sort(fd_ints.begin(), fd_ints.end());
 			}
-			bool Wait(uint timeoutms);
+			void Clear() {fd_ints.clear(); FD_ZERO(&fds);}
+			int Wait(uint timeoutms);
 	};
 
 	// Functions for sending and appending.
@@ -161,12 +162,7 @@ namespace pwskoag
 			return TcpSend(sock,p);
 	}
 
-	// Udp-functions
-	static bool UdpSend(e_Command c, UdpSocket* sock, Packet& p)
-	{
-		p << (uchar)c << (uchar)EOP;
-		return sock->Send(p);
-	}
+	// Udp-Functions
 	static bool UdpSend(UdpSocket* sock, Packet& p) {return sock->Send(p);}
 	template <class type>
 	bool UdpSend(e_Command c, type t, UdpSocket* sock, Packet& p)

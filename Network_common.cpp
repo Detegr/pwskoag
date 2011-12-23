@@ -45,7 +45,6 @@ namespace pwskoag
 		struct sockaddr_in a;
 		socklen_t len=sizeof(a);
 		int r=recvfrom(fd, buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
-		std::cout << "Got " << r << " UDP bytes." << std::endl;
 		if(r<0) return false;
 		for(int i=0;i<r;++i)p<<buf[i];
 		return true;

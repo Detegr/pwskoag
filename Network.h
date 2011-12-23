@@ -81,19 +81,18 @@ namespace pwskoag
 			uint 				serverPort;
 			TcpSocket 			tcpSocket;
 			bool				m_Connected;
-			Mutex				canAppend;
+			Mutex				m_Lock;
 			Mutex				m_ConnectMutex;
 			Packet				packet;
 			void 				ClientLoop();
-			void 				Append(e_Command c) {Lock l(canAppend); packet<<(uchar)c;}
-			void 				Send() {Lock l(canAppend); Append(EOP);tcpSocket.Send(packet); packet.Clear();}
-			void 				Send(e_Command c) {Lock l(canAppend); TcpSend(c, &tcpSocket, packet);}
+			void 				Append(e_Command c) {packet<<(uchar)c;}
+			void 				Send() {Append(EOP);Lock l(m_Lock);tcpSocket.Send(packet); packet.Clear();}
+			void 				Send(e_Command c) {Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
 			bool 						M_Connect(const char* addr, ushort port);
 			void 						M_Disconnect();
-			template<class type> void 	Append(e_Command c, type t) {Lock l(canAppend); Append(c); packet<<t;}
-			bool						IsSent() const {return packet.Size()==0;}
+			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
 	};
 
 	class UdpClient : public Client
@@ -103,19 +102,15 @@ namespace pwskoag
 			ushort			serverPort;
 			UdpSocket 		udpSocket;
 			Packet			packet;
+			Mutex			m_Lock;
 			void			ClientLoop();
+			void 			Append(e_Command c) {packet<<(uchar)c;}
+			void 			Send() {Append(EOP);Lock l(m_Lock);udpSocket.Send(packet); packet.Clear();}
 		public:
 			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
-			bool M_Connect(const char* addr, ushort port);
-			void M_Disconnect() {udpSocket.Close(); Stop();}
-	};
-
-	class Networking
-	{
-		private:
-			TcpClient tcpData;
-			//UdpClient UdpData;
-		public:
+			bool						M_Connect(const char* addr, ushort port);
+			void 						M_Disconnect() {udpSocket.Close(); Stop();}
+			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
 	};
 	
 }

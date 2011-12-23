@@ -35,7 +35,9 @@ int main()
 		u.M_Connect("127.0.0.1", 55556);
 		msSleep(1000);
 		c.Append(String, std::string("This is a string appended from main loop."));
-		msSleep(2000);
+		msSleep(1000);
+		u.Append(String, std::string("This is a string appended from main loop. Sent using UDP"));
+		msSleep(1000);
 		u.M_Disconnect();
 		c.M_Disconnect();
 	}

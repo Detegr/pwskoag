@@ -170,7 +170,6 @@ namespace pwskoag
 				{
 					if(s.IsReady(udpSocket))
 					{
-						std::cout << "Got some udp clients!" << std::endl;
 						p.Clear();
 						IpAddress ip = it->second.socket->GetIp();
 						ushort port = it->second.socket->GetPort();
@@ -191,12 +190,10 @@ namespace pwskoag
 											std::cout << "Str: " << str << std::endl;
 											break;
 										}
-										case EOP: goto EndOfPacket;
+										case EOP: break;
 										default: break;
 									}
 								}
-								EndOfPacket:
-									continue;
 							}
 						}
 					}
@@ -326,7 +323,8 @@ namespace pwskoag
 		{
 			p.Clear();
 			std::cout << "Sending udp data to " << serverAddress << ":" << serverPort << std::endl;
-			UdpSend(String, std::string("UDP Data."), &udpSocket, p);
+			Append(String, std::string("UDP Data."));
+			Send();
 			msSleep(100);
 		}
 	}

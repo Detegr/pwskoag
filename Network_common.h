@@ -43,9 +43,10 @@ namespace pwskoag
 	{
 		friend class Socket;
 		private:
+			Mutex				m_Lock;
 			std::vector<uchar>	data;
-			void 				Append(const void* d, size_t len) {data.resize(data.size()+len);memcpy(&data[data.size()-len], d, len);}
-			void				Pop(size_t bytes) {data.erase(data.begin(), data.begin()+bytes);}
+			void 				Append(const void* d, size_t len) {Lock l(m_Lock);data.resize(data.size()+len);memcpy(&data[data.size()-len], d, len);}
+			void				Pop(size_t bytes) {Lock l(m_Lock);data.erase(data.begin(), data.begin()+bytes);}
 		public:
 			static const size_t				MAXSIZE;
 			const uchar* 					RawData() const {return &data[0];}

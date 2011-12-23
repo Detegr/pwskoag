@@ -12,7 +12,8 @@ namespace pwskoag
 {
 	enum e_Command
 	{
-		Heartbeat=1,
+		HandShake=0,
+		Heartbeat,
 		Connect,
 		Disconnect,
 		String,
@@ -43,7 +44,7 @@ namespace pwskoag
 		friend class Socket;
 		private:
 			std::vector<uchar>	data;
-			void 				Append(const void* d, size_t len) {data.resize(data.size()+len); memcpy(&data[data.size()-len], d, len);}
+			void 				Append(const void* d, size_t len) {data.resize(data.size()+len);memcpy(&data[data.size()-len], d, len);}
 			void				Pop(size_t bytes) {data.erase(data.begin(), data.begin()+bytes);}
 		public:
 			static const size_t				MAXSIZE;
@@ -54,6 +55,7 @@ namespace pwskoag
 			Packet&							operator<<(const std::string& str){Append(str.c_str(), str.length()+1); return *this;}
 			Packet&							operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1); return *this;}
 			Packet&							operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1); return *this;}
+			Packet&							operator<<(e_Command c) {uchar x=(uchar)c; Append(&x, sizeof(x)); return *this;}
 			template <class type> Packet&	operator<<(type x) {Append(&x, sizeof(type)); return *this;}
 			template <class type> Packet&	operator>>(type& x) {if(Size()){x=*(type*)&data[0]; Pop(sizeof(type));} return *this;}
 	};
@@ -211,7 +213,7 @@ namespace pwskoag
 			bool			stopNow;
 			uint 			serverPort;
 			Mutex			selfMutex;
-			Thread*		selfThread;
+			Thread*			selfThread;
 			static void		ClientInitializer(void* args);
 			virtual 		~Client();
 			virtual void 	ClientLoop()=0;
@@ -221,7 +223,7 @@ namespace pwskoag
 			virtual void 	Start();
 			virtual void 	Stop();
 			virtual void 	ForceStop();
-			virtual void 	M_Connect(const char* addr, ushort port)=0;
+			virtual bool	M_Connect(const char* addr, ushort port)=0;
 			virtual void 	M_Disconnect()=0;
 			bool 	     	IsRunning() const { return selfThread!=NULL; }
 	};

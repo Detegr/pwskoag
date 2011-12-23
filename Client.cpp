@@ -30,9 +30,11 @@ int main()
 	*/
 	TcpClient c;
 	UdpClient u;
-	c.M_Connect("127.0.0.1", 55555);
-	u.M_Connect("127.0.0.1", 55556);
-	msSleep(4000);
-	u.M_Disconnect();
-	c.M_Disconnect();
+	if(c.M_Connect("127.0.0.1", 55555))
+	{
+		u.M_Connect("127.0.0.1", 55556);
+		msSleep(4000);
+		u.M_Disconnect();
+		c.M_Disconnect();
+	}
 }

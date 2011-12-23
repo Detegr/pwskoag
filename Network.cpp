@@ -1,10 +1,22 @@
+#include "Version.h"
 #include "Network.h"
 #include "Network_common.h"
 #include <iostream>
 #include <sys/time.h>
+#include <assert.h>
 
 namespace pwskoag
 {
+	static void EndOfPacket(TcpSocket* client)
+	{
+		Packet toClient;
+		std::string str("Hi, this is server speaking.");
+		if(!TcpSend(String, str, client, toClient))
+		{
+			std::cout << "Client disconnected: Terminating the connection." << std::endl;
+		}
+		std::cout << "Sent: " << str << std::endl;
+	}
 	void ReceiveThread(void *args)
 	{
 		ThreadData* data=(ThreadData*)args;
@@ -50,21 +62,11 @@ namespace pwskoag
 								client->Clear();
 								lock->Unlock();
 								std::cout << "Client disconnected." << std::endl;
-								pthread_exit(0);
-								break;
-							case EOP: goto EndOfPacket;
+								return;
+							case EOP: EndOfPacket(client); break;
 							default: break;
 						}
 					}
-					EndOfPacket:
-					Packet toClient;
-					std::string str("Hi, this is server speaking.");
-					if(!TcpSend(String, str, client, toClient))
-					{
-						std::cout << "Client disconnected: Terminating the connection." << std::endl;
-						pthread_exit(0);
-					}
-					std::cout << "Sent: " << str << std::endl;
 				}
 				else
 				{
@@ -72,7 +74,6 @@ namespace pwskoag
 					client->Clear();
 					lock->Unlock();
 					std::cout << "Client disconnected." << std::endl;
-					pthread_exit(0);
 				}
 			}
 			else
@@ -81,7 +82,6 @@ namespace pwskoag
 				client->Clear();
 				lock->Unlock();
 				std::cout << "Client timed out" << std::endl;
-				pthread_exit(0);
 			}
 		}
 	}
@@ -106,11 +106,24 @@ namespace pwskoag
 						uchar header; p>>header;
 						if(header==Connect)
 						{
-							std::cout << "Client connected" << std::endl;
-							clients.push_back(std::make_pair((Thread *)NULL, LocalThreadData(client)));
-							ThreadData* data=new ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
-							Thread* run=new Thread(ReceiveThread, (void*)data);
-							clients.back().first=run;
+							uint version; p>>version;
+							std::cout << "Version: " << version << std::endl;
+							if(!C_Version::M_Equal(version))
+							{
+								std::cerr << "Version mismatch!" << std::endl;
+								delete client;
+							}
+							else
+							{
+								p.Clear();
+								p<<HandShake;
+								client->Send(p);
+								std::cout << "Client connected" << std::endl;
+								clients.push_back(std::make_pair((Thread *)NULL, LocalThreadData(client)));
+								ThreadData* data=new ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
+								Thread* run=new Thread(ReceiveThread, (void*)data);
+								clients.back().first=run;
+							}
 						}
 					}
 				}
@@ -166,8 +179,6 @@ namespace pwskoag
 							while(p.Size())
 							{
 								uchar header=0;
-								std::cout << "UDP SIZE  : " << p.Size() << std::endl;
-								std::cout << "UDP HEADER: " << (int)header << std::endl;
 								while(p.Size())
 								{
 									p>>header;
@@ -185,7 +196,7 @@ namespace pwskoag
 									}
 								}
 								EndOfPacket:
-								continue;
+									continue;
 							}
 						}
 					}
@@ -199,15 +210,34 @@ namespace pwskoag
 		Lock lock(selfMutex);
 		for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) delete it->first;
 	}
-	void TcpClient::M_Connect(const char* addr, ushort port)
+	bool TcpClient::M_Connect(const char* addr, ushort port)
 	{
 		Lock lock(Client::selfMutex);
 		serverAddress=addr;
 		serverPort=port;
 		tcpSocket=TcpSocket(IpAddress(addr), port);
 		tcpSocket.Connect();
-		Client::Start();
-		Send(Connect);
+		packet << Connect << C_Version::M_Get();
+		Send();
+		Packet p;
+		Selector s;
+		s.Add(tcpSocket);
+		s.Wait(CONNECTTIME);
+		if(s.IsReady(tcpSocket))
+		{
+			if(tcpSocket.Receive(p))
+			{
+				uchar c; p>>c;
+				if(c==HandShake)
+				{
+					std::cout << "Got handshake. Launching threads..." << std::endl;
+					Client::Start();
+				}
+				return true;
+			}
+			else {std::cout << "Couldn't connect to server." << std::endl; return false;}
+		}
+		else {std::cout << "Couldn't connect to server." << std::endl; return false;}
 	}
 	void TcpClient::M_Disconnect()
 	{
@@ -222,6 +252,7 @@ namespace pwskoag
 		ThreadData* data=(ThreadData*)args;
 		TcpSocket* tcpSocket=data->socket;
 		bool* stopNow=data->stopNow;
+		bool connect=true;
 		delete data;
 		struct timeval tv;
 		Selector s;
@@ -261,7 +292,6 @@ namespace pwskoag
 				}
 			}
 		}
-		pthread_exit(0);
 	}
 
 	void TcpClient::ClientLoop()
@@ -281,12 +311,13 @@ namespace pwskoag
 			if(DataSize()) Send();
 		}
 	}
-	void UdpClient::M_Connect(const char* addr, ushort port)
+	bool UdpClient::M_Connect(const char* addr, ushort port)
 	{
 		serverAddress = IpAddress(addr);
 		serverPort = port;
 		udpSocket=UdpSocket(serverAddress, port);
 		Start();
+		return true;
 	}
 	void UdpClient::ClientLoop()
 	{

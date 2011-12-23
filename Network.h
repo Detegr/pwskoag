@@ -18,6 +18,7 @@ namespace pwskoag
 	const uint TIMEOUTMS=10000;
 	const uint TICKS_PER_SEC_TCP=1;
 	const uint TICK_WAITTIME_TCP=250/TICKS_PER_SEC_TCP;
+	const uint CONNECTTIME=3000;
 
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
@@ -27,7 +28,7 @@ namespace pwskoag
 	/*
 	 * TcpServer class
 	 *
-	 * Listens Tcp-M_Connections.
+	 * Listens Tcp-connections.
 	 */
 	class TcpServer : public Server
 	{	
@@ -74,16 +75,19 @@ namespace pwskoag
 	 */
 	class TcpClient : public Client
 	{
+		friend class UdpClient;
 		private:
 			IpAddress			serverAddress;
 			uint 				serverPort;
-			Mutex				canAppend;
 			TcpSocket 			tcpSocket;
+			bool				m_Connected;
+			Mutex				canAppend;
+			Mutex				m_ConnectMutex;
 			Packet				packet;
 			void 				ClientLoop();
 		public:
-			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
-			void 						M_Connect(const char* addr, ushort port);
+			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
+			bool 						M_Connect(const char* addr, ushort port);
 			void 						M_Disconnect();
 			void 						Append(e_Command c) {Lock l(canAppend); packet<<(uchar)c;}
 			template<class type> void 	Append(e_Command c, type t) {Lock l(canAppend); Append(c); packet<<t;}
@@ -103,7 +107,7 @@ namespace pwskoag
 			void			ClientLoop();
 		public:
 			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
-			void M_Connect(const char* addr, ushort port);
+			bool M_Connect(const char* addr, ushort port);
 			void M_Disconnect() {udpSocket.Close(); Stop();}
 	};
 

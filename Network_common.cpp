@@ -75,10 +75,10 @@ namespace pwskoag
 		if(ret>0 && FD_ISSET(fd, &set))
 		{
 			FD_CLR(fd, &set);
-			bytes=send(fd, p.RawData(), p.Size(),0);
+			bytes=send(fd, p.RawData(), p.Size(), 0);
 			if(bytes==-1)
 			{
-				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN){std::cout << "Connection lost." << std::endl; return false;}
+				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN){std::cerr << "Connection lost." << std::endl; return false;}
 				perror("SEND");
 			}
 		}

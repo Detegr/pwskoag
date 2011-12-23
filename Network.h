@@ -85,16 +85,15 @@ namespace pwskoag
 			Mutex				m_ConnectMutex;
 			Packet				packet;
 			void 				ClientLoop();
+			void 				Append(e_Command c) {Lock l(canAppend); packet<<(uchar)c;}
+			void 				Send() {Lock l(canAppend); Append(EOP);tcpSocket.Send(packet); packet.Clear();}
+			void 				Send(e_Command c) {Lock l(canAppend); TcpSend(c, &tcpSocket, packet);}
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
 			bool 						M_Connect(const char* addr, ushort port);
 			void 						M_Disconnect();
-			void 						Append(e_Command c) {Lock l(canAppend); packet<<(uchar)c;}
 			template<class type> void 	Append(e_Command c, type t) {Lock l(canAppend); Append(c); packet<<t;}
-			void 						Send() {Lock l(canAppend); Append(EOP);tcpSocket.Send(packet); packet.Clear();}
-			void 						Send(e_Command c) {Lock l(canAppend); TcpSend(c, &tcpSocket, packet);}
 			bool						IsSent() const {return packet.Size()==0;}
-			int							DataSize() const {return packet.Size();}
 	};
 
 	class UdpClient : public Client

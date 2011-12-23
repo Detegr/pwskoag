@@ -232,8 +232,8 @@ namespace pwskoag
 				{
 					std::cout << "Got handshake. Launching threads..." << std::endl;
 					Client::Start();
+					return true;
 				}
-				return true;
 			}
 			else {std::cout << "Couldn't connect to server." << std::endl; return false;}
 		}
@@ -308,7 +308,7 @@ namespace pwskoag
 				Append(Heartbeat);
 				timer.M_Reset();
 			}
-			if(DataSize()) Send();
+			Send();
 		}
 	}
 	bool UdpClient::M_Connect(const char* addr, ushort port)

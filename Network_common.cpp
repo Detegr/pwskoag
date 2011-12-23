@@ -27,8 +27,8 @@ namespace pwskoag
 		addr.sin_family=AF_INET;
 		addr.sin_port=htons(port);
 		addr.sin_addr.s_addr=htonl(INADDR_ANY);
-		//int yes=1;
-		//setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+		int yes=1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	}
 
 	bool TcpSocket::Receive(Packet& p)

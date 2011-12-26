@@ -17,12 +17,12 @@ namespace pwskoag
 		}
 		std::cout << "Sent: " << str << std::endl;
 	}
-	void ReceiveThread(void *args)
+	void TCPReceiveThread_Server(void *args)
 	{
 		ThreadData* data=(ThreadData*)args;
 		Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
-		TcpSocket* client=data->socket;
+		TcpSocket* client=(TcpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
 		delete data;
 
@@ -48,7 +48,7 @@ namespace pwskoag
 							{
 								std::string str;
 								p>>str;
-								std::cout << "Str: " << str << std::endl;
+								std::cout << "Str: " << str << " from " << client->GetIp() << ":" << client->GetPort() << std::endl;
 								break;
 							}
 							case Heartbeat:
@@ -121,7 +121,7 @@ namespace pwskoag
 								std::cout << "Client connected" << std::endl;
 								clients.push_back(std::make_pair((Thread *)NULL, LocalThreadData(client)));
 								ThreadData* data=new ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
-								Thread* run=new Thread(ReceiveThread, (void*)data);
+								Thread* run=new Thread(TCPReceiveThread_Server, (void*)data);
 								clients.back().first=run;
 							}
 						}
@@ -152,8 +152,50 @@ namespace pwskoag
 		if(clients.size()>0) {std::cout << "There were " << clients.size() << " clients connected." << std::endl;}
 		std::cout << "Shut down successful." << std::endl;
 	}
-	void ReceiveThread_UDP(void *args)
+	void UDPReceiveThread_Client(void *args)
 	{
+		Packet p;
+		ThreadData* data=(ThreadData*)args;
+		Mutex* lock=data->lock;
+		C_Timer* timer=data->timer;
+		UdpSocket* client=(UdpSocket*)data->socket;
+		bool* stopNow=data->stopNow;
+		delete data;
+
+		while(!stopNow)
+		{
+			p.Clear();
+			if(client->Receive(p))
+			{
+				while(p.Size())
+				{
+					uchar header=0;
+					while(p.Size())
+					{
+						p>>header;
+						switch (header)
+						{
+							case String:
+							{
+								std::string str;
+								p>>str;
+								std::cout << "Str: " << str << " from " << ip << ":" << port << std::endl;
+								break;
+							}
+							case EOP:
+							{
+								Packet p;
+								p << String << std::string("UDP ack") << EOP;
+								udpSocket.Send(p);
+							}
+							default: break;
+						}
+					}
+				}
+
+			}
+			msSleep(TICK_WAITTIME_UDP);
+		}
 	}
 	void UdpServer::ServerLoop()
 	{
@@ -163,17 +205,17 @@ namespace pwskoag
 		{
 			s.Clear();
 			t_Clients clients = master->GetClients();
-			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) s.Add(udpSocket);
+			s.Add(udpSocket);
 			if(s.Wait(TICK_WAITTIME_UDP))
 			{
-				for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
+				if(s.IsReady(udpSocket))
 				{
-					if(s.IsReady(udpSocket))
+					p.Clear();
+					IpAddress ip;
+					ushort port;
+					if(udpSocket.Receive(p, &ip, &port))
 					{
-						p.Clear();
-						IpAddress ip = it->second.socket->GetIp();
-						ushort port = it->second.socket->GetPort();
-						if(udpSocket.Receive(p))
+						if(ip==it->second.socket->GetIp())
 						{
 							while(p.Size())
 							{
@@ -187,16 +229,22 @@ namespace pwskoag
 										{
 											std::string str;
 											p>>str;
-											std::cout << "Str: " << str << std::endl;
+											std::cout << "Str: " << str << " from " << ip << ":" << port << std::endl;
 											break;
 										}
-										case EOP: break;
+										case EOP:
+										{
+											Packet p;
+											p << String << std::string("UDP ack") << EOP;
+											udpSocket.Send(p);
+										}
 										default: break;
 									}
 								}
 							}
 						}
 					}
+					else std::cerr << "Data wasn't ready." << std::endl;
 				}
 			}
 		}
@@ -244,10 +292,10 @@ namespace pwskoag
 		tcpSocket.Disconnect();
 	}
 
-	void ReceiveThread_Client(void *args)
+	void TCPReceiveThread_Client(void *args)
 	{
 		ThreadData* data=(ThreadData*)args;
-		TcpSocket* tcpSocket=data->socket;
+		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
 		bool connect=true;
 		delete data;
@@ -295,7 +343,7 @@ namespace pwskoag
 	{
 		C_Timer timer;
 		ThreadData* data=new ThreadData(NULL, NULL, &tcpSocket, &(Client::stopNow));
-		Thread t(ReceiveThread_Client, data);
+		Thread t(TCPReceiveThread_Client, data);
 		while(!Client::stopNow)
 		{
 			msSleep(TICK_WAITTIME_TCP);
@@ -319,6 +367,8 @@ namespace pwskoag
 	void UdpClient::ClientLoop()
 	{
 		Packet p;
+		ThreadData* data=new ThreadData(NULL, NULL, &udpSocket, &(Client::stopNow));
+		Thread t(UDPReceiveThread_Client, data);
 		while(!stopNow)
 		{
 			p.Clear();

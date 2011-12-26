@@ -64,7 +64,7 @@ namespace pwskoag
 
 	struct LocalThreadData
 	{
-		TcpSocket*			socket;
+		Socket*				socket;
 		C_Timer				timer;
 		Mutex	lock;
 		LocalThreadData(TcpSocket* s) : socket(s), timer(C_Timer()) {}

@@ -32,6 +32,7 @@ namespace pwskoag
 			IpAddress() : addr() {}
 			IpAddress(const char* a) {StrToAddr(a);}
 			IpAddress(const IpAddress& rhs) {addr=rhs.addr;}
+			IpAddress(struct in_addr a) {addr=a;}
 			const IpAddress&		operator=(const char* a) {StrToAddr(a); return *this;}
 			bool					operator==(const IpAddress& rhs) const {return strncmp(toString().c_str(), rhs.toString().c_str(), 15)==0;}
 			bool					operator==(const char* rhs) const {return strncmp(toString().c_str(), rhs, 15)==0;}
@@ -117,7 +118,7 @@ namespace pwskoag
 		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, UDP) {}
 		UdpSocket(ushort port) : Socket(port, UDP) {}
 		bool Send(Packet& p);
-		bool Receive(Packet& p);
+		bool Receive(Packet& p, IpAddress* ip=NULL, ushort* port=NULL);
 	};
 
 	class Selector

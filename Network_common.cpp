@@ -39,7 +39,7 @@ namespace pwskoag
 		for(int i=0;i<r;++i)p<<buf[i];
 		return true;
 	}
-	bool UdpSocket::Receive(Packet& p)
+	bool UdpSocket::Receive(Packet& p, IpAddress* ip, ushort* port)
 	{
 		uchar buf[Packet::MAXSIZE];
 		struct sockaddr_in a;
@@ -47,6 +47,8 @@ namespace pwskoag
 		int r=recvfrom(fd, buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
 		if(r<0) return false;
 		for(int i=0;i<r;++i)p<<buf[i];
+		if(ip) *ip=IpAddress(a.sin_addr);
+		if(port) *port=htons(a.sin_port);
 		return true;
 	}
 
@@ -105,7 +107,8 @@ namespace pwskoag
 		socklen_t len=sizeof(addr);
 		int newfd=accept(fd, (sockaddr*)&addr, &len);
 		if(newfd<0) return NULL;
-		return new TcpSocket(ip, port, Socket::TCP, newfd);
+		IpAddress ip(addr.sin_addr);
+		return new TcpSocket(ip, htons(addr.sin_port), Socket::TCP, newfd);
 	}
 
 	int Selector::Wait(uint timeoutms)

@@ -7,7 +7,7 @@ namespace pwskoag
 { 
 	const size_t Packet::MAXSIZE=4096;
 
-	Socket::Socket(IpAddress& ip, ushort port, Type type) : ip(ip), port(port), fd(0), type(type)
+	Socket::Socket(IpAddress& ip, ushort port, Type type) : m_Id(0), ip(ip), port(port), fd(0), type(type)
 	{
 		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error("Failed to create socket.");
@@ -19,7 +19,7 @@ namespace pwskoag
 		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	}
 
-	Socket::Socket(ushort port, Type type) : ip(), port(port), fd(0), type(type)
+	Socket::Socket(ushort port, Type type) : m_Id(0), ip(), port(port), fd(0), type(type)
 	{
 		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error(Error("Socket"));
@@ -89,15 +89,14 @@ namespace pwskoag
 		return true;
 	}
 
-	bool UdpSocket::Send(Packet& p)
+	bool UdpSocket::Send(Packet& p, IpAddress& ip, ushort port)
 	{
-		//struct sockaddr_in a;
-		//a.sin_family=AF_INET;
-		//a.sin_port=htons(port);
-		//a.sin_addr=ip.addr;
+		struct sockaddr_in a;
+		a.sin_family=AF_INET;
+		a.sin_port=htons(port);
+		a.sin_addr=ip.addr;
 		socklen_t len=sizeof(addr);
 		int r=sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&addr, len);
-		std::cout << "sent " << r << " bytes of " << p.Size() << std::endl;
 		p.Clear();
 		return true;
 	}
@@ -121,6 +120,42 @@ namespace pwskoag
 			FD_ZERO(&fds);
 			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
 			return select(fd_ints.back()+1, &fds, NULL, NULL, &tv);
+		}
+		else
+		{
+			msSleep(timeoutms);
+			return 0;
+		}
+	};
+
+	int Selector::WaitWrite(uint timeoutms)
+	{
+		if(fd_ints.size())
+		{
+			struct timeval tv;
+			tv.tv_sec=timeoutms/1000;
+			tv.tv_usec=(timeoutms%1000)*1000;
+			FD_ZERO(&fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+			return select(fd_ints.back()+1, NULL, &fds, NULL, &tv);
+		}
+		else
+		{
+			msSleep(timeoutms);
+			return 0;
+		}
+	};
+
+	int Selector::WaitReadWrite(uint timeoutms)
+	{
+		if(fd_ints.size())
+		{
+			struct timeval tv;
+			tv.tv_sec=timeoutms/1000;
+			tv.tv_usec=(timeoutms%1000)*1000;
+			FD_ZERO(&fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+			return select(fd_ints.back()+1, &fds, &fds, NULL, &tv);
 		}
 		else
 		{

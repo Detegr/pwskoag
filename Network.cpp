@@ -117,22 +117,34 @@ namespace pwskoag
 							{
 								p.Clear();
 								p<<HandShake;
-								client->Send(p);
+								bool ok=false;
+								do
+								{
+									ok=true;
+									ushort id=rand()%(((ushort)1)<<15);
+									for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
+									{
+										if(it->second.socket->M_Id()==id) {ok=false; break;}
+									}
+									client->M_Id(id);
+								} while(!ok);
+								p << client->M_Id();
+								std::cout << "Generated id: " << client->M_Id() << std::endl;
 								std::cout << "Client connected" << std::endl;
 								clients.push_back(std::make_pair((Thread *)NULL, LocalThreadData(client)));
 								ThreadData* data=new ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
 								Thread* run=new Thread(TCPReceiveThread_Server, (void*)data);
 								clients.back().first=run;
+								client->Send(p);
 							}
 						}
 					}
 				}
 			}
-			
 			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
 			{
 				it->second.lock.Lock();
-				bool closed=it->second.socket->Closed();
+				bool closed=it->second.socket->M_Closed();
 				it->second.lock.Unlock();
 				if(closed)
 				{
@@ -179,14 +191,15 @@ namespace pwskoag
 							{
 								std::string str;
 								p>>str;
-								std::cout << "Str: " << str << " from " << ip << ":" << port << std::endl;
+								std::cout << "UDP from server: " << str << std::endl;
 								break;
 							}
 							case EOP:
 							{
-								Packet p;
-								p << String << std::string("UDP ack") << EOP;
-								udpSocket.Send(p);
+								//Packet p;
+								//p << String << std::string("UDP ack") << EOP;
+								//client->Send(p);
+								break;
 							}
 							default: break;
 						}
@@ -197,48 +210,87 @@ namespace pwskoag
 			msSleep(TICK_WAITTIME_UDP);
 		}
 	}
+
 	void UdpServer::ServerLoop()
 	{
+		const t_Clients& c = master->GetClients();
 		Packet p;
-		Selector s;
+		Selector sel;
 		while(!stopNow)
 		{
-			s.Clear();
-			t_Clients clients = master->GetClients();
-			s.Add(udpSocket);
-			if(s.Wait(TICK_WAITTIME_UDP))
+			sel.Clear();
+			sel.Add(udpSocket);
+			if(sel.Wait(TICK_WAITTIME_UDP))
 			{
-				if(s.IsReady(udpSocket))
+				if(sel.IsReady(udpSocket))
 				{
 					p.Clear();
 					IpAddress ip;
 					ushort port;
 					if(udpSocket.Receive(p, &ip, &port))
 					{
-						if(ip==it->second.socket->GetIp())
+						for(t_Clients::const_iterator it=c.begin(); it!=c.end(); ++it)
 						{
-							while(p.Size())
+							TcpSocket* s=dynamic_cast<TcpSocket*>(it->second.socket);
+							if(ip==s->GetIp())
 							{
-								uchar header=0;
-								while(p.Size())
+								if(!s->M_UdpPort())
 								{
-									p>>header;
-									switch (header)
+									for(;;)
 									{
-										case String:
+										uchar header=0;
+										p >> header;
+										if(header==Connect)
 										{
-											std::string str;
-											p>>str;
-											std::cout << "Str: " << str << " from " << ip << ":" << port << std::endl;
-											break;
+											ushort id;
+											p>>id;
+											if(id==s->M_Id())
+											{
+												s->M_UdpPort(port);
+												std::cout << "Bound id " << id << " to UDP port " << port << std::endl;
+												p.Clear();
+												p<<HandShake;
+												if(sel.WaitWrite(TICK_WAITTIME_UDP))
+												{
+													if(sel.IsReady(udpSocket))
+													{
+														udpSocket.Send(p, ip, port);
+														std::cout << "Sent confirmation" << std::endl;
+													}
+													else std::cout << "Client wasn't ready." << std::endl;
+												}
+												else std::cout << "Socket wasn't ready to write." << std::endl;
+											}
+											else std::cout << "Wrong ID, discarding connection..." << std::endl;
 										}
-										case EOP:
+										break;
+									}
+									continue;
+								}
+								if(s->M_UdpPort()==port)
+								{
+									uchar header=0;
+									for(;;)
+									{
+										p>>header;
+										switch (header)
 										{
-											Packet p;
-											p << String << std::string("UDP ack") << EOP;
-											udpSocket.Send(p);
+											case String:
+											{
+												std::string str;
+												p>>str;
+												std::cout << "Str: " << str << " from " << ip << ":" << port << std::endl;
+												break;
+											}
+											case EOP:
+											{
+												//Packet p;
+												//p << String << std::string("UDP response") << EOP;
+												//udpSocket.Send(p, ip, );
+												break;
+											}
+											default: break;
 										}
-										default: break;
 									}
 								}
 							}
@@ -275,8 +327,11 @@ namespace pwskoag
 				uchar c; p>>c;
 				if(c==HandShake)
 				{
-					std::cout << "Got handshake. Launching threads..." << std::endl;
-					Client::Start();
+					ushort id;
+					p >> id;
+					tcpSocket.M_Id(id);
+					std::cout << "Got handshake with id: " << tcpSocket.M_Id() << std::endl;
+					Start();
 					return true;
 				}
 			}
@@ -316,7 +371,6 @@ namespace pwskoag
 					for(;;)
 					{
 						p>>header;
-						std::cout << "GOT HEADER: " << (int)header << std::endl;
 						switch (header)
 						{
 							case String:
@@ -358,23 +412,55 @@ namespace pwskoag
 	}
 	bool UdpClient::M_Connect(const char* addr, ushort port)
 	{
-		serverAddress = IpAddress(addr);
-		serverPort = port;
-		udpSocket=UdpSocket(serverAddress, port);
-		Start();
+		m_Address=IpAddress(addr);
+		m_Port=port;
+		udpSocket=UdpSocket(m_Address, m_Port);
+
+		Selector s;
+		s.Add(udpSocket);
+		if(s.WaitWrite(CONNECTTIME))
+		{
+			if(s.IsReady(udpSocket))
+			{
+				std::cout << "Connecting to UDP server..." << std::endl;
+				packet << Connect << m_Master->M_Id();
+				udpSocket.Send(packet, m_Address, m_Port);
+			}
+		}
+		s.Clear();
+		s.Add(udpSocket);
+		Packet p;
+		if(s.Wait(CONNECTTIME))
+		{
+			if(s.IsReady(udpSocket))
+			{
+				if(udpSocket.Receive(p))
+				{
+					uchar c; p>>c;
+					if(c==HandShake)
+					{
+						std::cout << "Got UDP confirmation." << std::endl;
+						Start();
+						return true;
+					}
+				}
+				else {std::cout << "Received broken data when connecting to UDP server." << std::endl; return false;}
+			}
+			else {std::cout << "Server didn't send confirmation data." << std::endl; return false;}
+		}
+		else {std::cout << "Couldn't connect to UDP server, connection timed out." << std::endl; return false;}
 		return true;
 	}
 	void UdpClient::ClientLoop()
 	{
-		Packet p;
 		ThreadData* data=new ThreadData(NULL, NULL, &udpSocket, &(Client::stopNow));
 		Thread t(UDPReceiveThread_Client, data);
 		while(!stopNow)
 		{
-			p.Clear();
-			std::cout << "Sending udp data to " << serverAddress << ":" << serverPort << std::endl;
+			//p.Clear();
+			std::cout << "Sending udp data to " << m_Address << ":" << m_Port << std::endl;
 			Append(String, std::string("UDP Data."));
-			Send();
+			Send(m_Master->serverAddress, m_Port);
 			msSleep(100);
 		}
 	}

@@ -29,16 +29,18 @@ int main()
 	c.AutoSend(Network::Command::String, &b);
 	*/
 	TcpClient c;
-	UdpClient u;
+	UdpClient u(&c);
 	if(c.M_Connect("127.0.0.1", 55555))
 	{
-		u.M_Connect("127.0.0.1", 55556);
-		msSleep(1000);
-		c.Append(String, std::string("This is a string appended from main loop."));
-		msSleep(1000);
-		u.Append(String, std::string("This is a string appended from main loop. Sent using UDP"));
-		msSleep(1000);
-		u.M_Disconnect();
+		if(u.M_Connect("127.0.0.1", 55556))
+		{
+			msSleep(1000);
+			c.Append(String, std::string("This is a string appended from main loop."));
+			msSleep(1000);
+			u.Append(String, std::string("This is a string appended from main loop. Sent using UDP"));
+			msSleep(1000);
+			u.M_Disconnect();
+		}
 		c.M_Disconnect();
 	}
 }

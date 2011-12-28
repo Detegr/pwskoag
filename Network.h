@@ -54,11 +54,11 @@ namespace pwskoag
 	
 	struct ThreadData
 	{
-		Mutex* lock;
-		TcpSocket*			socket;
-		C_Timer*			timer;
-		bool*				stopNow;
-		ThreadData(Mutex *l, C_Timer* t, TcpSocket* sock, bool* stop) :
+		Mutex*		lock;
+		Socket*		socket;
+		C_Timer*	timer;
+		bool*		stopNow;
+		ThreadData(Mutex *l, C_Timer* t, Socket* sock, bool* stop) :
 			lock(l), timer(t), socket(sock), stopNow(stop) {}
 	};
 
@@ -67,7 +67,7 @@ namespace pwskoag
 		Socket*				socket;
 		C_Timer				timer;
 		Mutex	lock;
-		LocalThreadData(TcpSocket* s) : socket(s), timer(C_Timer()) {}
+		LocalThreadData(Socket* s) : socket(s), timer(C_Timer()) {}
 	};
 
 	/*
@@ -93,21 +93,23 @@ namespace pwskoag
 			bool 						M_Connect(const char* addr, ushort port);
 			void 						M_Disconnect();
 			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
+			const ushort				M_Id() const {return tcpSocket.M_Id();}
 	};
 
 	class UdpClient : public Client
 	{
 		private:
-			IpAddress 		serverAddress;
-			ushort			serverPort;
+			TcpClient*		m_Master;
+			IpAddress		m_Address;
+			ushort			m_Port;
 			UdpSocket 		udpSocket;
 			Packet			packet;
 			Mutex			m_Lock;
 			void			ClientLoop();
 			void 			Append(e_Command c) {packet<<(uchar)c;}
-			void 			Send() {Append(EOP);Lock l(m_Lock);udpSocket.Send(packet); packet.Clear();}
+			void 			Send(IpAddress& ip, ushort port) {Append(EOP);Lock l(m_Lock);udpSocket.Send(packet, ip, port); packet.Clear();}
 		public:
-			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
+			UdpClient(TcpClient* t) :	m_Master(t), m_Port(0), udpSocket() {}
 			bool						M_Connect(const char* addr, ushort port);
 			void 						M_Disconnect() {udpSocket.Close(); Stop();}
 			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}

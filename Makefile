@@ -3,9 +3,9 @@ OPTS=-ggdb
 SOURCES=Network.cpp Network_common.cpp Concurrency.cpp Timer.cpp
 HEADERS=Version.h Network.h Network_common.h Concurrency.h Base.h Timer.h
 LIBS=
-EXE=a.out
 SERVER=server
 CLIENT=client
+EXECUTABLES=$(SERVER) $(CLIENT)
 
 all: server client
 server: Server.cpp $(SOURCES) $(HEADERS)
@@ -13,4 +13,4 @@ server: Server.cpp $(SOURCES) $(HEADERS)
 client: Client.cpp $(SOURCES) $(HEADERS)
 	$(CC) -o $(CLIENT) Client.cpp $(SOURCES) $(OPTS) $(LIBS)
 clean:
-	rm $(EXE) $(SERVER) $(CLIENT)
+	rm $(EXECUTABLES)

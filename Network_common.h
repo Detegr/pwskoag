@@ -17,6 +17,7 @@ namespace pwskoag
 		Connect,
 		Disconnect,
 		String,
+		c_Ushort,
 		EOP=255
 	};
 
@@ -66,12 +67,13 @@ namespace pwskoag
 	{
 		friend class Selector;
 		protected:
+			ushort		m_Id;
 			IpAddress	ip;
 			ushort		port;
 			int			type;
 			sockaddr_in	addr;
 
-			Socket() {}
+			Socket() : m_Id(0) {}
 		public:
 			int			fd;
 			enum Type
@@ -82,6 +84,7 @@ namespace pwskoag
 			Socket(IpAddress& ip, ushort port, Type type);
 			Socket(ushort port, Type type);
 			Socket(const Socket& s) {*this=s;}
+			virtual ~Socket() {}
 			const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
 			void Bind()
 			{
@@ -91,12 +94,16 @@ namespace pwskoag
 			void Close() {close(fd);}
 			const IpAddress&	GetIp() const {return ip;}
 			const ushort		GetPort() const {return port;}
+			const ushort		M_Id() const {return m_Id;}
+			void				M_Id(ushort id) {m_Id=id;}
+			bool 				M_Closed() const {return this->fd<0;}
 	};
 
 	class TcpSocket : public Socket
 	{
 		private:
-			TcpSocket(IpAddress& ip, ushort port, Type type, int fd) : Socket(ip, port, type) {this->fd=fd;}
+			TcpSocket(IpAddress& ip, ushort port, Type type, int fd) : Socket(ip, port, type) {m_UdpPort=0; this->fd=fd;}
+			ushort m_UdpPort;
 		public:
 			TcpSocket() {}
 			TcpSocket(IpAddress ip, ushort port) : Socket(ip, port, TCP) {}
@@ -106,10 +113,11 @@ namespace pwskoag
 			void Connect();
 			void Disconnect() {if(fd>0)Close();}
 			void Clear() {Close(); this->fd=-1;}
-			bool Closed() const {return this->fd<0;}
 			TcpSocket* Accept(); 
 			bool Send(Packet& p); 
 			bool Receive(Packet& p);
+			void M_UdpPort(ushort port) {m_UdpPort=port;}
+			const ushort M_UdpPort() const {return m_UdpPort;}
 	};
 
 	struct UdpSocket : public Socket
@@ -117,7 +125,7 @@ namespace pwskoag
 		UdpSocket() {}
 		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, UDP) {}
 		UdpSocket(ushort port) : Socket(port, UDP) {}
-		bool Send(Packet& p);
+		bool Send(Packet& p, IpAddress& ip, ushort port);
 		bool Receive(Packet& p, IpAddress* ip=NULL, ushort* port=NULL);
 	};
 
@@ -145,6 +153,8 @@ namespace pwskoag
 			}
 			void Clear() {fd_ints.clear(); FD_ZERO(&fds);}
 			int Wait(uint timeoutms);
+			int WaitWrite(uint timeoutms);
+			int WaitReadWrite(uint timeoutms);
 	};
 
 	// Functions for sending and appending.
@@ -167,13 +177,13 @@ namespace pwskoag
 	}
 
 	// Udp-Functions
-	static bool UdpSend(UdpSocket* sock, Packet& p) {return sock->Send(p);}
+	static bool UdpSend(UdpSocket* sock, Packet& p, IpAddress& ip, ushort port) {return sock->Send(p, ip, port);}
 	template <class type>
-	bool UdpSend(e_Command c, type t, UdpSocket* sock, Packet& p)
+	bool UdpSend(e_Command c, type t, UdpSocket* sock, Packet& p, IpAddress& ip, ushort port)
 	{
 		p.Clear();
 		Append(c, t, p); Append(EOP, p);
-		return UdpSend(sock, p);
+		return UdpSend(sock, p, ip, port);
 	}
 
 	/*

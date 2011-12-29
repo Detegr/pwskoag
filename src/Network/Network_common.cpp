@@ -7,7 +7,7 @@ namespace pwskoag
 { 
 	const size_t Packet::MAXSIZE=4096;
 
-	Socket::Socket(IpAddress& ip, ushort port, Type type) : ip(ip), port(port), fd(0), type(type)
+	Socket::Socket(IpAddress& ip, ushort port, Type type) : m_Id(0), ip(ip), port(port), fd(0), type(type)
 	{
 		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error("Failed to create socket.");
@@ -19,7 +19,7 @@ namespace pwskoag
 		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	}
 
-	Socket::Socket(ushort port, Type type) : ip(), port(port), fd(0), type(type)
+	Socket::Socket(ushort port, Type type) : m_Id(0), ip(), port(port), fd(0), type(type)
 	{
 		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error(Error("Socket"));
@@ -27,8 +27,14 @@ namespace pwskoag
 		addr.sin_family=AF_INET;
 		addr.sin_port=htons(port);
 		addr.sin_addr.s_addr=htonl(INADDR_ANY);
-		//int yes=1;
-		//setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+		int yes=1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+	}
+
+	void Socket::Bind()
+	{
+		socklen_t len=sizeof(addr);
+		if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));
 	}
 
 	bool TcpSocket::Receive(Packet& p)
@@ -39,15 +45,16 @@ namespace pwskoag
 		for(int i=0;i<r;++i)p<<buf[i];
 		return true;
 	}
-	bool UdpSocket::Receive(Packet& p)
+	bool UdpSocket::Receive(Packet& p, IpAddress* ip, ushort* port)
 	{
 		uchar buf[Packet::MAXSIZE];
 		struct sockaddr_in a;
 		socklen_t len=sizeof(a);
 		int r=recvfrom(fd, buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
-		std::cout << "Got " << r << " UDP bytes." << std::endl;
 		if(r<0) return false;
 		for(int i=0;i<r;++i)p<<buf[i];
+		if(ip) *ip=IpAddress(a.sin_addr);
+		if(port) *port=ntohs(a.sin_port);
 		return true;
 	}
 
@@ -75,10 +82,14 @@ namespace pwskoag
 		if(ret>0 && FD_ISSET(fd, &set))
 		{
 			FD_CLR(fd, &set);
-			bytes=send(fd, p.RawData(), p.Size(),0);
+			bytes=send(fd, p.RawData(), p.Size(), 0);
 			if(bytes==-1)
 			{
-				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN){std::cout << "Connection lost." << std::endl; return false;}
+				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN)
+				{
+					std::cerr << "Connection lost." << std::endl;
+					return false;
+				}
 				perror("SEND");
 			}
 		}
@@ -88,15 +99,14 @@ namespace pwskoag
 		return true;
 	}
 
-	bool UdpSocket::Send(Packet& p)
+	bool UdpSocket::Send(Packet& p, IpAddress& ip, ushort port)
 	{
-		//struct sockaddr_in a;
-		//a.sin_family=AF_INET;
-		//a.sin_port=htons(port);
-		//a.sin_addr=ip.addr;
-		socklen_t len=sizeof(addr);
-		int r=sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&addr, len);
-		std::cout << "sent " << r << " bytes of " << p.Size() << std::endl;
+		struct sockaddr_in a;
+		a.sin_family=AF_INET;
+		a.sin_port=htons(port);
+		a.sin_addr=ip.addr;
+		socklen_t len=sizeof(a);
+		int r=sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&a, len);
 		p.Clear();
 		return true;
 	}
@@ -106,7 +116,23 @@ namespace pwskoag
 		socklen_t len=sizeof(addr);
 		int newfd=accept(fd, (sockaddr*)&addr, &len);
 		if(newfd<0) return NULL;
-		return new TcpSocket(ip, port, Socket::TCP, newfd);
+		IpAddress ip(addr.sin_addr);
+		return new TcpSocket(ip, htons(addr.sin_port), Socket::TCP, newfd);
+	}
+
+
+	void Selector::Remove(Socket& s)
+	{
+		for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it)
+		{
+			if(*it==s.fd)
+			{
+				std::cout << "Erasing: " << *it << std::endl;
+				it=fd_ints.erase(it);
+				break;
+			}
+		}
+		std::sort(fd_ints.begin(), fd_ints.end());
 	}
 
 	int Selector::Wait(uint timeoutms)
@@ -119,6 +145,42 @@ namespace pwskoag
 			FD_ZERO(&fds);
 			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
 			return select(fd_ints.back()+1, &fds, NULL, NULL, &tv);
+		}
+		else
+		{
+			msSleep(timeoutms);
+			return 0;
+		}
+	};
+
+	int Selector::WaitWrite(uint timeoutms)
+	{
+		if(fd_ints.size())
+		{
+			struct timeval tv;
+			tv.tv_sec=timeoutms/1000;
+			tv.tv_usec=(timeoutms%1000)*1000;
+			FD_ZERO(&fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+			return select(fd_ints.back()+1, NULL, &fds, NULL, &tv);
+		}
+		else
+		{
+			msSleep(timeoutms);
+			return 0;
+		}
+	};
+
+	int Selector::WaitReadWrite(uint timeoutms)
+	{
+		if(fd_ints.size())
+		{
+			struct timeval tv;
+			tv.tv_sec=timeoutms/1000;
+			tv.tv_usec=(timeoutms%1000)*1000;
+			FD_ZERO(&fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+			return select(fd_ints.back()+1, &fds, &fds, NULL, &tv);
 		}
 		else
 		{

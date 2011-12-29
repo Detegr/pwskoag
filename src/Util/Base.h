@@ -18,7 +18,6 @@ namespace pwskoag
 	{
 		#ifdef _WIN32
 			Sleep(ms);
-		#elif defined(_APPLE_)
 		#else
 			struct timespec ts;
 			if(ms==0){sched_yield(); return;}

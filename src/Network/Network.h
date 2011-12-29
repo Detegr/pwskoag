@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Network_common.h"
-#include "Base.h"
-#include "Concurrency.h"
-#include "Timer.h"
+#include <Util/Base.h>
+#include <Concurrency/Concurrency.h>
+#include <Util/Timer.h>
 #include <list>
 #include <stdexcept>
 #include <string.h>
@@ -18,6 +18,7 @@ namespace pwskoag
 	const uint TIMEOUTMS=10000;
 	const uint TICKS_PER_SEC_TCP=1;
 	const uint TICK_WAITTIME_TCP=250/TICKS_PER_SEC_TCP;
+	const uint CONNECTTIME=3000;
 
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
@@ -27,7 +28,7 @@ namespace pwskoag
 	/*
 	 * TcpServer class
 	 *
-	 * Listens Tcp-M_Connections.
+	 * Listens Tcp-connections.
 	 */
 	class TcpServer : public Server
 	{	
@@ -53,20 +54,20 @@ namespace pwskoag
 	
 	struct ThreadData
 	{
-		Mutex* lock;
-		TcpSocket*			socket;
-		C_Timer*			timer;
-		bool*				stopNow;
-		ThreadData(Mutex *l, C_Timer* t, TcpSocket* sock, bool* stop) :
+		Mutex*		lock;
+		Socket*		socket;
+		C_Timer*	timer;
+		bool*		stopNow;
+		ThreadData(Mutex *l, C_Timer* t, Socket* sock, bool* stop) :
 			lock(l), timer(t), socket(sock), stopNow(stop) {}
 	};
 
 	struct LocalThreadData
 	{
-		TcpSocket*			socket;
+		Socket*				socket;
 		C_Timer				timer;
 		Mutex	lock;
-		LocalThreadData(TcpSocket* s) : socket(s), timer(C_Timer()) {}
+		LocalThreadData(Socket* s) : socket(s), timer(C_Timer()) {}
 	};
 
 	/*
@@ -74,45 +75,44 @@ namespace pwskoag
 	 */
 	class TcpClient : public Client
 	{
+		friend class UdpClient;
 		private:
 			IpAddress			serverAddress;
 			uint 				serverPort;
-			Mutex				canAppend;
 			TcpSocket 			tcpSocket;
+			bool				m_Connected;
+			Mutex				m_Lock;
+			Mutex				m_ConnectMutex;
 			Packet				packet;
 			void 				ClientLoop();
+			void 				Append(e_Command c) {packet<<(uchar)c;}
+			void 				Send();
+			void 				Send(e_Command c) {Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
 		public:
-			TcpClient() : serverAddress(), serverPort(0), tcpSocket() {}
-			void 						M_Connect(const char* addr, ushort port);
+			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
+			bool 						M_Connect(const char* addr, ushort port);
 			void 						M_Disconnect();
-			void 						Append(e_Command c) {Lock l(canAppend); packet<<(uchar)c;}
-			template<class type> void 	Append(e_Command c, type t) {Lock l(canAppend); Append(c); packet<<t;}
-			void 						Send() {Lock l(canAppend); Append(EOP);tcpSocket.Send(packet); packet.Clear();}
-			void 						Send(e_Command c) {Lock l(canAppend); TcpSend(c, &tcpSocket, packet);}
-			bool						IsSent() const {return packet.Size()==0;}
-			int							DataSize() const {return packet.Size();}
+			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
+			const ushort				M_Id() const {return tcpSocket.M_Id();}
 	};
 
 	class UdpClient : public Client
 	{
 		private:
-			IpAddress 		serverAddress;
-			ushort			serverPort;
+			TcpClient*		m_Master;
+			IpAddress		m_Address;
+			ushort			m_Port;
 			UdpSocket 		udpSocket;
 			Packet			packet;
+			Mutex			m_Lock;
 			void			ClientLoop();
+			void 			Append(e_Command c) {packet<<(uchar)c;}
+			void 			Send(IpAddress& ip, ushort port);
 		public:
-			UdpClient() : serverAddress(), serverPort(0), udpSocket() {}
-			void M_Connect(const char* addr, ushort port);
-			void M_Disconnect() {udpSocket.Close(); Stop();}
-	};
-
-	class Networking
-	{
-		private:
-			TcpClient tcpData;
-			//UdpClient UdpData;
-		public:
+			UdpClient(TcpClient* t) :	m_Master(t), m_Port(0), udpSocket() {}
+			bool						M_Connect(const char* addr, ushort port);
+			void 						M_Disconnect() {udpSocket.Close(); Stop();}
+			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
 	};
 	
 }

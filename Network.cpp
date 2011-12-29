@@ -174,34 +174,29 @@ namespace pwskoag
 		bool* stopNow=data->stopNow;
 		delete data;
 
-		while(!stopNow)
+		while(!*stopNow)
 		{
 			p.Clear();
 			if(client->Receive(p))
 			{
-				while(p.Size())
+				uchar header=0;
+				bool eop=false;
+				while(!eop)
 				{
-					uchar header=0;
-					while(p.Size())
+					p>>header;
+					switch (header)
 					{
-						p>>header;
-						switch (header)
+						case String:
 						{
-							case String:
-							{
-								std::string str;
-								p>>str;
-								std::cout << "UDP from server: " << str << std::endl;
-								break;
-							}
-							case EOP:
-							{
-								//Packet p;
-								//p << String << std::string("UDP ack") << EOP;
-								//client->Send(p);
-								break;
-							}
-							default: break;
+							std::string str;
+							p>>str;
+							std::cout << "UDP from server: " << str << std::endl;
+							break;
+						}
+						case EOP:
+						{
+							eop=true;
+							break;
 						}
 					}
 				}
@@ -229,7 +224,6 @@ namespace pwskoag
 					ushort port;
 					if(udpSocket.Receive(p, &ip, &port))
 					{
-						std::cout << "Received UDP from " << ip << ":" << port << std::endl;
 						for(t_Clients::const_iterator it=c.begin(); it!=c.end(); ++it)
 						{
 							TcpSocket* s=dynamic_cast<TcpSocket*>(it->second.socket);
@@ -257,7 +251,6 @@ namespace pwskoag
 													{
 														udpSocket.Send(p, ip, port);
 														std::cout << "Sent confirmation to " << ip  << ":" << port << std::endl;
-														sleep(10);
 													}
 													else std::cout << "Client wasn't ready." << std::endl;
 												}
@@ -272,7 +265,7 @@ namespace pwskoag
 								if(s->M_UdpPort()==port)
 								{
 									uchar header=0;
-									for(;;)
+									while(p.Size())
 									{
 										p>>header;
 										switch (header)
@@ -286,14 +279,14 @@ namespace pwskoag
 											}
 											case EOP:
 											{
-												//Packet p;
-												//p << String << std::string("UDP response") << EOP;
-												//udpSocket.Send(p, ip, );
+												Packet p;
+												p << String << std::string("UDP response") << EOP;
+												udpSocket.Send(p, ip, port);
 												break;
 											}
-											default: break;
 										}
 									}
+									break;
 								}
 							}
 						}
@@ -457,7 +450,6 @@ namespace pwskoag
 		Thread t(UDPReceiveThread_Client, data);
 		while(!stopNow)
 		{
-			std::cout << "Sending udp data to " << m_Address << ":" << m_Port << std::endl;
 			Append(String, std::string("UDP Data."));
 			Send(m_Master->serverAddress, m_Port);
 			msSleep(100);

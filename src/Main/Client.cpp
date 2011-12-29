@@ -1,6 +1,6 @@
 #include <iostream>
 #include <signal.h>
-#include "Network.h"
+#include <Network/Network.h>
 
 using namespace pwskoag;
 

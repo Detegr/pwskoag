@@ -1,6 +1,6 @@
 #pragma once
-#include "Base.h"
-#include "Concurrency.h"
+#include <Util/Base.h>
+#include <Concurrency/Concurrency.h>
 
 #include <vector>
 #include <stdexcept>

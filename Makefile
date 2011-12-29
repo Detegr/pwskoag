@@ -1,25 +1,29 @@
 CC=g++
 OPTS=-ggdb
-SOURCES=Network.cpp Network_common.cpp Concurrency.cpp Timer.cpp
-HEADERS=Version.h Network.h Network_common.h Concurrency.h Base.h Timer.h
-MODULES=Network.o Concurrency.o Timer.o Network_common.o
+MODULE_DIR=build/modules
+UTIL_DIR=src/Util
+CONCURRENCY_DIR=src/Concurrency
+NETWORK_DIR=src/Network
+SOURCES=$(NETWORK_DIR)/Network.cpp $(NETWORK_DIR)/Network_common.cpp $(CONCURRENCY_DIR)/Concurrency.cpp $(UTIL_DIR)/Timer.cpp
+HEADERS=$(UTIL_DIR)/Version.h $(NETWORK_DIR)/Network.h $(NETWORK_DIR)/Network_common.h $(CONCURRENCY_DIR)/Concurrency.h $(UTIL_DIR)/Base.h $(UTIL_DIR)/Timer.h
+MODULES=Timer.o Concurrency.o Network_common.o Network.o
+INCLUDEDIR=src/
 LIBS=
-SERVER=server
-CLIENT=client
-EXECUTABLES=$(SERVER) $(CLIENT)
+EXECUTABLES=build/*
+
 
 all: server client
-Network.o: Network.cpp Network.h
-	$(CC) -c Network.cpp
-Concurrency.o: Concurrency.cpp Concurrency.h
-	$(CC) -c Concurrency.cpp
-Timer.o: Timer.cpp Timer.h
-	$(CC) -c Timer.cpp
-Network_common.o: Network_common.cpp Network_common.h
-	$(CC) -c Network_common.cpp
-server: Server.cpp $(MODULES) $(HEADERS)
-	$(CC) -o $(SERVER) Server.cpp $(MODULES) $(OPTS) $(LIBS)
-client: Client.cpp $(MODULES) $(HEADERS)
-	$(CC) -o $(CLIENT) Client.cpp $(MODULES) $(OPTS) $(LIBS)
+Network.o: $(NETWORK_DIR)/Network.cpp $(NETWORK_DIR)/Network.h
+	$(CC) -c $(NETWORK_DIR)/Network.cpp -o $(MODULE_DIR)/Network.o -I $(INCLUDEDIR)
+Concurrency.o: $(CONCURRENCY_DIR)/Concurrency.cpp $(CONCURRENCY_DIR)/Concurrency.h 
+	$(CC) -c $(CONCURRENCY_DIR)/Concurrency.cpp -o $(MODULE_DIR)/Concurrency.o -I $(INCLUDEDIR)
+Timer.o: $(UTIL_DIR)/Timer.cpp $(UTIL_DIR)/Timer.h
+	$(CC) -c $(UTIL_DIR)/Timer.cpp -o $(MODULE_DIR)/Timer.o -I$(INCLUDEDIR)
+Network_common.o: $(NETWORK_DIR)/Network_common.cpp $(NETWORK_DIR)/Network_common.h
+	$(CC) -c $(NETWORK_DIR)/Network_common.cpp -o $(MODULE_DIR)/Network_common.o -I $(INCLUDEDIR)
+server: src/Main/Server.cpp $(MODULES) $(HEADERS)
+	$(CC) -o build/server src/Main/Server.cpp $(foreach m,$(MODULES),$(MODULE_DIR)/$(m)) $(OPTS) $(LIBS) -I $(INCLUDEDIR)
+client: src/Main/Client.cpp $(MODULE_DIR)/$(MODULES) $(HEADERS)
+	$(CC) -o build/client src/Main/Client.cpp $(foreach m,$(MODULES),$(MODULE_DIR)/$(m)) $(OPTS) $(LIBS) -I $(INCLUDEDIR)
 clean:
 	rm $(EXECUTABLES) $(MODULES)

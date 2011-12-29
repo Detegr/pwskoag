@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Network_common.h"
-#include "Base.h"
-#include "Concurrency.h"
-#include "Timer.h"
+#include <Util/Base.h>
+#include <Concurrency/Concurrency.h>
+#include <Util/Timer.h>
 #include <list>
 #include <stdexcept>
 #include <string.h>

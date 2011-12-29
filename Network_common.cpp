@@ -31,6 +31,12 @@ namespace pwskoag
 		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	}
 
+	void Socket::Bind()
+	{
+		socklen_t len=sizeof(addr);
+		if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));
+	}
+
 	bool TcpSocket::Receive(Packet& p)
 	{
 		uchar buf[Packet::MAXSIZE];
@@ -79,7 +85,11 @@ namespace pwskoag
 			bytes=send(fd, p.RawData(), p.Size(), 0);
 			if(bytes==-1)
 			{
-				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN){std::cerr << "Connection lost." << std::endl; return false;}
+				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN)
+				{
+					std::cerr << "Connection lost." << std::endl;
+					return false;
+				}
 				perror("SEND");
 			}
 		}
@@ -108,6 +118,21 @@ namespace pwskoag
 		if(newfd<0) return NULL;
 		IpAddress ip(addr.sin_addr);
 		return new TcpSocket(ip, htons(addr.sin_port), Socket::TCP, newfd);
+	}
+
+
+	void Selector::Remove(Socket& s)
+	{
+		for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it)
+		{
+			if(*it==s.fd)
+			{
+				std::cout << "Erasing: " << *it << std::endl;
+				it=fd_ints.erase(it);
+				break;
+			}
+		}
+		std::sort(fd_ints.begin(), fd_ints.end());
 	}
 
 	int Selector::Wait(uint timeoutms)

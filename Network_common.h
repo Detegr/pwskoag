@@ -17,7 +17,6 @@ namespace pwskoag
 		Connect,
 		Disconnect,
 		String,
-		c_Ushort,
 		EOP=255
 	};
 
@@ -86,11 +85,7 @@ namespace pwskoag
 			Socket(const Socket& s) {*this=s;}
 			virtual ~Socket() {}
 			const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
-			void Bind()
-			{
-				socklen_t len=sizeof(addr);
-				if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));
-			}
+			void Bind();
 			void Close() {close(fd);}
 			const IpAddress&	GetIp() const {return ip;}
 			const ushort		GetPort() const {return port;}
@@ -138,19 +133,7 @@ namespace pwskoag
 			Selector() {FD_ZERO(&fds);}
 			void Add(Socket& s) {fd_ints.push_back(s.fd); std::sort(fd_ints.begin(), fd_ints.end());}
 			bool IsReady(Socket& s) {return FD_ISSET(s.fd, &fds);}
-			void Remove(Socket& s)
-			{
-				for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it)
-				{
-					if(*it==s.fd)
-					{
-						std::cout << "Erasing: " << *it << std::endl;
-						it=fd_ints.erase(it);
-						break;
-					}
-				}
-				std::sort(fd_ints.begin(), fd_ints.end());
-			}
+			void Remove(Socket& s);
 			void Clear() {fd_ints.clear(); FD_ZERO(&fds);}
 			int Wait(uint timeoutms);
 			int WaitWrite(uint timeoutms);
@@ -239,5 +222,4 @@ namespace pwskoag
 			virtual void 	M_Disconnect()=0;
 			bool 	     	IsRunning() const { return selfThread!=NULL; }
 	};
-
 }

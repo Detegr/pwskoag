@@ -17,6 +17,23 @@ namespace pwskoag
 		}
 		std::cout << "Sent: " << str << std::endl;
 	}
+
+	void UdpClient::Send(IpAddress& ip, ushort port)
+	{
+		Append(EOP);
+		Lock l(m_Lock);
+		udpSocket.Send(packet, ip, port);
+		packet.Clear();
+	}
+
+	void TcpClient::Send()
+	{
+		Append(EOP);
+		Lock l(m_Lock);
+		tcpSocket.Send(packet);
+		packet.Clear();
+	}
+
 	void TCPReceiveThread_Server(void *args)
 	{
 		ThreadData* data=(ThreadData*)args;

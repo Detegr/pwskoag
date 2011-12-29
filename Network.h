@@ -86,7 +86,7 @@ namespace pwskoag
 			Packet				packet;
 			void 				ClientLoop();
 			void 				Append(e_Command c) {packet<<(uchar)c;}
-			void 				Send() {Append(EOP);Lock l(m_Lock);tcpSocket.Send(packet); packet.Clear();}
+			void 				Send();
 			void 				Send(e_Command c) {Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
@@ -107,7 +107,7 @@ namespace pwskoag
 			Mutex			m_Lock;
 			void			ClientLoop();
 			void 			Append(e_Command c) {packet<<(uchar)c;}
-			void 			Send(IpAddress& ip, ushort port) {Append(EOP);Lock l(m_Lock);udpSocket.Send(packet, ip, port); packet.Clear();}
+			void 			Send(IpAddress& ip, ushort port);
 		public:
 			UdpClient(TcpClient* t) :	m_Master(t), m_Port(0), udpSocket() {}
 			bool						M_Connect(const char* addr, ushort port);

@@ -229,6 +229,7 @@ namespace pwskoag
 					ushort port;
 					if(udpSocket.Receive(p, &ip, &port))
 					{
+						std::cout << "Received UDP from " << ip << ":" << port << std::endl;
 						for(t_Clients::const_iterator it=c.begin(); it!=c.end(); ++it)
 						{
 							TcpSocket* s=dynamic_cast<TcpSocket*>(it->second.socket);
@@ -249,13 +250,14 @@ namespace pwskoag
 												s->M_UdpPort(port);
 												std::cout << "Bound id " << id << " to UDP port " << port << std::endl;
 												p.Clear();
-												p<<HandShake;
+												p<<HandShake<<EOP;
 												if(sel.WaitWrite(TICK_WAITTIME_UDP))
 												{
 													if(sel.IsReady(udpSocket))
 													{
 														udpSocket.Send(p, ip, port);
-														std::cout << "Sent confirmation" << std::endl;
+														std::cout << "Sent confirmation to " << ip  << ":" << port << std::endl;
+														sleep(10);
 													}
 													else std::cout << "Client wasn't ready." << std::endl;
 												}
@@ -427,8 +429,6 @@ namespace pwskoag
 				udpSocket.Send(packet, m_Address, m_Port);
 			}
 		}
-		s.Clear();
-		s.Add(udpSocket);
 		Packet p;
 		if(s.Wait(CONNECTTIME))
 		{
@@ -457,7 +457,6 @@ namespace pwskoag
 		Thread t(UDPReceiveThread_Client, data);
 		while(!stopNow)
 		{
-			//p.Clear();
 			std::cout << "Sending udp data to " << m_Address << ":" << m_Port << std::endl;
 			Append(String, std::string("UDP Data."));
 			Send(m_Master->serverAddress, m_Port);

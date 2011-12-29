@@ -1,6 +1,7 @@
 #include "Network.h"
 #include <iostream>
 #include <signal.h>
+#include <netdb.h>
 
 using namespace pwskoag;
 

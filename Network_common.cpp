@@ -48,7 +48,7 @@ namespace pwskoag
 		if(r<0) return false;
 		for(int i=0;i<r;++i)p<<buf[i];
 		if(ip) *ip=IpAddress(a.sin_addr);
-		if(port) *port=htons(a.sin_port);
+		if(port) *port=ntohs(a.sin_port);
 		return true;
 	}
 
@@ -95,8 +95,8 @@ namespace pwskoag
 		a.sin_family=AF_INET;
 		a.sin_port=htons(port);
 		a.sin_addr=ip.addr;
-		socklen_t len=sizeof(addr);
-		int r=sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&addr, len);
+		socklen_t len=sizeof(a);
+		int r=sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&a, len);
 		p.Clear();
 		return true;
 	}

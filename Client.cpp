@@ -2,6 +2,7 @@
 #include <signal.h>
 #include "Network.h"
 
+#include <netdb.h>
 using namespace pwskoag;
 
 bool stopNow=false;
@@ -28,6 +29,7 @@ int main()
 	c.AutoSend(Network::Command::String, &a);
 	c.AutoSend(Network::Command::String, &b);
 	*/
+
 	TcpClient c;
 	UdpClient u(&c);
 	if(c.M_Connect("127.0.0.1", 55555))

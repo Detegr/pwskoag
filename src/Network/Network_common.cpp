@@ -67,7 +67,11 @@ namespace pwskoag
 		socklen_t len=sizeof(addr);
 		int ret=-1;
 		ret=connect(fd, (sockaddr*)&addr, len);
-		if(ret<0)Error("Connect:",type);
+		if(ret<0)
+		{
+			std::cout << Error("Connect",type) << std::endl;
+			exit(1);
+		}
 	}
 
 	bool TcpSocket::Send(Packet& p)

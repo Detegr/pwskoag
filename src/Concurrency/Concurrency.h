@@ -61,10 +61,15 @@ namespace pwskoag
 			~C_Lock() {m_Mutex->M_Unlock();}
 	};
 
+	/*
+	 * This class is implemented with a bubblegummish solution
+	 * on Windows. Think twice before using...
+    */
 	class C_CondVar
 	{
 		private:
 			#ifdef _WIN32
+				unsigned int m_Waiters;
 				HANDLE m_Cond;
 			#else
 				pthread_cond_t m_Cond;

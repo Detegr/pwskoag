@@ -37,9 +37,10 @@ int main()
 		pwskoag::C_Thread t1(condwait, &c);
 		pwskoag::C_Thread t2(condwait, &c);
 		pwskoag::msSleep(2000);
-		c.M_Signal();
-		pwskoag::msSleep(2000);
 		c.M_SignalOne();
+		std::cout << "One signaled?" << std::endl;
+		pwskoag::msSleep(2000);
+		c.M_Signal();
 		pwskoag::msSleep(1000);
 	}
 	return 0;

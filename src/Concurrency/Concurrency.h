@@ -36,40 +36,42 @@ namespace pwskoag
 			void M_Join();
 	};
 
-#ifndef _WIN32
-	class Mutex
+	class C_Mutex
 	{
-		friend class CondVar;
+		friend class C_CondVar;
 		private:
-			pthread_mutex_t mutex;
-			pthread_mutexattr_t attr;
+			#ifdef _WIN32
+				HANDLE m_Mutex;
+			#else
+				pthread_mutex_t m_Mutex;
+				pthread_mutexattr_t m_Attr;
+			#endif
 		public:
-			Mutex();
-			~Mutex() {pthread_mutex_destroy(&mutex);}
-			void Lock() {pthread_mutex_lock(&mutex);}
-			void Unlock() {pthread_mutex_unlock(&mutex);}
+			C_Mutex();
+			~C_Mutex() {pthread_mutex_destroy(&m_Mutex);}
+			void M_Lock() {pthread_mutex_lock(&m_Mutex);}
+			void M_Unlock() {pthread_mutex_unlock(&m_Mutex);}
 	};
 
-	class Lock
+	class C_Lock
 	{
 		private:
-			Mutex* m;
+			C_Mutex* m_Mutex;
 		public:
-			Lock(Mutex& m) : m(&m) {m.Lock();}
-			~Lock() {m->Unlock();}
+			C_Lock(C_Mutex& m) : m_Mutex(&m) {m_Mutex.M_Lock();}
+			~C_Lock() {m_Mutex->M_Unlock();}
 	};
 
-	class CondVar
+	class C_CondVar
 	{
 		private:
-			Mutex mutex;
-			pthread_cond_t cond;
+			C_Mutex m_Mutex;
+			pthread_cond_t m_Cond;
 		public:
-			CondVar() {pthread_cond_init(&cond,NULL);}
-			~CondVar() {pthread_cond_destroy(&cond);}
-			void Wait() {mutex.Lock(); pthread_cond_wait(&cond, &mutex.mutex); mutex.Unlock();}
-			void SignalOne() {pthread_cond_signal(&cond);}
-			void Signal() {pthread_cond_broadcast(&cond);}
+			C_CondVar() {pthread_cond_init(&m_Cond,NULL);}
+			~C_CondVar() {pthread_cond_destroy(&m_Cond);}
+			void M_Wait() {mutex.Lock(); pthread_cond_wait(&m_Cond, &m_Mutex.m_Mutex); m_Mutex.M_Unlock();}
+			void M_SignalOne() {pthread_cond_signal(&m_Cond);}
+			void M_Signal() {pthread_cond_broadcast(&m_Cond);}
 	};
-#endif
 }

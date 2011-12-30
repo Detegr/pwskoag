@@ -115,7 +115,8 @@ namespace pwskoag
 	C_CondVar::C_CondVar()
 	{
 		#ifdef _WIN32
-			m_Cond=CreateEvent(0,true,false,0);
+			m_Waiters=0;
+			m_Cond=CreateEvent(0,false,false,0);
 		#else
 			pthread_cond_init(&m_Cond,NULL);
 		#endif
@@ -123,7 +124,9 @@ namespace pwskoag
 	void C_CondVar::M_Wait()
 	{
 		#ifdef _WIN32
+			++m_Waiters;
 			WaitForSingleObject(m_Cond, INFINITE);
+			--m_Waiters;
 		#else
 			m_Mutex.M_Lock();
 			pthread_cond_wait(&m_Cond, &m_Mutex.m_Mutex);
@@ -133,7 +136,7 @@ namespace pwskoag
 	void C_CondVar::M_SignalOne()
 	{
 		#ifdef _WIN32
-			PulseEvent(m_Cond);
+			SetEvent(m_Cond);
 		#else
 			pthread_cond_signal(&m_Cond);
 		#endif
@@ -141,7 +144,8 @@ namespace pwskoag
 	void C_CondVar::M_Signal()
 	{
 		#ifdef _WIN32
-			ResetEvent(m_Cond);
+			// Due to a lack of real condvars on windows, a bubblegum solution emerges!
+			for(int i=0; i<m_Waiters; ++i) SetEvent(m_Cond);
 		#else
 			pthread_cond_broadcast(&m_Cond);
 		#endif

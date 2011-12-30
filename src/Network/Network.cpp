@@ -90,7 +90,7 @@ namespace pwskoag
 					lock->Lock();
 					client->Clear();
 					lock->Unlock();
-					std::cout << "Client disconnected." << std::endl;
+					std::cout << "Couldn't receive data from client. Client disconnected?" << std::endl;
 				}
 			}
 			else
@@ -198,7 +198,7 @@ namespace pwskoag
 			{
 				uchar header=0;
 				bool eop=false;
-				while(!eop)
+				while(p.Size() && !eop)
 				{
 					p>>header;
 					switch (header)
@@ -354,8 +354,8 @@ namespace pwskoag
 	void TcpClient::M_Disconnect()
 	{
 		Send(Disconnect);
-		Client::Stop();
-		Lock lock(Client::selfMutex);
+		Stop();
+		//Lock lock(Client::selfMutex);
 		tcpSocket.Disconnect();
 	}
 
@@ -380,7 +380,7 @@ namespace pwskoag
 			{
 				if(tcpSocket->Receive(p))
 				{
-					for(;;)
+					while(p.Size() && !end)
 					{
 						p>>header;
 						switch (header)
@@ -398,7 +398,6 @@ namespace pwskoag
 							default:
 								std::cout << "Invalid packet. Terminating." << std::endl; break;
 						}
-						if(end) break;
 					}
 				}
 			}
@@ -410,7 +409,7 @@ namespace pwskoag
 		C_Timer timer;
 		ThreadData* data=new ThreadData(NULL, NULL, &tcpSocket, &(Client::stopNow));
 		Thread t(TCPReceiveThread_Client, data);
-		while(!Client::stopNow)
+		while(!stopNow)
 		{
 			msSleep(TICK_WAITTIME_TCP);
 			Append(String, std::string(":))"));

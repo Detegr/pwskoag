@@ -20,7 +20,7 @@ int main()
 	std::cout << "Starting server." << std::endl;
 	s.Start();
 	u.Start();
-	while(!stopNow) sleep((uint)~0);
+	while(!stopNow) sleep((unsigned int)~0);
 	u.Stop();
 	s.Stop();
 	return 0;

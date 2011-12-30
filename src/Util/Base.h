@@ -6,13 +6,16 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <iostream>
+#include <cstring>
 
 namespace pwskoag
 {
-	typedef unsigned int		uint;
-	typedef unsigned short		ushort;
-	typedef unsigned char 		uchar;
-	typedef unsigned long long	uint64;
+	#ifndef HAVE_INTTYPES_H
+		typedef unsigned int		uint;
+		typedef unsigned short		ushort;
+		typedef unsigned char 		uchar;
+		typedef unsigned long long	uint64;
+	#endif
 
 	inline void msSleep(uint ms)
 	{

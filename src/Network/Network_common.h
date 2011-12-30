@@ -183,7 +183,7 @@ namespace pwskoag
 			bool 			stopNow;
 			uint 			serverPort;
 			Mutex	 		selfMutex;
-			Thread* 		selfThread;
+			C_Thread* 		selfThread;
 			static void 	ServerInitializer(void* args);
 			virtual 		~Server();
 			virtual void	ServerLoop()=0;
@@ -209,7 +209,7 @@ namespace pwskoag
 			bool			stopNow;
 			uint 			serverPort;
 			Mutex			selfMutex;
-			Thread*			selfThread;
+			C_Thread*		selfThread;
 			static void		ClientInitializer(void* args);
 			virtual 		~Client();
 			virtual void 	ClientLoop()=0;

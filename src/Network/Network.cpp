@@ -36,7 +36,7 @@ namespace pwskoag
 
 	void TCPReceiveThread_Server(void *args)
 	{
-		ThreadData* data=(ThreadData*)args;
+		C_ThreadData* data=(C_ThreadData*)args;
 		Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
 		TcpSocket* client=(TcpSocket*)data->socket;
@@ -148,9 +148,9 @@ namespace pwskoag
 								p << client->M_Id();
 								std::cout << "Generated id: " << client->M_Id() << std::endl;
 								std::cout << "Client connected" << std::endl;
-								clients.push_back(std::make_pair((Thread *)NULL, LocalThreadData(client)));
-								ThreadData* data=new ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
-								Thread* run=new Thread(TCPReceiveThread_Server, (void*)data);
+								clients.push_back(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
+								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
+								C_Thread* run=new C_Thread(TCPReceiveThread_Server, (void*)data);
 								clients.back().first=run;
 								client->Send(p);
 							}
@@ -166,7 +166,7 @@ namespace pwskoag
 				if(closed)
 				{
 					std::cout << "Removed disconnected client from clients." << std::endl;
-					it->first->Join();
+					it->first->M_Join();
 					it->second.lock.Lock();
 					delete it->first;
 					delete it->second.socket;
@@ -184,7 +184,7 @@ namespace pwskoag
 	void UDPReceiveThread_Client(void *args)
 	{
 		Packet p;
-		ThreadData* data=(ThreadData*)args;
+		C_ThreadData* data=(C_ThreadData*)args;
 		Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
 		UdpSocket* client=(UdpSocket*)data->socket;
@@ -361,7 +361,7 @@ namespace pwskoag
 
 	void TCPReceiveThread_Client(void *args)
 	{
-		ThreadData* data=(ThreadData*)args;
+		C_ThreadData* data=(C_ThreadData*)args;
 		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
 		bool connect=true;
@@ -407,8 +407,8 @@ namespace pwskoag
 	void TcpClient::ClientLoop()
 	{
 		C_Timer timer;
-		ThreadData* data=new ThreadData(NULL, NULL, &tcpSocket, &(Client::stopNow));
-		Thread t(TCPReceiveThread_Client, data);
+		C_ThreadData* data=new C_ThreadData(NULL, NULL, &tcpSocket, &(Client::stopNow));
+		C_Thread t(TCPReceiveThread_Client, data);
 		while(!stopNow)
 		{
 			msSleep(TICK_WAITTIME_TCP);
@@ -462,8 +462,8 @@ namespace pwskoag
 	}
 	void UdpClient::ClientLoop()
 	{
-		ThreadData* data=new ThreadData(NULL, NULL, &udpSocket, &(Client::stopNow));
-		Thread t(UDPReceiveThread_Client, data);
+		C_ThreadData* data=new C_ThreadData(NULL, NULL, &udpSocket, &(Client::stopNow));
+		C_Thread t(UDPReceiveThread_Client, data);
 		while(!stopNow)
 		{
 			Append(String, std::string("UDP Data."));

@@ -20,7 +20,7 @@ namespace pwskoag
 			throw std::runtime_error("Error creating a thread.");
 		}
 	#else
-		int ret=pthread_create(&thread, NULL, threadInit, &data);
+		int ret=pthread_create(&m_Thread, NULL, M_ThreadInit, &m_Data);
 		if(ret)
 		{
 			throw std::runtime_error("Error creating a thread.");

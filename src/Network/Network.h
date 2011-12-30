@@ -12,8 +12,8 @@
 
 namespace pwskoag
 {
-	class Thread; class LocalThreadData;
-	typedef std::list<std::pair<Thread*, LocalThreadData> > t_Clients;
+	class C_Thread; class LocalThreadData;
+	typedef std::list<std::pair<C_Thread*, LocalThreadData> > t_Clients;
 
 	const uint TIMEOUTMS=10000;
 	const uint TICKS_PER_SEC_TCP=1;
@@ -52,13 +52,13 @@ namespace pwskoag
 			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp), udpSocket(UdpSocket(port)) {udpSocket.Bind();}
 	};
 	
-	struct ThreadData
+	struct C_ThreadData
 	{
 		Mutex*		lock;
 		Socket*		socket;
 		C_Timer*	timer;
 		bool*		stopNow;
-		ThreadData(Mutex *l, C_Timer* t, Socket* sock, bool* stop) :
+		C_ThreadData(Mutex *l, C_Timer* t, Socket* sock, bool* stop) :
 			lock(l), timer(t), socket(sock), stopNow(stop) {}
 	};
 

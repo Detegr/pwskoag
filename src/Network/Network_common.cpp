@@ -206,7 +206,7 @@ namespace pwskoag
 		if(!selfThread)
 		{
 			stopNow=false;
-			selfThread = new Thread(Server::ServerInitializer, this);
+			selfThread = new C_Thread(Server::ServerInitializer, this);
 		}
 		else std::cerr << "Server already running!" << std::endl;
 	}
@@ -214,7 +214,7 @@ namespace pwskoag
 	{
 		Lock lock(selfMutex);
 		stopNow=true;
-		if(selfThread) {selfThread->Join(); delete selfThread; selfThread=NULL;}
+		if(selfThread) {selfThread->M_Join(); delete selfThread; selfThread=NULL;}
 		else std::cerr << "Server already stopped!" << std::endl;
 	}
 	void Server::ForceStop()
@@ -237,7 +237,7 @@ namespace pwskoag
 		Lock lock(selfMutex);
 		if(!selfThread)
 		{
-			selfThread = new Thread(Client::ClientInitializer, this);
+			selfThread = new C_Thread(Client::ClientInitializer, this);
 		}
 		else std::cerr << "Client already running!" << std::endl;
 	}

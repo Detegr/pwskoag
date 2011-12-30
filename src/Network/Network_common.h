@@ -2,6 +2,7 @@
 #include <Util/Base.h>
 #include <Concurrency/Concurrency.h>
 
+#include <algorithm>
 #include <vector>
 #include <stdexcept>
 #include <arpa/inet.h>
@@ -86,7 +87,7 @@ namespace pwskoag
 			virtual ~Socket() {}
 			const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
 			void Bind();
-			void Close() {close(fd);}
+			void Close() {shutdown(fd, SHUT_RDWR);close(fd);}
 			const IpAddress&	GetIp() const {return ip;}
 			const ushort		GetPort() const {return port;}
 			const ushort		M_Id() const {return m_Id;}

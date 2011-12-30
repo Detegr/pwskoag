@@ -1,3 +1,6 @@
 *.o
 *.swp
-build/
+*.swo
+*.swn
+client
+server

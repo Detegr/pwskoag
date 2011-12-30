@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <iostream>
 #include <assert.h>
+#include <cstdio>
 
 namespace pwskoag
 { 

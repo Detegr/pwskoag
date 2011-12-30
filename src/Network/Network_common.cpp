@@ -202,7 +202,7 @@ namespace pwskoag
 
 	void Server::Start()
 	{
-		Lock lock(selfMutex);
+		C_Lock lock(selfMutex);
 		if(!selfThread)
 		{
 			stopNow=false;
@@ -212,7 +212,7 @@ namespace pwskoag
 	}
 	void Server::Stop()
 	{
-		Lock lock(selfMutex);
+		C_Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {selfThread->M_Join(); delete selfThread; selfThread=NULL;}
 		else std::cerr << "Server already stopped!" << std::endl;
@@ -234,7 +234,7 @@ namespace pwskoag
 	
 	void Client::Start()
 	{
-		Lock lock(selfMutex);
+		C_Lock lock(selfMutex);
 		if(!selfThread)
 		{
 			selfThread = new C_Thread(Client::ClientInitializer, this);
@@ -243,7 +243,7 @@ namespace pwskoag
 	}
 	void Client::Stop()
 	{
-		Lock lock(selfMutex);
+		C_Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {std::cout << "Disconnecting...";std::cout.flush(); delete selfThread; selfThread=NULL;std::cout<<"DONE!"<<std::endl;}
 		else std::cerr << "Client already stopped!" << std::endl;

@@ -58,7 +58,7 @@ namespace pwskoag
 		private:
 			C_Mutex* m_Mutex;
 		public:
-			C_Lock(C_Mutex& m) : m_Mutex(&m) {m_Mutex.M_Lock();}
+			C_Lock(C_Mutex& m) : m_Mutex(&m) {m_Mutex->M_Lock();}
 			~C_Lock() {m_Mutex->M_Unlock();}
 	};
 
@@ -70,7 +70,7 @@ namespace pwskoag
 		public:
 			C_CondVar() {pthread_cond_init(&m_Cond,NULL);}
 			~C_CondVar() {pthread_cond_destroy(&m_Cond);}
-			void M_Wait() {mutex.Lock(); pthread_cond_wait(&m_Cond, &m_Mutex.m_Mutex); m_Mutex.M_Unlock();}
+			void M_Wait() {m_Mutex.M_Lock(); pthread_cond_wait(&m_Cond, &m_Mutex.m_Mutex); m_Mutex.M_Unlock();}
 			void M_SignalOne() {pthread_cond_signal(&m_Cond);}
 			void M_Signal() {pthread_cond_broadcast(&m_Cond);}
 	};

@@ -21,7 +21,7 @@ namespace pwskoag
 	void UdpClient::Send(IpAddress& ip, ushort port)
 	{
 		Append(EOP);
-		Lock l(m_Lock);
+		C_Lock l(m_Lock);
 		udpSocket.Send(packet, ip, port);
 		packet.Clear();
 	}
@@ -29,7 +29,7 @@ namespace pwskoag
 	void TcpClient::Send()
 	{
 		Append(EOP);
-		Lock l(m_Lock);
+		C_Lock l(m_Lock);
 		tcpSocket.Send(packet);
 		packet.Clear();
 	}
@@ -37,7 +37,7 @@ namespace pwskoag
 	void TCPReceiveThread_Server(void *args)
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
-		Mutex* lock=data->lock;
+		C_Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
 		TcpSocket* client=(TcpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
@@ -69,15 +69,15 @@ namespace pwskoag
 								break;
 							}
 							case Heartbeat:
-								lock->Lock();
+								lock->M_Lock();
 								timer->M_Reset();
-								lock->Unlock();
+								lock->M_Unlock();
 								std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
 								break;
 							case Disconnect:		
-								lock->Lock();
+								lock->M_Lock();
 								client->Clear();
-								lock->Unlock();
+								lock->M_Unlock();
 								std::cout << "Client disconnected." << std::endl;
 								return;
 							case EOP: EndOfPacket(client); break;
@@ -87,17 +87,17 @@ namespace pwskoag
 				}
 				else
 				{
-					lock->Lock();
+					lock->M_Lock();
 					client->Clear();
-					lock->Unlock();
+					lock->M_Unlock();
 					std::cout << "Couldn't receive data from client. Client disconnected?" << std::endl;
 				}
 			}
 			else
 			{
-				lock->Lock();
+				lock->M_Lock();
 				client->Clear();
-				lock->Unlock();
+				lock->M_Unlock();
 				std::cout << "Client timed out" << std::endl;
 			}
 		}
@@ -160,17 +160,17 @@ namespace pwskoag
 			}
 			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
 			{
-				it->second.lock.Lock();
+				it->second.lock.M_Lock();
 				bool closed=it->second.socket->M_Closed();
-				it->second.lock.Unlock();
+				it->second.lock.M_Unlock();
 				if(closed)
 				{
 					std::cout << "Removed disconnected client from clients." << std::endl;
 					it->first->M_Join();
-					it->second.lock.Lock();
+					it->second.lock.M_Lock();
 					delete it->first;
 					delete it->second.socket;
-					it->second.lock.Unlock();
+					it->second.lock.M_Unlock();
 					it=clients.erase(it);
 					continue;
 				}
@@ -185,7 +185,7 @@ namespace pwskoag
 	{
 		Packet p;
 		C_ThreadData* data=(C_ThreadData*)args;
-		Mutex* lock=data->lock;
+		C_Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
 		UdpSocket* client=(UdpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
@@ -316,12 +316,12 @@ namespace pwskoag
 		
 	TcpServer::~TcpServer()
 	{
-		Lock lock(selfMutex);
+		C_Lock lock(selfMutex);
 		for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) delete it->first;
 	}
 	bool TcpClient::M_Connect(const char* addr, ushort port)
 	{
-		Lock lock(Client::selfMutex);
+		C_Lock lock(Client::selfMutex);
 		serverAddress=addr;
 		serverPort=port;
 		tcpSocket=TcpSocket(IpAddress(addr), port);

@@ -54,11 +54,11 @@ namespace pwskoag
 	
 	struct C_ThreadData
 	{
-		Mutex*		lock;
+		C_Mutex*		lock;
 		Socket*		socket;
 		C_Timer*	timer;
 		bool*		stopNow;
-		C_ThreadData(Mutex *l, C_Timer* t, Socket* sock, bool* stop) :
+		C_ThreadData(C_Mutex *l, C_Timer* t, Socket* sock, bool* stop) :
 			lock(l), timer(t), socket(sock), stopNow(stop) {}
 	};
 
@@ -66,7 +66,7 @@ namespace pwskoag
 	{
 		Socket*				socket;
 		C_Timer				timer;
-		Mutex	lock;
+		C_Mutex	lock;
 		LocalThreadData(Socket* s) : socket(s), timer(C_Timer()) {}
 	};
 
@@ -81,13 +81,13 @@ namespace pwskoag
 			uint 				serverPort;
 			TcpSocket 			tcpSocket;
 			bool				m_Connected;
-			Mutex				m_Lock;
-			Mutex				m_ConnectMutex;
+			C_Mutex				m_Lock;
+			C_Mutex				m_ConnectMutex;
 			Packet				packet;
 			void 				ClientLoop();
 			void 				Append(e_Command c) {packet<<(uchar)c;}
 			void 				Send();
-			void 				Send(e_Command c) {Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
+			void 				Send(e_Command c) {C_Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
 			bool 						M_Connect(const char* addr, ushort port);
@@ -104,7 +104,7 @@ namespace pwskoag
 			ushort			m_Port;
 			UdpSocket 		udpSocket;
 			Packet			packet;
-			Mutex			m_Lock;
+			C_Mutex			m_Lock;
 			void			ClientLoop();
 			void 			Append(e_Command c) {packet<<(uchar)c;}
 			void 			Send(IpAddress& ip, ushort port);

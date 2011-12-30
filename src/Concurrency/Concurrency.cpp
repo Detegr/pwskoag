@@ -64,12 +64,12 @@ namespace pwskoag
 		#endif
 	}
 #ifndef _WIN32
-	Mutex::Mutex()
+	C_Mutex::C_Mutex()
 	{
-		pthread_mutexattr_init(&attr);
-		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-		pthread_mutex_init(&mutex, &attr);
-		pthread_mutexattr_destroy(&attr);
+		pthread_mutexattr_init(&m_Attr);
+		pthread_mutexattr_settype(&m_Attr, PTHREAD_MUTEX_RECURSIVE);
+		pthread_mutex_init(&m_Mutex, &m_Attr);
+		pthread_mutexattr_destroy(&m_Attr);
 	}
 #endif
 }

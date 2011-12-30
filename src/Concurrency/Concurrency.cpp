@@ -1,21 +1,59 @@
 #include "Concurrency.h"
 #include <stdexcept>
+#ifdef _WIN32
+	#include <process.h>
+#endif
 
 namespace pwskoag
 {
-	void* Thread::threadInit(void* args)
+	void* C_Thread::M_ThreadInit(void* args)
 	{
-		Thread::Data* d=(Thread::Data*)args;
-		d->func(d->arg);
+		C_Thread::C_Data* d=(C_Thread::C_Data*)args;
+		d->m_Func(d->m_Arg);
 	}
-	Thread::Thread(threadFunc f, void* args) : thread(0), data(Data(f, args))
+	C_Thread::C_Thread(t_ThreadFunc f, void* args) : m_Thread(0), m_Data(C_Data(f, args))
 	{
+	#ifdef _WIN32
+		m_Thread=(HANDLE)_beginthreadex(NULL,0,f,args,0,NULL);
+		if(!m_Thread)
+		{
+			throw std::runtime_error("Error creating a thread.");
+		}
+	#else
 		int ret=pthread_create(&thread, NULL, threadInit, &data);
 		if(ret)
 		{
 			throw std::runtime_error("Error creating a thread.");
 		}
+	#endif
 	}
+	void C_Thread::M_Join()
+	{
+		#ifdef _WIN32
+			WaitForSingleObject(m_Thread, INFINITE);
+		#else
+			pthread_join(m_Thread, NULL);
+		#endif
+	}
+	C_Thread::~C_Thread()
+	{
+		#ifdef _WIN32
+			if(m_Thread)
+			{
+				M_Join();
+				CloseHandle(m_Thread);
+				m_Thread=NULL;
+			}
+		#else
+			if(m_Thread)
+			{
+				M_Join();
+				pthread_detach(m_Thread);
+				m_Thread=0;
+			}
+		#endif
+	}
+#ifndef _WIN32
 	Mutex::Mutex()
 	{
 		pthread_mutexattr_init(&attr);
@@ -23,4 +61,5 @@ namespace pwskoag
 		pthread_mutex_init(&mutex, &attr);
 		pthread_mutexattr_destroy(&attr);
 	}
+#endif
 }

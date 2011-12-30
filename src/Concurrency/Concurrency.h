@@ -1,30 +1,41 @@
 #pragma once
-#include <pthread.h>
+#ifdef _WIN32
+	#include <Windows.h>
+#else
+	#include <pthread.h>
+#endif
 #include <iostream>
 
 namespace pwskoag
 {
-	class Thread
+	class C_Thread
 	{
 		private:
-			typedef void(*threadFunc)(void*);
-			struct Data
+			#ifdef _WIN32
+				HANDLE m_Thread;
+				typedef unsigned int(__stdcall* t_ThreadFunc)(void*);
+			#else
+				pthread_t m_Thread;
+				typedef void(*t_ThreadFunc)(void*);
+			#endif
+			
+			struct C_Data
 			{
-				Data() : func(NULL), arg(NULL) {}
-				Data(threadFunc f, void* a) : func(f), arg(a) {}
-				threadFunc 	func;
-				void*		arg;
+				C_Data() : m_Func(NULL), m_Arg(NULL) {}
+				C_Data(t_ThreadFunc f, void* a) : m_Func(f), m_Arg(a) {}
+				t_ThreadFunc 	m_Func;
+				void*			m_Arg;
 			};
 
-			pthread_t thread;
-			Data data;
-			static void* threadInit(void* args);
+			C_Data m_Data;
+			static void* M_ThreadInit(void* args);
 		public:
-			Thread(threadFunc f, void* args=NULL);
-			~Thread() {if(thread){Join(); pthread_detach(thread); thread=0;}}
-			void Join() {pthread_join(thread, NULL);}
+			C_Thread(t_ThreadFunc f, void* args=NULL);
+			~C_Thread();
+			void M_Join();
 	};
 
+#ifndef _WIN32
 	class Mutex
 	{
 		friend class CondVar;
@@ -59,4 +70,5 @@ namespace pwskoag
 			void SignalOne() {pthread_cond_signal(&cond);}
 			void Signal() {pthread_cond_broadcast(&cond);}
 	};
+#endif
 }

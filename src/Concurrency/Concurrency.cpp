@@ -63,13 +63,87 @@ namespace pwskoag
 			}
 		#endif
 	}
-#ifndef _WIN32
+
 	C_Mutex::C_Mutex()
 	{
-		pthread_mutexattr_init(&m_Attr);
-		pthread_mutexattr_settype(&m_Attr, PTHREAD_MUTEX_RECURSIVE);
-		pthread_mutex_init(&m_Mutex, &m_Attr);
-		pthread_mutexattr_destroy(&m_Attr);
+		#ifdef _WIN32
+			m_Mutex=CreateMutex(0,false,0);
+			if(!m_Mutex)
+			{
+				throw std::runtime_error("Error creating a mutex.");
+			}
+		#else
+			pthread_mutexattr_t attr;
+			pthread_mutexattr_init(&attr);
+			pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+			pthread_mutex_init(&m_Mutex, &attr);
+			pthread_mutexattr_destroy(&attr);
+		#endif
 	}
-#endif
+	C_Mutex::~C_Mutex()
+	{
+		#ifdef _WIN32
+			CloseHandle(m_Mutex);
+		#else
+			pthread_mutex_destroy(&m_Mutex);
+		#endif
+	}
+	void C_Mutex::M_Lock()
+	{
+		#ifdef _WIN32
+			DWORD result=WaitForSingleObject(m_Mutex, INFINITE);
+			if(result!=WAIT_OBJECT_0)
+			{
+				throw std::runtime_error("Error locking a mutex");
+			}
+		#else
+			pthread_mutex_lock(&m_Mutex);
+		#endif
+	}
+	void C_Mutex::M_Unlock()
+	{
+		#ifdef _WIN32
+			if(!ReleaseMutex(m_Mutex))
+			{
+				throw std::runtime_error("Failed to release a mutex");
+			}
+		#else
+			pthread_mutex_unlock(&m_Mutex);
+		#endif
+	}
+
+	C_CondVar::C_CondVar()
+	{
+		#ifdef _WIN32
+			m_Cond=CreateEvent(0,true,false,0);
+		#else
+			pthread_cond_init(&m_Cond,NULL);
+		#endif
+	}
+	void C_CondVar::M_Wait()
+	{
+		#ifdef _WIN32
+			WaitForSingleObject(m_Cond, INFINITE);
+		#else
+			m_Mutex.M_Lock();
+			pthread_cond_wait(&m_Cond, &m_Mutex.m_Mutex);
+			m_Mutex.M_Unlock();
+		#endif
+	}
+	void C_CondVar::M_SignalOne()
+	{
+		#ifdef _WIN32
+			PulseEvent(m_Cond);
+		#else
+			pthread_cond_signal(&m_Cond);
+		#endif
+	}
+	void C_CondVar::M_Signal()
+	{
+		#ifdef _WIN32
+			ResetEvent(m_Cond);
+		#else
+			pthread_cond_broadcast(&m_Cond);
+		#endif
+	}
 }

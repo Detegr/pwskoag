@@ -44,13 +44,12 @@ namespace pwskoag
 				HANDLE m_Mutex;
 			#else
 				pthread_mutex_t m_Mutex;
-				pthread_mutexattr_t m_Attr;
 			#endif
 		public:
 			C_Mutex();
-			~C_Mutex() {pthread_mutex_destroy(&m_Mutex);}
-			void M_Lock() {pthread_mutex_lock(&m_Mutex);}
-			void M_Unlock() {pthread_mutex_unlock(&m_Mutex);}
+			~C_Mutex();
+			void M_Lock();
+			void M_Unlock();
 	};
 
 	class C_Lock
@@ -65,13 +64,19 @@ namespace pwskoag
 	class C_CondVar
 	{
 		private:
+			#ifdef _WIN32
+				HANDLE m_Cond;
+			#else
+				pthread_cond_t m_Cond;
+			#endif
 			C_Mutex m_Mutex;
-			pthread_cond_t m_Cond;
 		public:
-			C_CondVar() {pthread_cond_init(&m_Cond,NULL);}
-			~C_CondVar() {pthread_cond_destroy(&m_Cond);}
-			void M_Wait() {m_Mutex.M_Lock(); pthread_cond_wait(&m_Cond, &m_Mutex.m_Mutex); m_Mutex.M_Unlock();}
-			void M_SignalOne() {pthread_cond_signal(&m_Cond);}
-			void M_Signal() {pthread_cond_broadcast(&m_Cond);}
+			C_CondVar();
+			#ifndef _WIN32
+				~C_CondVar() {pthread_cond_destroy(&m_Cond);}
+			#endif
+			void M_Wait();
+			void M_SignalOne();
+			void M_Signal();
 	};
 }

@@ -11,12 +11,14 @@ namespace pwskoag
 	class C_Thread
 	{
 		private:
+			typedef void(*t_ThreadFunc)(void*);
+
 			#ifdef _WIN32
 				HANDLE m_Thread;
-				typedef unsigned int(__stdcall* t_ThreadFunc)(void*);
+				static unsigned __stdcall M_ThreadInit(void* args);
 			#else
 				pthread_t m_Thread;
-				typedef void(*t_ThreadFunc)(void*);
+				static void* M_ThreadInit(void* args);
 			#endif
 			
 			struct C_Data
@@ -28,7 +30,6 @@ namespace pwskoag
 			};
 
 			C_Data m_Data;
-			static void* M_ThreadInit(void* args);
 		public:
 			C_Thread(t_ThreadFunc f, void* args=NULL);
 			~C_Thread();

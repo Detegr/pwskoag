@@ -6,27 +6,37 @@
 
 namespace pwskoag
 {
-	void* C_Thread::M_ThreadInit(void* args)
-	{
-		C_Thread::C_Data* d=(C_Thread::C_Data*)args;
-		d->m_Func(d->m_Arg);
-	}
-	C_Thread::C_Thread(t_ThreadFunc f, void* args) : m_Thread(0), m_Data(C_Data(f, args))
-	{
 	#ifdef _WIN32
-		m_Thread=(HANDLE)_beginthreadex(NULL,0,f,args,0,NULL);
-		if(!m_Thread)
+		unsigned __stdcall C_Thread::M_ThreadInit(void* args)
 		{
-			throw std::runtime_error("Error creating a thread.");
+			C_Thread::C_Data* d=(C_Thread::C_Data*)args;
+			d->m_Func(d->m_Arg);
+			return 0;
+		}
+		C_Thread::C_Thread(t_ThreadFunc f, void* args) : m_Thread(0), m_Data(C_Data(f, args))
+		{
+			m_Thread=(HANDLE)_beginthreadex(NULL,0,M_ThreadInit,&m_Data,0,NULL);
+			if(!m_Thread)
+			{
+				throw std::runtime_error("Error creating a thread.");
+			}
 		}
 	#else
-		int ret=pthread_create(&m_Thread, NULL, M_ThreadInit, &m_Data);
-		if(ret)
+		void* C_Thread::M_ThreadInit(void* args)
 		{
-			throw std::runtime_error("Error creating a thread.");
+			C_Thread::C_Data* d=(C_Thread::C_Data*)args;
+			d->m_Func(d->m_Arg);
+		}
+		C_Thread::C_Thread(t_ThreadFunc f, void* args) : m_Thread(0), m_Data(C_Data(f, args))
+		{
+			int ret=pthread_create(&m_Thread, NULL, M_ThreadInit, &m_Data);
+			if(ret)
+			{
+				throw std::runtime_error("Error creating a thread.");
+			}
 		}
 	#endif
-	}
+
 	void C_Thread::M_Join()
 	{
 		#ifdef _WIN32

@@ -1,17 +1,18 @@
 #include <iostream>
 #include "../Concurrency/Concurrency.h"
+#include "../Util/Base.h"
 
 void thread(void* args)
 {
-	std::cout << "Hi, this is a thread test, with argument :" << *reinterpret_cast<std::string*>(args) << std::endl;
+	std::cout << "Hi, this is a thread test, with argument :" << (*reinterpret_cast<std::string*>(args)).c_str() << std::endl;
 }
 
 int main()
 {
 	std::string str("String :)");
-	pwskoag::Thread t(thread, &str);
-	sleep(1);
+	pwskoag::C_Thread t(thread, &str);
+	pwskoag::msSleep(100);
 	std::cout << "This is the main thread." << std::endl;
-	t.Join();
+	t.M_Join();
 	return 0;
 }

@@ -3,8 +3,11 @@
  */
 #pragma once
 
-#include <arpa/inet.h>
-#include <errno.h>
+#ifdef _WIN32
+#else
+	#include <arpa/inet.h>
+	#include <errno.h>
+#endif
 #include <iostream>
 #include <cstring>
 

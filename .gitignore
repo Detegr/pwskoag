@@ -17,3 +17,5 @@ ipch/
 bin/
 obj/
 Debug/
+build/
+!build/Makefile

@@ -13,7 +13,7 @@ namespace pwskoag
 {
 	static void EndOfPacket(TcpSocket* client)
 	{
-		Packet toClient;
+		C_Packet toClient;
 		std::string str("Hi, this is server speaking.");
 		if(!TcpSend(String, str, client, toClient))
 		{
@@ -50,7 +50,7 @@ namespace pwskoag
 		Selector s;
 		while(!*stopNow)
 		{
-			Packet p;
+			C_Packet p;
 			s.Clear();
 			s.Add(*client);
 			s.Wait(4000);
@@ -120,7 +120,7 @@ namespace pwskoag
 				TcpSocket* client = tcpListener.Accept();
 				if(client)
 				{
-					Packet p;
+					C_Packet p;
 					if(client->Receive(p))
 					{
 						uchar header; p>>header;
@@ -190,7 +190,7 @@ namespace pwskoag
 	}
 	void UDPReceiveThread_Client(void *args)
 	{
-		Packet p;
+		C_Packet p;
 		C_ThreadData* data=(C_ThreadData*)args;
 		C_Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
@@ -233,7 +233,7 @@ namespace pwskoag
 	PWSKOAG_API void UdpServer::ServerLoop()
 	{
 		const t_Clients& c = master->GetClients();
-		Packet p;
+		C_Packet p;
 		Selector sel;
 		while(!stopNow)
 		{
@@ -303,7 +303,7 @@ namespace pwskoag
 											}
 											case EOP:
 											{
-												Packet p;
+												C_Packet p;
 												p << String << std::string("UDP response") << EOP;
 												udpSocket.Send(p, ip, port);
 												break;
@@ -335,7 +335,7 @@ namespace pwskoag
 		tcpSocket.Connect();
 		packet << Connect << C_Version::M_Get();
 		Send();
-		Packet p;
+		C_Packet p;
 		Selector s;
 		s.Add(tcpSocket);
 		s.Wait(CONNECTTIME);
@@ -377,7 +377,7 @@ namespace pwskoag
 		Selector s;
 		while(!*stopNow)
 		{
-			Packet p;
+			C_Packet p;
 			uchar header=0;
 			bool end=false;
 			s.Clear();
@@ -445,7 +445,7 @@ namespace pwskoag
 				udpSocket.Send(packet, m_Address, m_Port);
 			}
 		}
-		Packet p;
+		C_Packet p;
 		if(s.Wait(CONNECTTIME))
 		{
 			if(s.IsReady(udpSocket))

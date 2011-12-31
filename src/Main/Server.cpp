@@ -17,7 +17,6 @@ int main()
 		C_SocketInitializer init;
 	#endif
 	signal(SIGINT, sighandler);
-	Packet p;
 	TcpServer s(55555);
 	UdpServer u(&s, 55556);
 	std::cout << "Starting server." << std::endl;

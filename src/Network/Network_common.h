@@ -1,6 +1,7 @@
 #pragma once
 #include <Util/Base.h>
 #include <Concurrency/Concurrency.h>
+#include "Packet.h"
 
 #include <algorithm>
 #include <vector>
@@ -36,15 +37,6 @@ namespace pwskoag
 				}
 		};
 	#endif
-	enum e_Command
-	{
-		HandShake=0,
-		Heartbeat,
-		Connect,
-		Disconnect,
-		String,
-		EOP=255
-	};
 
 	class IpAddress
 	{
@@ -64,28 +56,6 @@ namespace pwskoag
 			bool					operator==(const char* rhs) const {return strncmp(toString().c_str(), rhs, 15)==0;}
 			std::string 			toString() const {return std::string(inet_ntoa(addr));}
 			friend std::ostream& 	operator<<(std::ostream& o, const IpAddress& rhs) {o << rhs.toString(); return o;}
-	};
-
-	class Packet
-	{
-		friend class Socket;
-		private:
-			C_Mutex				m_Lock;
-			std::vector<uchar>	data;
-			void 				Append(const void* d, size_t len) {C_Lock l(m_Lock);data.resize(data.size()+len);memcpy(&data[data.size()-len], d, len);}
-			void				Pop(size_t bytes) {C_Lock l(m_Lock);data.erase(data.begin(), data.begin()+bytes);}
-		public:
-			static const size_t				MAXSIZE;
-			const uchar* 					RawData() const {return &data[0];}
-			void 							Clear() {data.clear();}
-			size_t							Size() const {return data.size();}
-			Packet&							operator<<(const char* str) {Append(str, strlen(str)+1);}
-			Packet&							operator<<(const std::string& str){Append(str.c_str(), str.length()+1); return *this;}
-			Packet&							operator>>(char* str) {strcpy(str, (char*)&data[0]); Pop(strlen(str)+1); return *this;}
-			Packet&							operator>>(std::string& str) {str=(char*)&data[0]; Pop(str.length()+1); return *this;}
-			Packet&							operator<<(e_Command c) {uchar x=(uchar)c; Append(&x, sizeof(x)); return *this;}
-			template <class type> Packet&	operator<<(type x) {Append(&x, sizeof(type)); return *this;}
-			template <class type> Packet&	operator>>(type& x) {if(Size()){x=*(type*)&data[0]; Pop(sizeof(type));} return *this;}
 	};
 
 	class Socket
@@ -143,8 +113,8 @@ namespace pwskoag
 			void Disconnect() {if(fd>0)Close();}
 			void Clear() {Close(); this->fd=-1;}
 			TcpSocket* Accept(); 
-			bool Send(Packet& p); 
-			bool Receive(Packet& p);
+			bool Send(C_Packet& p); 
+			bool Receive(C_Packet& p);
 			void M_UdpPort(ushort port) {m_UdpPort=port;}
 			const ushort M_UdpPort() const {return m_UdpPort;}
 	};
@@ -154,8 +124,8 @@ namespace pwskoag
 		UdpSocket() {}
 		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, UDP) {}
 		UdpSocket(ushort port) : Socket(port, UDP) {}
-		bool Send(Packet& p, IpAddress& ip, ushort port);
-		bool Receive(Packet& p, IpAddress* ip=NULL, ushort* port=NULL);
+		bool Send(C_Packet& p, IpAddress& ip, ushort port);
+		bool Receive(C_Packet& p, IpAddress* ip=NULL, ushort* port=NULL);
 	};
 
 	class Selector
@@ -175,18 +145,18 @@ namespace pwskoag
 	};
 
 	// Functions for sending and appending.
-	static void Append(e_Command c, Packet& p) {p<<(uchar)c;}
-	template <class type> void Append(type& t, Packet& p){p<<t;}
-	template <class type> void Append(e_Command c, type& t, Packet& p){Append(c,p);Append(t,p);}
+	static void Append(e_Command c, C_Packet& p) {p<<(uchar)c;}
+	template <class type> void Append(type& t, C_Packet& p){p<<t;}
+	template <class type> void Append(e_Command c, type& t, C_Packet& p){Append(c,p);Append(t,p);}
 
 	// Tcp-functions
-	static bool TcpSend(e_Command c, TcpSocket* sock, Packet& p)
+	static bool TcpSend(e_Command c, TcpSocket* sock, C_Packet& p)
 	{
 		p << (uchar)c << (uchar)EOP;
 		return sock->Send(p);
 	}
-	static bool TcpSend(TcpSocket* sock, Packet& p) {return sock->Send(p);}
-	template <class type> bool TcpSend(e_Command c, type t, TcpSocket* sock, Packet& p)
+	static bool TcpSend(TcpSocket* sock, C_Packet& p) {return sock->Send(p);}
+	template <class type> bool TcpSend(e_Command c, type t, TcpSocket* sock, C_Packet& p)
 	{
 			p.Clear();
 			Append(c,t,p); Append(EOP, p);
@@ -194,9 +164,9 @@ namespace pwskoag
 	}
 
 	// Udp-Functions
-	static bool UdpSend(UdpSocket* sock, Packet& p, IpAddress& ip, ushort port) {return sock->Send(p, ip, port);}
+	static bool UdpSend(UdpSocket* sock, C_Packet& p, IpAddress& ip, ushort port) {return sock->Send(p, ip, port);}
 	template <class type>
-	bool UdpSend(e_Command c, type t, UdpSocket* sock, Packet& p, IpAddress& ip, ushort port)
+	bool UdpSend(e_Command c, type t, UdpSocket* sock, C_Packet& p, IpAddress& ip, ushort port)
 	{
 		p.Clear();
 		Append(c, t, p); Append(EOP, p);

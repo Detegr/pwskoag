@@ -6,8 +6,6 @@
 
 namespace pwskoag
 { 
-	const size_t Packet::MAXSIZE=4096;
-
 	PWSKOAG_API Socket::Socket(IpAddress& ip, ushort port, Type type) : m_Id(0), ip(ip), port(port), fd(0), type(type)
 	{
 		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
@@ -38,20 +36,20 @@ namespace pwskoag
 		if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));
 	}
 
-	bool TcpSocket::Receive(Packet& p)
+	bool TcpSocket::Receive(C_Packet& p)
 	{
-		uchar buf[Packet::MAXSIZE];
-		int r=recv(fd, (char*)buf, Packet::MAXSIZE, 0);
+		uchar buf[C_Packet::MAXSIZE];
+		int r=recv(fd, (char*)buf, C_Packet::MAXSIZE, 0);
 		if(r<=0) return false;
 		for(int i=0;i<r;++i)p<<buf[i];
 		return true;
 	}
-	bool UdpSocket::Receive(Packet& p, IpAddress* ip, ushort* port)
+	bool UdpSocket::Receive(C_Packet& p, IpAddress* ip, ushort* port)
 	{
-		uchar buf[Packet::MAXSIZE];
+		uchar buf[C_Packet::MAXSIZE];
 		struct sockaddr_in a;
 		socklen_t len=sizeof(a);
-		int r=recvfrom(fd, (char*)buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
+		int r=recvfrom(fd, (char*)buf, C_Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
 		if(r<0) return false;
 		for(int i=0;i<r;++i)p<<buf[i];
 		if(ip) *ip=IpAddress(a.sin_addr);
@@ -74,7 +72,7 @@ namespace pwskoag
 		}
 	}
 
-	bool TcpSocket::Send(Packet& p)
+	bool TcpSocket::Send(C_Packet& p)
 	{
 		fd_set set;
 		FD_ZERO(&set);
@@ -113,7 +111,7 @@ namespace pwskoag
 		return true;
 	}
 
-	bool UdpSocket::Send(Packet& p, IpAddress& ip, ushort port)
+	bool UdpSocket::Send(C_Packet& p, IpAddress& ip, ushort port)
 	{
 		struct sockaddr_in a;
 		a.sin_family=AF_INET;

@@ -83,7 +83,7 @@ namespace pwskoag
 			bool				m_Connected;
 			C_Mutex				m_Lock;
 			C_Mutex				m_ConnectMutex;
-			Packet				packet;
+			C_Packet				packet;
 			PWSKOAG_API void 	ClientLoop();
 			void 				Append(e_Command c) {packet<<(uchar)c;}
 			void 				Send();
@@ -103,7 +103,7 @@ namespace pwskoag
 			IpAddress			m_Address;
 			ushort				m_Port;
 			UdpSocket 			udpSocket;
-			Packet				packet;
+			C_Packet				packet;
 			C_Mutex				m_Lock;
 			PWSKOAG_API void	ClientLoop();
 			void 				Append(e_Command c) {packet<<(uchar)c;}

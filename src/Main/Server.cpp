@@ -13,6 +13,9 @@ void sighandler(int)
 
 int main()
 {
+	#ifdef _WIN32
+		C_SocketInitializer init;
+	#endif
 	signal(SIGINT, sighandler);
 	Packet p;
 	TcpServer s(55555);
@@ -20,7 +23,7 @@ int main()
 	std::cout << "Starting server." << std::endl;
 	s.Start();
 	u.Start();
-	while(!stopNow) sleep((unsigned int)~0);
+	while(!stopNow) msSleep((unsigned int)~0);
 	u.Stop();
 	s.Stop();
 	return 0;

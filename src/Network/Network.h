@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Network_common.h"
 #include <Util/Base.h>
 #include <Concurrency/Concurrency.h>
 #include <Util/Timer.h>
+#include "Network_common.h"
 #include <list>
 #include <stdexcept>
 #include <string.h>
@@ -12,7 +12,7 @@
 
 namespace pwskoag
 {
-	class C_Thread; class LocalThreadData;
+	class C_Thread; struct LocalThreadData;
 	typedef std::list<std::pair<C_Thread*, LocalThreadData> > t_Clients;
 
 	const uint TIMEOUTMS=10000;
@@ -33,21 +33,21 @@ namespace pwskoag
 	class TcpServer : public Server
 	{	
 		private:
-			TcpSocket 	tcpListener;
-			t_Clients	clients;
-			void		ServerLoop();
+			TcpSocket 			tcpListener;
+			t_Clients			clients;
+			PWSKOAG_API void	ServerLoop();
 		public:
-			TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
-			~TcpServer();
+			PWSKOAG_API TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
+			PWSKOAG_API ~TcpServer();
 			const t_Clients& GetClients() const {return clients;}
 	};
 
 	class UdpServer : public Server
 	{
 		private:
-			TcpServer*		master;
-			UdpSocket		udpSocket;
-			void			ServerLoop();
+			TcpServer*			master;
+			UdpSocket			udpSocket;
+			PWSKOAG_API void	ServerLoop();
 		public:
 			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp), udpSocket(UdpSocket(port)) {udpSocket.Bind();}
 	};
@@ -84,14 +84,14 @@ namespace pwskoag
 			C_Mutex				m_Lock;
 			C_Mutex				m_ConnectMutex;
 			Packet				packet;
-			void 				ClientLoop();
+			PWSKOAG_API void 	ClientLoop();
 			void 				Append(e_Command c) {packet<<(uchar)c;}
 			void 				Send();
 			void 				Send(e_Command c) {C_Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
-			bool 						M_Connect(const char* addr, ushort port);
-			void 						M_Disconnect();
+			PWSKOAG_API bool			M_Connect(const char* addr, ushort port);
+			PWSKOAG_API void 			M_Disconnect();
 			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
 			const ushort				M_Id() const {return tcpSocket.M_Id();}
 	};
@@ -99,20 +99,20 @@ namespace pwskoag
 	class UdpClient : public Client
 	{
 		private:
-			TcpClient*		m_Master;
-			IpAddress		m_Address;
-			ushort			m_Port;
-			UdpSocket 		udpSocket;
-			Packet			packet;
-			C_Mutex			m_Lock;
-			void			ClientLoop();
-			void 			Append(e_Command c) {packet<<(uchar)c;}
-			void 			Send(IpAddress& ip, ushort port);
+			TcpClient*			m_Master;
+			IpAddress			m_Address;
+			ushort				m_Port;
+			UdpSocket 			udpSocket;
+			Packet				packet;
+			C_Mutex				m_Lock;
+			PWSKOAG_API void	ClientLoop();
+			void 				Append(e_Command c) {packet<<(uchar)c;}
+			void 				Send(IpAddress& ip, ushort port);
 		public:
 			UdpClient(TcpClient* t) :	m_Master(t), m_Port(0), udpSocket() {}
-			bool						M_Connect(const char* addr, ushort port);
-			void 						M_Disconnect() {udpSocket.Close(); Stop();}
-			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
+			PWSKOAG_API bool						M_Connect(const char* addr, ushort port);
+			PWSKOAG_API void 						M_Disconnect() {udpSocket.Close(); Stop();}
+			template<class type> void				Append(e_Command c, type t) {Append(c); packet<<t;}
 	};
 	
 }

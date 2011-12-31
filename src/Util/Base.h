@@ -4,9 +4,15 @@
 #pragma once
 
 #ifdef _WIN32
+	#include <WinSock2.h>
+	#include <WS2tcpip.h>
+	#include <Windows.h>
+	#include <string>
+	#define PWSKOAG_API __declspec( dllexport )
 #else
 	#include <arpa/inet.h>
 	#include <errno.h>
+	#define PWSKOAG_API
 #endif
 #include <iostream>
 #include <cstring>
@@ -20,7 +26,7 @@ namespace pwskoag
 		typedef unsigned long long	uint64;
 	#endif
 
-	inline void msSleep(uint ms)
+	PWSKOAG_API inline void msSleep(uint ms)
 	{
 		#ifdef _WIN32
 			Sleep(ms);
@@ -36,7 +42,7 @@ namespace pwskoag
 		#endif
 	}
 
-	inline std::string Error(const char* err, int type=-1)
+	PWSKOAG_API inline std::string Error(const char* err, int type=-1)
 	{
 		std::string error;
 		error+=err;

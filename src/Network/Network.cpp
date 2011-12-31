@@ -2,8 +2,12 @@
 #include "Network.h"
 #include "Network_common.h"
 #include <iostream>
-#include <sys/time.h>
 #include <assert.h>
+
+#ifdef _WIN32
+#else
+	#include <sys/time.h>
+#endif
 
 namespace pwskoag
 {
@@ -43,7 +47,6 @@ namespace pwskoag
 		bool* stopNow=data->stopNow;
 		delete data;
 
-		struct timeval tv;
 		Selector s;
 		while(!*stopNow)
 		{
@@ -103,7 +106,7 @@ namespace pwskoag
 		}
 	}
 
-	void TcpServer::ServerLoop()
+	PWSKOAG_API void TcpServer::ServerLoop()
 	{
 		tcpListener.Bind();
 		tcpListener.Listen();
@@ -158,7 +161,8 @@ namespace pwskoag
 					}
 				}
 			}
-			for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
+			t_Clients::iterator it=clients.begin();
+			while(it!=clients.end())
 			{
 				it->second.lock.M_Lock();
 				bool closed=it->second.socket->M_Closed();
@@ -171,9 +175,12 @@ namespace pwskoag
 					delete it->first;
 					delete it->second.socket;
 					it->second.lock.M_Unlock();
-					it=clients.erase(it);
+					t_Clients::iterator prev=it;
+					++it;
+					it=clients.erase(prev);
 					continue;
 				}
+				else ++it;
 			}
 		}
 		tcpListener.Close();
@@ -223,7 +230,7 @@ namespace pwskoag
 		}
 	}
 
-	void UdpServer::ServerLoop()
+	PWSKOAG_API void UdpServer::ServerLoop()
 	{
 		const t_Clients& c = master->GetClients();
 		Packet p;
@@ -319,7 +326,7 @@ namespace pwskoag
 		C_Lock lock(selfMutex);
 		for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) delete it->first;
 	}
-	bool TcpClient::M_Connect(const char* addr, ushort port)
+	PWSKOAG_API bool TcpClient::M_Connect(const char* addr, ushort port)
 	{
 		C_Lock lock(Client::selfMutex);
 		serverAddress=addr;
@@ -349,9 +356,10 @@ namespace pwskoag
 			}
 			else {std::cout << "Couldn't connect to server." << std::endl; return false;}
 		}
-		else {std::cout << "Couldn't connect to server." << std::endl; return false;}
+		std::cout << "Couldn't connect to server." << std::endl;
+		return false;
 	}
-	void TcpClient::M_Disconnect()
+	PWSKOAG_API void TcpClient::M_Disconnect()
 	{
 		Send(Disconnect);
 		Stop();
@@ -366,7 +374,6 @@ namespace pwskoag
 		bool* stopNow=data->stopNow;
 		bool connect=true;
 		delete data;
-		struct timeval tv;
 		Selector s;
 		while(!*stopNow)
 		{
@@ -404,7 +411,7 @@ namespace pwskoag
 		}
 	}
 
-	void TcpClient::ClientLoop()
+	PWSKOAG_API void TcpClient::ClientLoop()
 	{
 		C_Timer timer;
 		C_ThreadData* data=new C_ThreadData(NULL, NULL, &tcpSocket, &(Client::stopNow));
@@ -421,7 +428,7 @@ namespace pwskoag
 			Send();
 		}
 	}
-	bool UdpClient::M_Connect(const char* addr, ushort port)
+	PWSKOAG_API bool UdpClient::M_Connect(const char* addr, ushort port)
 	{
 		m_Address=IpAddress(addr);
 		m_Port=port;
@@ -460,7 +467,7 @@ namespace pwskoag
 		else {std::cout << "Couldn't connect to UDP server, connection timed out." << std::endl; return false;}
 		return true;
 	}
-	void UdpClient::ClientLoop()
+	PWSKOAG_API void UdpClient::ClientLoop()
 	{
 		C_ThreadData* data=new C_ThreadData(NULL, NULL, &udpSocket, &(Client::stopNow));
 		C_Thread t(UDPReceiveThread_Client, data);

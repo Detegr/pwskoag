@@ -11,10 +11,14 @@ namespace pwskoag
 	class C_Timer
 	{
 		private:
-			struct timeval m_Time;
+			#ifdef _WIN32
+				uint64 m_Time;
+			#else
+				struct timeval m_Time;
+			#endif
 		public:
-			C_Timer();
-			uint64 M_Get() const;
-			void M_Reset();
+			PWSKOAG_API C_Timer();
+			PWSKOAG_API uint64 M_Get() const;
+			PWSKOAG_API void M_Reset();
 	};
 }

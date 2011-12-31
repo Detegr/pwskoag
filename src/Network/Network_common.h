@@ -5,12 +5,37 @@
 #include <algorithm>
 #include <vector>
 #include <stdexcept>
-#include <arpa/inet.h>
 #include <string.h>
 #include <fcntl.h>
 
+#ifdef _WIN32
+	#pragma warning( disable : 4800 )
+#else
+	#include <arpa/inet.h>
+#endif
+
 namespace pwskoag
 {
+	#ifdef _WIN32
+		class C_SocketInitializer
+		{
+			private:
+				WSADATA m_Data;
+			public:
+				C_SocketInitializer()
+				{
+					if(WSAStartup(MAKEWORD(2,2), &m_Data)!=0)
+					{
+						std::runtime_error("Couldn't find Winsock DLL");
+						exit(1);
+					}
+				}
+				~C_SocketInitializer()
+				{
+					WSACleanup();
+				}
+		};
+	#endif
 	enum e_Command
 	{
 		HandShake=0,
@@ -25,7 +50,7 @@ namespace pwskoag
 	{
 		friend class Socket;
 		friend class TcpSocket;
-		friend class UdpSocket;
+		friend struct UdpSocket;
 		private:
 			struct in_addr addr;
 			void StrToAddr(const char* a);
@@ -81,18 +106,26 @@ namespace pwskoag
 				TCP=SOCK_STREAM,
 				UDP=SOCK_DGRAM
 			};
-			Socket(IpAddress& ip, ushort port, Type type);
-			Socket(ushort port, Type type);
-			Socket(const Socket& s) {*this=s;}
-			virtual ~Socket() {}
-			const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
-			void Bind();
-			void Close() {shutdown(fd, SHUT_RDWR);close(fd);}
-			const IpAddress&	GetIp() const {return ip;}
-			const ushort		GetPort() const {return port;}
-			const ushort		M_Id() const {return m_Id;}
-			void				M_Id(ushort id) {m_Id=id;}
-			bool 				M_Closed() const {return this->fd<0;}
+			PWSKOAG_API Socket(IpAddress& ip, ushort port, Type type);
+			PWSKOAG_API Socket(ushort port, Type type);
+			PWSKOAG_API Socket(const Socket& s) {*this=s;}
+			PWSKOAG_API virtual ~Socket() {}
+			PWSKOAG_API const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
+			PWSKOAG_API void Bind();
+			PWSKOAG_API void Close()
+			{
+				#ifdef _WIN32
+					closesocket(fd);
+				#else
+					shutdown(fd, SHUT_RDWR);
+					close(fd);
+				#endif
+			}
+			PWSKOAG_API const IpAddress&	GetIp() const {return ip;}
+			PWSKOAG_API const ushort		GetPort() const {return port;}
+			PWSKOAG_API const ushort		M_Id() const {return m_Id;}
+			PWSKOAG_API void				M_Id(ushort id) {m_Id=id;}
+			PWSKOAG_API bool 				M_Closed() const {return this->fd<0;}
 	};
 
 	class TcpSocket : public Socket
@@ -180,20 +213,20 @@ namespace pwskoag
 	class Server
 	{
 		protected:
-			bool 			stopNow;
-			uint 			serverPort;
-			C_Mutex	 		selfMutex;
-			C_Thread* 		selfThread;
-			static void 	ServerInitializer(void* args);
-			virtual 		~Server();
-			virtual void	ServerLoop()=0;
+			bool 						stopNow;
+			uint			 			serverPort;
+			C_Mutex	 					selfMutex;
+			C_Thread*			 		selfThread;
+			static void					ServerInitializer(void* args);
+			virtual void				ServerLoop()=0;
 
-			Server(ushort port) : stopNow(false), serverPort(port), selfThread(NULL) {};
+			PWSKOAG_API Server(ushort port) : stopNow(false), serverPort(port), selfThread(NULL) {};
+			PWSKOAG_API	virtual	~Server();
 		public:
-			virtual void 	Start();
-			virtual void 	Stop();
-			virtual void 	ForceStop();
-			bool IsRunning() const { return selfThread!=NULL; }
+			PWSKOAG_API virtual void 	Start();
+			PWSKOAG_API virtual void 	Stop();
+			PWSKOAG_API virtual void 	ForceStop();
+			PWSKOAG_API bool IsRunning() const { return selfThread!=NULL; }
 	};
 	
 	/*
@@ -206,21 +239,21 @@ namespace pwskoag
 	class Client
 	{
 		protected:
-			bool			stopNow;
-			uint 			serverPort;
-			C_Mutex			selfMutex;
-			C_Thread*		selfThread;
-			static void		ClientInitializer(void* args);
-			virtual 		~Client();
-			virtual void 	ClientLoop()=0;
+			bool					stopNow;
+			uint 					serverPort;
+			C_Mutex					selfMutex;
+			C_Thread*				selfThread;
+			static void	ClientInitializer(void* args);
+			PWSKOAG_API virtual 	~Client();
+			virtual void 			ClientLoop()=0;
 
 			Client() : stopNow(false), serverPort(), selfThread(NULL) {};
 		public:
-			virtual void 	Start();
-			virtual void 	Stop();
-			virtual void 	ForceStop();
-			virtual bool	M_Connect(const char* addr, ushort port)=0;
-			virtual void 	M_Disconnect()=0;
-			bool 	     	IsRunning() const { return selfThread!=NULL; }
+			PWSKOAG_API virtual void 	Start();
+			PWSKOAG_API virtual void 	Stop();
+			PWSKOAG_API virtual void 	ForceStop();
+			virtual bool				M_Connect(const char* addr, ushort port)=0;
+			virtual void				M_Disconnect()=0;
+			bool 						IsRunning() const { return selfThread!=NULL; }
 	};
 }

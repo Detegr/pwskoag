@@ -12,6 +12,9 @@ void sighandler(int)
 
 int main()
 {
+	#ifdef _WIN32
+		C_SocketInitializer init;
+	#endif
 	TcpClient c;
 	UdpClient u(&c);
 	if(c.M_Connect("127.0.0.1", 55555))

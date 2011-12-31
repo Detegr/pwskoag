@@ -8,7 +8,7 @@ namespace pwskoag
 { 
 	const size_t Packet::MAXSIZE=4096;
 
-	Socket::Socket(IpAddress& ip, ushort port, Type type) : m_Id(0), ip(ip), port(port), fd(0), type(type)
+	PWSKOAG_API Socket::Socket(IpAddress& ip, ushort port, Type type) : m_Id(0), ip(ip), port(port), fd(0), type(type)
 	{
 		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error("Failed to create socket.");
@@ -17,10 +17,10 @@ namespace pwskoag
 		addr.sin_port=htons(port);
 		addr.sin_addr=ip.addr;
 		int yes=1;
-		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&yes, sizeof(yes));
 	}
 
-	Socket::Socket(ushort port, Type type) : m_Id(0), ip(), port(port), fd(0), type(type)
+	PWSKOAG_API Socket::Socket(ushort port, Type type) : m_Id(0), ip(), port(port), fd(0), type(type)
 	{
 		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
 		if(fd<=0) throw std::runtime_error(Error("Socket"));
@@ -29,10 +29,10 @@ namespace pwskoag
 		addr.sin_port=htons(port);
 		addr.sin_addr.s_addr=htonl(INADDR_ANY);
 		int yes=1;
-		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&yes, sizeof(yes));
 	}
 
-	void Socket::Bind()
+	PWSKOAG_API void Socket::Bind()
 	{
 		socklen_t len=sizeof(addr);
 		if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));
@@ -41,7 +41,7 @@ namespace pwskoag
 	bool TcpSocket::Receive(Packet& p)
 	{
 		uchar buf[Packet::MAXSIZE];
-		int r=recv(fd, buf, Packet::MAXSIZE, 0);
+		int r=recv(fd, (char*)buf, Packet::MAXSIZE, 0);
 		if(r<=0) return false;
 		for(int i=0;i<r;++i)p<<buf[i];
 		return true;
@@ -51,7 +51,7 @@ namespace pwskoag
 		uchar buf[Packet::MAXSIZE];
 		struct sockaddr_in a;
 		socklen_t len=sizeof(a);
-		int r=recvfrom(fd, buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
+		int r=recvfrom(fd, (char*)buf, Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
 		if(r<0) return false;
 		for(int i=0;i<r;++i)p<<buf[i];
 		if(ip) *ip=IpAddress(a.sin_addr);
@@ -87,7 +87,7 @@ namespace pwskoag
 		if(ret>0 && FD_ISSET(fd, &set))
 		{
 			FD_CLR(fd, &set);
-			bytes=send(fd, p.RawData(), p.Size(), 0);
+			bytes=send(fd, (char*)p.RawData(), p.Size(), 0);
 			if(bytes==-1)
 			{
 				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN)
@@ -98,7 +98,16 @@ namespace pwskoag
 				perror("SEND");
 			}
 		}
-		else {std::cout << "Something went wrong." << std::endl; close(fd); exit(1);}
+		else
+		{
+			std::cout << "Something went wrong." << std::endl;
+			#ifdef _WIN32
+				closesocket(fd);
+			#else
+				close(fd);
+			#endif
+			exit(1);
+		}
 		assert(bytes==p.Size());
 		p.Clear();
 		return true;
@@ -111,7 +120,7 @@ namespace pwskoag
 		a.sin_port=htons(port);
 		a.sin_addr=ip.addr;
 		socklen_t len=sizeof(a);
-		int r=sendto(fd, p.RawData(), p.Size(), 0, (struct sockaddr*)&a, len);
+		int r=sendto(fd, (char*)p.RawData(), p.Size(), 0, (struct sockaddr*)&a, len);
 		p.Clear();
 		return true;
 	}
@@ -197,14 +206,14 @@ namespace pwskoag
 	void IpAddress::StrToAddr(const char* a)
 	{
 		if(std::string(a)=="localhost") a="127.0.0.1";
-		if(inet_aton(a, &addr)==0)
+		if(inet_pton(AF_INET, a, &addr)==0)
 		{
 			std::string errmsg=("IpAddress is not a valid address.");
 			throw std::runtime_error(errmsg);
 		}
 	}
 
-	void Server::Start()
+	PWSKOAG_API void Server::Start()
 	{
 		C_Lock lock(selfMutex);
 		if(!selfThread)
@@ -214,14 +223,14 @@ namespace pwskoag
 		}
 		else std::cerr << "Server already running!" << std::endl;
 	}
-	void Server::Stop()
+	PWSKOAG_API void Server::Stop()
 	{
 		C_Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {selfThread->M_Join(); delete selfThread; selfThread=NULL;}
 		else std::cerr << "Server already stopped!" << std::endl;
 	}
-	void Server::ForceStop()
+	PWSKOAG_API void Server::ForceStop()
 	{
 		//Lock lock(selfMutex);
 		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
@@ -231,12 +240,12 @@ namespace pwskoag
 		Server* s = (Server*)args;
 		s->ServerLoop();
 	}
-	Server::~Server()
+	PWSKOAG_API Server::~Server()
 	{
 		if(selfThread) std::cerr << "!! Server not stopped and still shutting down !!" << std::endl;
 	}
 	
-	void Client::Start()
+	PWSKOAG_API void Client::Start()
 	{
 		C_Lock lock(selfMutex);
 		if(!selfThread)
@@ -245,14 +254,14 @@ namespace pwskoag
 		}
 		else std::cerr << "Client already running!" << std::endl;
 	}
-	void Client::Stop()
+	PWSKOAG_API void Client::Stop()
 	{
 		C_Lock lock(selfMutex);
 		stopNow=true;
 		if(selfThread) {std::cout << "Disconnecting...";std::cout.flush(); delete selfThread; selfThread=NULL;std::cout<<"DONE!"<<std::endl;}
 		else std::cerr << "Client already stopped!" << std::endl;
 	}
-	void Client::ForceStop()
+	PWSKOAG_API void Client::ForceStop()
 	{
 		//Lock lock(selfMutex);
 		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
@@ -262,7 +271,7 @@ namespace pwskoag
 		Client* s = (Client*)args;
 		s->ClientLoop();
 	}
-	Client::~Client()
+	PWSKOAG_API Client::~Client()
 	{
 		if(selfThread) std::cerr << "!! Client not stopped and still shutting down !!" << std::endl;
 	}

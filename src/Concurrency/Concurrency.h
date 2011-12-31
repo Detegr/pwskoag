@@ -1,6 +1,6 @@
 #pragma once
+#include <Util/Base.h>
 #ifdef _WIN32
-	#include <Windows.h>
 #else
 	#include <pthread.h>
 #endif
@@ -31,9 +31,9 @@ namespace pwskoag
 
 			C_Data m_Data;
 		public:
-			C_Thread(t_ThreadFunc f, void* args=NULL);
-			~C_Thread();
-			void M_Join();
+			PWSKOAG_API C_Thread(t_ThreadFunc f, void* args=NULL);
+			PWSKOAG_API ~C_Thread();
+			PWSKOAG_API void M_Join();
 	};
 
 	class C_Mutex
@@ -41,15 +41,15 @@ namespace pwskoag
 		friend class C_CondVar;
 		private:
 			#ifdef _WIN32
-				HANDLE m_Mutex;
+				CRITICAL_SECTION m_Mutex;
 			#else
 				pthread_mutex_t m_Mutex;
 			#endif
 		public:
-			C_Mutex();
-			~C_Mutex();
-			void M_Lock();
-			void M_Unlock();
+			PWSKOAG_API C_Mutex();
+			PWSKOAG_API ~C_Mutex();
+			PWSKOAG_API void M_Lock();
+			PWSKOAG_API void M_Unlock();
 	};
 
 	class C_Lock
@@ -57,8 +57,8 @@ namespace pwskoag
 		private:
 			C_Mutex* m_Mutex;
 		public:
-			C_Lock(C_Mutex& m) : m_Mutex(&m) {m_Mutex->M_Lock();}
-			~C_Lock() {m_Mutex->M_Unlock();}
+			PWSKOAG_API C_Lock(C_Mutex& m) : m_Mutex(&m) {m_Mutex->M_Lock();}
+			PWSKOAG_API ~C_Lock() {m_Mutex->M_Unlock();}
 	};
 
 	/*
@@ -69,19 +69,18 @@ namespace pwskoag
 	{
 		private:
 			#ifdef _WIN32
-				unsigned int m_Waiters;
-				HANDLE m_Cond;
+				CONDITION_VARIABLE m_Cond;
 			#else
 				pthread_cond_t m_Cond;
 			#endif
 			C_Mutex m_Mutex;
 		public:
-			C_CondVar();
+			PWSKOAG_API C_CondVar();
 			#ifndef _WIN32
 				~C_CondVar() {pthread_cond_destroy(&m_Cond);}
 			#endif
-			void M_Wait();
-			void M_SignalOne();
-			void M_Signal();
+			PWSKOAG_API void M_Wait();
+			PWSKOAG_API void M_SignalOne();
+			PWSKOAG_API void M_Signal();
 	};
 }

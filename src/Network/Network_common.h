@@ -158,7 +158,7 @@ namespace pwskoag
 	static bool TcpSend(TcpSocket* sock, C_Packet& p) {return sock->Send(p);}
 	template <class type> bool TcpSend(e_Command c, type t, TcpSocket* sock, C_Packet& p)
 	{
-			p.Clear();
+			p.M_Clear();
 			Append(c,t,p); Append(EOP, p);
 			return TcpSend(sock,p);
 	}
@@ -168,7 +168,7 @@ namespace pwskoag
 	template <class type>
 	bool UdpSend(e_Command c, type t, UdpSocket* sock, C_Packet& p, IpAddress& ip, ushort port)
 	{
-		p.Clear();
+		p.M_Clear();
 		Append(c, t, p); Append(EOP, p);
 		return UdpSend(sock, p, ip, port);
 	}

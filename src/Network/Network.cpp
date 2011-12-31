@@ -27,7 +27,7 @@ namespace pwskoag
 		Append(EOP);
 		C_Lock l(m_Lock);
 		udpSocket.Send(packet, ip, port);
-		packet.Clear();
+		packet.M_Clear();
 	}
 
 	void TcpClient::Send()
@@ -35,7 +35,7 @@ namespace pwskoag
 		Append(EOP);
 		C_Lock l(m_Lock);
 		tcpSocket.Send(packet);
-		packet.Clear();
+		packet.M_Clear();
 	}
 
 	void TCPReceiveThread_Server(void *args)
@@ -59,7 +59,7 @@ namespace pwskoag
 				if(client->Receive(p))
 				{
 					uchar header=0;
-					while(p.Size())
+					while(p.M_Size())
 					{
 						p>>header;
 						switch (header)
@@ -135,7 +135,7 @@ namespace pwskoag
 							}
 							else
 							{
-								p.Clear();
+								p.M_Clear();
 								p<<HandShake;
 								bool ok=false;
 								do
@@ -200,12 +200,12 @@ namespace pwskoag
 
 		while(!*stopNow)
 		{
-			p.Clear();
+			p.M_Clear();
 			if(client->Receive(p))
 			{
 				uchar header=0;
 				bool eop=false;
-				while(p.Size() && !eop)
+				while(p.M_Size() && !eop)
 				{
 					p>>header;
 					switch (header)
@@ -243,7 +243,7 @@ namespace pwskoag
 			{
 				if(sel.IsReady(udpSocket))
 				{
-					p.Clear();
+					p.M_Clear();
 					IpAddress ip;
 					ushort port;
 					if(udpSocket.Receive(p, &ip, &port))
@@ -267,7 +267,7 @@ namespace pwskoag
 											{
 												s->M_UdpPort(port);
 												std::cout << "Bound id " << id << " to UDP port " << port << std::endl;
-												p.Clear();
+												p.M_Clear();
 												p<<HandShake<<EOP;
 												if(sel.WaitWrite(TICK_WAITTIME_UDP))
 												{
@@ -289,7 +289,7 @@ namespace pwskoag
 								if(s->M_UdpPort()==port)
 								{
 									uchar header=0;
-									while(p.Size())
+									while(p.M_Size())
 									{
 										p>>header;
 										switch (header)
@@ -387,7 +387,7 @@ namespace pwskoag
 			{
 				if(tcpSocket->Receive(p))
 				{
-					while(p.Size() && !end)
+					while(p.M_Size() && !end)
 					{
 						p>>header;
 						switch (header)

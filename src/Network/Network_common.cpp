@@ -85,7 +85,7 @@ namespace pwskoag
 		if(ret>0 && FD_ISSET(fd, &set))
 		{
 			FD_CLR(fd, &set);
-			bytes=send(fd, (char*)p.RawData(), p.Size(), 0);
+			bytes=send(fd, (char*)p.M_RawData(), p.M_Size(), 0);
 			if(bytes==-1)
 			{
 				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN)
@@ -106,8 +106,8 @@ namespace pwskoag
 			#endif
 			exit(1);
 		}
-		assert(bytes==p.Size());
-		p.Clear();
+		assert(bytes==p.M_Size());
+		p.M_Clear();
 		return true;
 	}
 
@@ -118,8 +118,8 @@ namespace pwskoag
 		a.sin_port=htons(port);
 		a.sin_addr=ip.addr;
 		socklen_t len=sizeof(a);
-		int r=sendto(fd, (char*)p.RawData(), p.Size(), 0, (struct sockaddr*)&a, len);
-		p.Clear();
+		int r=sendto(fd, (char*)p.M_RawData(), p.M_Size(), 0, (struct sockaddr*)&a, len);
+		p.M_Clear();
 		return true;
 	}
 

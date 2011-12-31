@@ -6,6 +6,13 @@
 *.sln.cache
 *.user
 *.sdf
+*.exe
+*.exp
+*.ilk
+*.lib
+*.pdb
+*.dll
+*.opensdf
 ipch/
 bin/
 obj/

@@ -112,7 +112,9 @@ namespace pwskoag
 	void C_CondVar::M_Wait()
 	{
 		#ifdef _WIN32
+			m_Mutex.M_Lock();
 			SleepConditionVariableCS(&m_Cond, &m_Mutex.m_Mutex, INFINITE);
+			m_Mutex.M_Unlock();
 		#else
 			m_Mutex.M_Lock();
 			pthread_cond_wait(&m_Cond, &m_Mutex.m_Mutex);

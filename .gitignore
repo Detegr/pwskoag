@@ -2,5 +2,11 @@
 *.swp
 *.swo
 *.swn
-client
-server
+*.suo
+*.sln.cache
+*.user
+*.sdf
+ipch/
+bin/
+obj/
+Debug/

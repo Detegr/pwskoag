@@ -3,11 +3,17 @@
 #include <vector>
 namespace pwskoag
 {
+	/*
+	 * Packet types:
+	 * TCPConnect [uchar(TCPConnect), uint]
+	 * UDPConnect [uchar(UDPConnect), ushort]
+	 */
 	enum e_Command
 	{
 		HandShake=0,
 		Heartbeat,
-		Connect,
+		TCPConnect,
+		UDPConnect,
 		Disconnect,
 		String,
 		EOP=255
@@ -33,5 +39,14 @@ namespace pwskoag
 			C_Packet&			operator<<(e_Command c) {uchar x=(uchar)c; M_Append(&x, sizeof(x)); return *this;}
 			template <class type> C_Packet&		operator<<(type x) {M_Append(&x, sizeof(type)); return *this;}
 			template <class type> C_Packet&		operator>>(type& x) {if(M_Size()){x=*(type*)&m_Data[0]; Pop(sizeof(type));} return *this;}
+	};
+
+	class C_DeltaPacket
+	{
+		private:
+			C_Packet m_Previous;
+		public:
+			C_DeltaPacket(const C_Packet& rhs) : m_Previous(rhs) {}
+			C_Packet M_Delta(const C_Packet& rhs) const;
 	};
 }

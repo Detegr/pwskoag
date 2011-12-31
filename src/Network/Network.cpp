@@ -124,7 +124,7 @@ namespace pwskoag
 					if(client->Receive(p))
 					{
 						uchar header; p>>header;
-						if(header==Connect)
+						if(header==TCPConnect)
 						{
 							uint version; p>>version;
 							std::cout << "Version: " << version << std::endl;
@@ -259,7 +259,7 @@ namespace pwskoag
 									{
 										uchar header=0;
 										p >> header;
-										if(header==Connect)
+										if(header==UDPConnect)
 										{
 											ushort id;
 											p>>id;
@@ -333,7 +333,7 @@ namespace pwskoag
 		serverPort=port;
 		tcpSocket=TcpSocket(IpAddress(addr), port);
 		tcpSocket.Connect();
-		packet << Connect << C_Version::M_Get();
+		packet << TCPConnect << C_Version::M_Get();
 		Send();
 		C_Packet p;
 		Selector s;
@@ -441,7 +441,7 @@ namespace pwskoag
 			if(s.IsReady(udpSocket))
 			{
 				std::cout << "Connecting to UDP server..." << std::endl;
-				packet << Connect << m_Master->M_Id();
+				packet << UDPConnect << m_Master->M_Id();
 				udpSocket.Send(packet, m_Address, m_Port);
 			}
 		}

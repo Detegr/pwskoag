@@ -24,12 +24,15 @@ void condwait(void* args)
 int main()
 {
 	pwskoag::C_Mutex m;
+	pwskoag::C_Mutex m2(m);
 	{
+		m2.M_Lock();
 		pwskoag::C_Thread t(thread, &m);
-		pwskoag::C_Thread t1(thread, &m);
+		pwskoag::C_Thread t1(thread, &m2);
 		pwskoag::C_Thread t2(thread, &m);
-		pwskoag::msSleep(100);
+		pwskoag::msSleep(5000);
 		std::cout << "This is the main thread." << std::endl;
+		m2.M_Unlock();
 	}
 	{
 		pwskoag::C_CondVar c;

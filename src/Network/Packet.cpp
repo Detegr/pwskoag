@@ -3,6 +3,54 @@
 namespace pwskoag
 {
 	const size_t C_Packet::MAXSIZE=4096;
+
+	C_Packet::C_Packet(const C_Packet& rhs) : m_Data(rhs.M_Size())
+	{
+		m_Lock=rhs.m_Lock;
+		memcpy(&m_Data[0], &rhs.m_Data[0], rhs.M_Size());
+	}
+
+	C_Packet& C_Packet::operator=(const C_Packet& rhs)
+	{
+		if(this!=&rhs)
+		{
+			this->m_Lock=rhs.m_Lock;
+			m_Data.resize(rhs.M_Size());
+			memcpy(&m_Data[0], &rhs.m_Data[0], rhs.M_Size());
+		}
+		return *this;
+	}
+
+	void C_Packet::M_GetDataChunk(e_Command h, void* data)
+	{
+		switch(h)
+		{
+			case HandShake: return;
+			case TCPConnect:
+			{
+				uint d;
+				*this>>d;
+				if(data) memcpy(data, &d, sizeof(d));
+				return;
+			}
+			case UDPConnect:
+			{
+				ushort d;
+				*this>>d;
+				if(data) memcpy(data, &d, sizeof(d));
+				return;
+			}
+			case String:
+			{
+				std::string d;
+				*this>>d;
+				if(data) *reinterpret_cast<std::string*>(data)=d;
+				return;
+			}
+			case EOP: return;
+		}
+	}
+
 	C_Packet C_DeltaPacket::M_Delta(const C_Packet& rhs) const
 	{
 		if(!m_Previous.M_Size()) return rhs;
@@ -11,8 +59,8 @@ namespace pwskoag
 		C_Packet pretmp(m_Previous);
 		C_Packet rhstmp(rhs);
 
-		uchar rhs_header;
-		uchar pre_header;
+		uchar rhsheader;
+		uchar preheader;
 		while(rhstmp.M_Size())
 		{
 			rhstmp>>rhsheader;
@@ -21,14 +69,39 @@ namespace pwskoag
 			{
 				switch(rhsheader)
 				{
-					case HandShake: break;
+					case HandShake:
+					{
+						out<<rhsheader;
+						break;
+					}
 					case TCPConnect:
 					{
 						uint predata;
 						uint rhsdata;
 						pretmp>>predata;
 						rhstmp>>rhsdata;
-						if(predata!=rhsdata) out<<rhsheader<<rhsdata;
+						if(predata!=rhsdata)
+						{
+							uchar rhsheader2;
+							uint rhsdata2;
+							C_Packet rhstmp2(rhstmp);
+							bool nonewdata=false;
+							while(rhstmp2.M_Size())
+							{
+								rhstmp2>>rhsheader2;
+								if(rhsheader2==preheader)
+								{
+									rhstmp2.M_GetDataChunk(TCPConnect, &rhsdata2);
+									if(rhsdata2==predata)
+									{
+										nonewdata=true;
+										break;
+									}
+								}
+								else rhstmp2.M_GetDataChunk((e_Command)rhsheader2, NULL);
+							}
+							if(!nonewdata) out<<rhsheader<<rhsdata;
+						}
 						break;
 					}
 					case UDPConnect:
@@ -49,13 +122,18 @@ namespace pwskoag
 						if(predata!=rhsdata) out<<rhsheader<<rhsdata;
 						break;
 					}
-					case EOP: break;
+					case EOP:
+					{
+						out<<rhsheader;
+						break;
+					}
+					default:
+					{
+						throw std::runtime_error("Wrong packet header.");
+					}
 				}
 			}
-			else
-			{
-				out << rhsheader;
-			}
 		}
+		return out;
 	}
 }

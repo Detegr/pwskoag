@@ -7,11 +7,11 @@ NETWORK_DIR=../src/Network
 HEADERS=$(UTIL_DIR)/Version.h $(NETWORK_DIR)/Network.h $(NETWORK_DIR)/Network_common.h $(CONCURRENCY_DIR)/Concurrency.h $(UTIL_DIR)/Base.h $(UTIL_DIR)/Timer.h $(NETWORK_DIR)/Packet.h
 MODULES=Timer.o Concurrency.o Network_common.o Network.o Packet.o
 INCLUDEDIR=../src/
-LIBS=-lpthread
+LIBS=-lpthread -framework OpenGL -framework sfml-graphics
 EXECUTABLES=client server
 
 
-all: server client
+all: $(MODULES) server client gfxtest
 Network.o: $(NETWORK_DIR)/Network.cpp $(NETWORK_DIR)/Network.h
 	$(CC) -c $(NETWORK_DIR)/Network.cpp $(OPTS) -o $(MODULE_DIR)/Network.o -I $(INCLUDEDIR)
 Concurrency.o: $(CONCURRENCY_DIR)/Concurrency.cpp $(CONCURRENCY_DIR)/Concurrency.h 
@@ -22,9 +22,11 @@ Packet.o: $(NETWORK_DIR)/Packet.cpp $(NETWORK_DIR)/Packet.h
 	$(CC) -c $(NETWORK_DIR)/Packet.cpp $(OPTS) -o $(MODULE_DIR)/Packet.o -I $(INCLUDEDIR)
 Network_common.o: $(NETWORK_DIR)/Network_common.cpp $(NETWORK_DIR)/Network_common.h
 	$(CC) -c $(NETWORK_DIR)/Network_common.cpp $(OPTS) -o $(MODULE_DIR)/Network_common.o -I $(INCLUDEDIR)
-server: ../src/Main/Server.cpp $(MODULES) $(HEADERS)
+server: ../src/Main/Server.cpp $(HEADERS)
 	$(CC) -o server ../src/Main/Server.cpp $(foreach m,$(MODULES),$(MODULE_DIR)/$(m)) $(OPTS) $(LIBS) -I $(INCLUDEDIR)
-client: ../src/Main/Client.cpp $(MODULE_DIR)/$(MODULES) $(HEADERS)
+client: ../src/Main/Client.cpp $(HEADERS)
 	$(CC) -o client ../src/Main/Client.cpp $(foreach m,$(MODULES),$(MODULE_DIR)/$(m)) $(OPTS) $(LIBS) -I $(INCLUDEDIR)
+gfxtest: ../src/Main/gfxtest.cpp $(HEADERS)
+	$(CC) -o gfxtest ../src/Main/gfxtest.cpp $(foreach m,$(MODULES),$(MODULE_DIR)/$(m)) $(OPTS) $(LIBS) -I $(INCLUDEDIR)
 clean:
 	rm $(EXECUTABLES) $(MODULE_DIR)/$(MODULES)

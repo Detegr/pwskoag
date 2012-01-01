@@ -16,6 +16,7 @@
 #endif
 #include <iostream>
 #include <cstring>
+#include <stdexcept>
 
 namespace pwskoag
 {

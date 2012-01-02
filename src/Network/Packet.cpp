@@ -15,10 +15,32 @@ namespace pwskoag
 		if(this!=&rhs)
 		{
 			this->m_Lock=rhs.m_Lock;
+			C_Lock(this->m_Lock);
 			m_Data.resize(rhs.M_Size());
 			memcpy(&m_Data[0], &rhs.m_Data[0], rhs.M_Size());
 		}
 		return *this;
+	}
+
+	void C_Packet::M_Append(const void* d, size_t len)
+	{
+		C_Lock l(m_Lock);
+		size_t size=m_Data.size();
+		m_Sections.push_back(size);
+		m_Data.resize(size+len);
+		memcpy(&m_Data[size], d, len);
+	}
+
+	void C_Packet::M_Pop(size_t bytes)
+	{
+		C_Lock l(m_Lock);
+		m_Sections.erase(m_Sections.begin());
+		m_Data.erase(m_Data.begin(), m_Data.begin()+bytes);
+	}
+	uchar* C_Packet::M_GetSection(int section)
+	{
+		if(section==m_Sections.size()) return &m_Data[m_Data.size()];
+		else return &m_Data[m_Sections[section]];
 	}
 
 	void C_Packet::M_GetDataChunk(e_Command h, void* data)

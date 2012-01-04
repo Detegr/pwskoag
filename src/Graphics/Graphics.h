@@ -1,42 +1,44 @@
 #pragma once
+#include <Util/Base.h>
 #include <SFML/Graphics.hpp>
 #include <vector>
 
 namespace pwskoag
 {
-	class RendererImpl
+	typedef std::vector<sf::Drawable *> t_Drawable;
+	class C_RendererImpl
 	{
-		friend class Renderer;
+		friend class C_Renderer;
 		private:
 			sf::RenderWindow				window;
 			std::vector<sf::Drawable *> 	objectsToDraw;
-			void Draw()
+			void M_Draw()
 			{
 				window.Clear();
-				for(auto it=objectsToDraw.begin(); it!=objectsToDraw.end(); ++it) window.Draw(**it);
+				for(t_Drawable::iterator it=objectsToDraw.begin(); it!=objectsToDraw.end(); ++it) window.Draw(**it);
 				window.Display();
 			}
-			RendererImpl(uint w, uint h) : window(sf::VideoMode(w,h,32), "") {}
+			C_RendererImpl(uint w, uint h) : window(sf::VideoMode(w,h,32), "") {}
 	};
 
-	class Renderer
+	class C_Pollable
+	{
+		virtual sf::Event& M_GetEvent()=0;
+	};
+
+	class C_Renderer : public C_Pollable
 	{
 		private:
-			static RendererImpl* 	impl;
+			sf::Event m_Event;
+			static C_RendererImpl* 	impl;
 			static uint				references;
 		public:
-			Renderer(uint w, uint h);
-			~Renderer();
-			void AddObject(sf::Drawable& obj) {impl->objectsToDraw.push_back(&obj);}
-			void Draw() {impl->Draw();}
+			C_Renderer(uint w, uint h);
+			~C_Renderer();
+			void M_AddObject(sf::Drawable& obj) {impl->objectsToDraw.push_back(&obj);}
+			void M_Draw() {impl->M_Draw();}
+			bool M_Running() const {return impl->window.IsOpened();}
+			void M_Stop() {impl->window.Close();}
+			virtual sf::Event& M_GetEvent() {impl->window.GetEvent(m_Event); return m_Event;}
 	};
-	/*
-	class EventManager
-	{
-		private:
-			sf::Event e;
-		public:
-			sf::Event& getEvent() {Renderer::impl->window.PollEvent(e); return e;}
-	};
-	*/
 }

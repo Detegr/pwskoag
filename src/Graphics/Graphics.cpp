@@ -2,15 +2,15 @@
 
 namespace pwskoag
 {
-	RendererImpl* 	Renderer::impl;
-	uint			Renderer::references;
+	C_RendererImpl* 	C_Renderer::impl;
+	uint				C_Renderer::references;
 
-	Renderer::Renderer(uint w, uint h)
+	C_Renderer::C_Renderer(uint w, uint h)
 	{
-		if(!references){impl=new RendererImpl(w,h); ++references;}
+		if(!references){impl=new C_RendererImpl(w,h); ++references;}
 		else {++references;}
 	}
-	Renderer::~Renderer()
+	C_Renderer::~C_Renderer()
 	{
 		--references;
 		if(!references) delete impl;

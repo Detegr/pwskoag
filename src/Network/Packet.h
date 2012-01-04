@@ -25,6 +25,7 @@ namespace pwskoag
 	class C_Packet
 	{
 		friend class Socket;
+		friend class C_DeltaPacket;
 		private:
 			C_Mutex				m_Lock;
 			std::vector<uchar>	m_Data;
@@ -81,9 +82,9 @@ namespace pwskoag
 				}
 				return *this;
 			}
-			void				M_GetDataChunk(uchar h, void* data) {M_GetDataChunk((e_Command)h,data);}
+			void				M_GetDataChunk(uchar h, void* data) {M_GetDataChunk((e_Command)h, data);}
 			void				M_GetDataChunk(e_Command h, void* data);
-			uchar*				M_GetSection(int section);
+			uchar*				M_GetSection(int section) const;
 	};
 
 	class C_DeltaPacket
@@ -92,6 +93,6 @@ namespace pwskoag
 			C_Packet m_Previous;
 		public:
 			C_DeltaPacket(const C_Packet& rhs) : m_Previous(rhs) {}
-			C_Packet M_Delta(const C_Packet& rhs) const;
+			C_Packet M_Delta(const C_Packet& rhs);
 	};
 }

@@ -5,17 +5,17 @@
 
 namespace pwskoag
 {
-	typedef std::vector<sf::Drawable *> t_Drawable;
+	typedef std::vector<const sf::Drawable *> t_Drawable;
 	class C_RendererImpl
 	{
 		friend class C_Renderer;
 		private:
 			sf::RenderWindow				window;
-			std::vector<sf::Drawable *> 	objectsToDraw;
+			std::vector<const sf::Drawable *> 	objectsToDraw;
 			void M_Draw()
 			{
 				window.Clear();
-				for(t_Drawable::iterator it=objectsToDraw.begin(); it!=objectsToDraw.end(); ++it) window.Draw(**it);
+				for(t_Drawable::const_iterator it=objectsToDraw.begin(); it!=objectsToDraw.end(); ++it) window.Draw(**it);
 				window.Display();
 			}
 			C_RendererImpl(uint w, uint h) : window(sf::VideoMode(w,h,32), "") {}
@@ -35,7 +35,7 @@ namespace pwskoag
 		public:
 			C_Renderer(uint w, uint h);
 			~C_Renderer();
-			void M_AddObject(sf::Drawable& obj) {impl->objectsToDraw.push_back(&obj);}
+			void M_AddObject(const sf::Drawable& obj) {impl->objectsToDraw.push_back(&obj);}
 			void M_Draw() {impl->M_Draw();}
 			bool M_Running() const {return impl->window.IsOpened();}
 			void M_Stop() {impl->window.Close();}

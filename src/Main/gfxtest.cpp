@@ -1,16 +1,23 @@
 #include <Graphics/Graphics.h>
 #include <Network/Network.h>
+#include <Game/Player.h>
+#include <vector>
 
 int main()
 {
 	pwskoag::C_Renderer r(640,480);
 	pwskoag::TcpClient c;
-	sf::Font f;
-	f.LoadFromFile("play.ttf");
-	sf::String text("", f, 40);
-	r.M_AddObject(text);
+	pwskoag::C_ClientPlayer p(&c);
+	r.M_AddObject(*p.M_GetDRAW()->M_GetDrawableObj());
 	bool key=false;
-	c.M_Connect("localhost", 55555);
+	try
+	{
+		c.M_Connect("localhost", 55555);
+	}
+	catch(...)
+	{
+		std::cout << "Failed to connect..." << std::endl;
+	}
 	while(r.M_Running())
 	{
 		r.M_Draw();
@@ -20,14 +27,13 @@ int main()
 			case sf::Event::TextEntered:
 			{
 				sf::Uint32 e=r.M_GetEvent().Text.Unicode;
-				if(e==278) text.SetText("");
+				if(e==278) {p.M_Send(); std::string str; p.M_SetStr(str);}
 				else
 				{
+					std::string str;
 					if(e==277) e=' ';
-					std::cout << e << std::endl;
-					std::string str(text.GetText());
 					str+=(char)e;
-					text.SetText(str);
+					p.M_AddStr(str);
 				}
 			}
 			case sf::Event::KeyReleased: key=false; break;

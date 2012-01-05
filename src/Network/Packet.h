@@ -19,6 +19,7 @@ namespace pwskoag
 		UDPConnect,
 		Disconnect,
 		String,
+		Integer,
 		EOP=255
 	};
 

@@ -67,8 +67,7 @@ namespace pwskoag
 		ret=connect(fd, (sockaddr*)&addr, len);
 		if(ret<0)
 		{
-			std::cout << Error("Connect",type) << std::endl;
-			exit(1);
+			throw std::runtime_error("Connection refused");
 		}
 	}
 

@@ -3,6 +3,7 @@
 #include <Util/Base.h>
 #include <Concurrency/Concurrency.h>
 #include <Util/Timer.h>
+#include "ThreadData.h"
 #include "Network_common.h"
 #include <list>
 #include <stdexcept>
@@ -35,6 +36,8 @@ namespace pwskoag
 		private:
 			TcpSocket 			tcpListener;
 			t_Clients			clients;
+			C_Mutex				m_PlayerLock;
+			std::vector<C_ServerPlayer *> m_Players;
 			PWSKOAG_API void	ServerLoop();
 		public:
 			PWSKOAG_API TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
@@ -52,30 +55,15 @@ namespace pwskoag
 			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp), udpSocket(UdpSocket(port)) {udpSocket.Bind();}
 	};
 	
-	struct C_ThreadData
-	{
-		C_Mutex*		lock;
-		Socket*		socket;
-		C_Timer*	timer;
-		bool*		stopNow;
-		C_ThreadData(C_Mutex *l, C_Timer* t, Socket* sock, bool* stop) :
-			lock(l), timer(t), socket(sock), stopNow(stop) {}
-	};
-
-	struct LocalThreadData
-	{
-		Socket*				socket;
-		C_Timer				timer;
-		C_Mutex	lock;
-		LocalThreadData(Socket* s) : socket(s), timer(C_Timer()) {}
-	};
-
 	/*
 	 * TcpClient class
 	 */
 	class TcpClient : public Client
 	{
 		friend class UdpClient;
+		friend class C_ClientPlayer;
+		friend class C_ServerPlayer;
+		friend class C_Sendable;
 		private:
 			IpAddress			serverAddress;
 			uint 				serverPort;
@@ -83,7 +71,7 @@ namespace pwskoag
 			bool				m_Connected;
 			C_Mutex				m_Lock;
 			C_Mutex				m_ConnectMutex;
-			C_Packet				packet;
+			C_Packet			packet;
 			PWSKOAG_API void 	ClientLoop();
 			void 				Append(e_Command c) {packet<<(uchar)c;}
 			void 				Send();
@@ -96,6 +84,20 @@ namespace pwskoag
 			const ushort				M_Id() const {return tcpSocket.M_Id();}
 	};
 
+	class C_Sendable
+	{
+		private:
+			C_Sendable() {}
+		public:
+			TcpSocket* m_Tcp;
+			C_Packet* m_Packet;
+		public:
+			C_Sendable(TcpClient* t) : m_Tcp(&t->tcpSocket), m_Packet(&t->packet) {}
+			C_Sendable(TcpSocket* s, C_Packet* p) : m_Tcp(s), m_Packet(p) {}
+			virtual ~C_Sendable() {}
+			virtual void M_Send()=0;
+	};
+
 	class UdpClient : public Client
 	{
 		private:
@@ -103,7 +105,7 @@ namespace pwskoag
 			IpAddress			m_Address;
 			ushort				m_Port;
 			UdpSocket 			udpSocket;
-			C_Packet				packet;
+			C_Packet			packet;
 			C_Mutex				m_Lock;
 			PWSKOAG_API void	ClientLoop();
 			void 				Append(e_Command c) {packet<<(uchar)c;}

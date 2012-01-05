@@ -3,6 +3,7 @@
 #include "Network_common.h"
 #include <iostream>
 #include <assert.h>
+#include <Game/Player.h>
 
 #ifdef _WIN32
 #else
@@ -43,6 +44,7 @@ namespace pwskoag
 		C_ThreadData* data=(C_ThreadData*)args;
 		C_Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
+		std::vector<C_ServerPlayer *>* plrs=data->m_Players;
 		TcpSocket* client=(TcpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
 		delete data;
@@ -71,6 +73,24 @@ namespace pwskoag
 								std::cout << "Str: " << str << " from " << client->GetIp() << ":" << client->GetPort() << std::endl;
 								break;
 							}
+							case Integer:
+							{
+								int i;
+								p>>i;
+								std::cout << "ID: " << i << std::endl;
+								std::string str;
+								p>>str;
+								lock->M_Lock();
+								for(std::vector<C_ServerPlayer*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								{
+									(*it)->m_Packet->M_Clear();
+									if((*it)->M_Id()==i) (*it)->M_SetStr(str);
+										for(std::vector<C_ServerPlayer*>::iterator it2=plrs->begin(); it2!=plrs->end(); ++it2) *((*it)->m_Packet)<<(uchar)Integer<<(int)(*it2)->M_Id()<<(uchar)String<<(*it2)->M_GetStr();
+									(*it)->M_Send();
+								}
+								lock->M_Unlock();
+								break;
+							}
 							case Heartbeat:
 								lock->M_Lock();
 								timer->M_Reset();
@@ -83,7 +103,7 @@ namespace pwskoag
 								lock->M_Unlock();
 								std::cout << "Client disconnected." << std::endl;
 								return;
-							case EOP: EndOfPacket(client); break;
+							case EOP: /*EndOfPacket(client);*/ break;
 							default: break;
 						}
 					}
@@ -151,8 +171,11 @@ namespace pwskoag
 								p << client->M_Id();
 								std::cout << "Generated id: " << client->M_Id() << std::endl;
 								std::cout << "Client connected" << std::endl;
+								m_Players.push_back(new C_ServerPlayer(client, new C_Packet));
+								m_Players.back()->M_SetId(client->M_Id());
+								std::cout << "Players: " << m_Players.size() << std::endl;
 								clients.push_back(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
-								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock, &clients.back().second.timer, client, &stopNow);
+								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock,client, &clients.back().second.timer, &m_Players, &stopNow);
 								C_Thread* run=new C_Thread(TCPReceiveThread_Server, (void*)data);
 								clients.back().first=run;
 								client->Send(p);
@@ -169,15 +192,31 @@ namespace pwskoag
 				it->second.lock.M_Unlock();
 				if(closed)
 				{
-					std::cout << "Removed disconnected client from clients." << std::endl;
 					it->first->M_Join();
 					it->second.lock.M_Lock();
+					std::cout << "Removed disconnected client from clients." << std::endl;
+					std::vector<C_ServerPlayer *>::iterator pt=m_Players.begin();
+					while(pt!=m_Players.end())
+					{
+						if((*pt)->m_Tcp->M_Id()==it->second.socket->M_Id())
+						{
+							std::cout << "Deleting player " << (*pt)->m_Tcp->M_Id() << std::endl;
+							delete (*pt)->m_Packet;
+							delete (*pt);
+							std::vector<C_ServerPlayer *>::iterator del=pt;
+							++pt;
+							m_Players.erase(del);
+							break;
+						}
+						++pt;
+					}
 					delete it->first;
 					delete it->second.socket;
 					it->second.lock.M_Unlock();
 					t_Clients::iterator prev=it;
 					++it;
 					it=clients.erase(prev);
+
 					continue;
 				}
 				else ++it;
@@ -186,6 +225,7 @@ namespace pwskoag
 		tcpListener.Close();
 
 		if(clients.size()>0) {std::cout << "There were " << clients.size() << " clients connected." << std::endl;}
+		for(std::vector<C_ServerPlayer*>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it) {delete (*it)->m_Packet; delete *it;}
 		std::cout << "Shut down successful." << std::endl;
 	}
 	void UDPReceiveThread_Client(void *args)
@@ -392,6 +432,13 @@ namespace pwskoag
 						p>>header;
 						switch (header)
 						{
+							case Integer:
+							{
+								int i;
+								p>>i;
+								std::cout << "To ID: " << i << std::endl;
+								break;
+							}
 							case String:
 							{
 								std::string str;
@@ -414,18 +461,17 @@ namespace pwskoag
 	PWSKOAG_API void TcpClient::ClientLoop()
 	{
 		C_Timer timer;
-		C_ThreadData* data=new C_ThreadData(NULL, NULL, &tcpSocket, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, NULL, &(Client::stopNow));
 		C_Thread t(TCPReceiveThread_Client, data);
 		while(!stopNow)
 		{
 			msSleep(TICK_WAITTIME_TCP);
-			Append(String, std::string(":))"));
 			if(timer.M_Get()>2000)
 			{
 				Append(Heartbeat);
 				timer.M_Reset();
 			}
-			Send();
+			if(packet.M_Size()) Send();
 		}
 	}
 	PWSKOAG_API bool UdpClient::M_Connect(const char* addr, ushort port)
@@ -469,7 +515,7 @@ namespace pwskoag
 	}
 	PWSKOAG_API void UdpClient::ClientLoop()
 	{
-		C_ThreadData* data=new C_ThreadData(NULL, NULL, &udpSocket, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, &(Client::stopNow));
 		C_Thread t(UDPReceiveThread_Client, data);
 		while(!stopNow)
 		{

@@ -23,9 +23,12 @@ namespace pwskoag
 		public:
 			C_DRAWPlayer()
 			{
+				static uint y=0;
 				m_Font.LoadFromFile("play.ttf");
 				m_Text.SetFont(m_Font);
-				m_Text.SetSize(40);
+				m_Text.SetSize(20);
+				m_Text.SetPosition(0,y);
+				y+=20;
 			}
 			void M_SetStr(std::string& str)
 			{
@@ -101,6 +104,7 @@ namespace pwskoag
 				m_Str=str;
 				m_Draw->M_SetStr(m_Str);
 			}
+			std::string& M_GetStr() {return m_Str;}
 			void M_Send()
 			{
 				C_Lock l(m_Lock);

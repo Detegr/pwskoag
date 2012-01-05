@@ -136,7 +136,7 @@ namespace pwskoag
 		public:
 			Selector() {FD_ZERO(&fds);}
 			void Add(Socket& s) {fd_ints.push_back(s.fd); std::sort(fd_ints.begin(), fd_ints.end());}
-			bool IsReady(Socket& s) {return FD_ISSET(s.fd, &fds);}
+			bool IsReady(Socket& s) {if(s.fd!=-1) return FD_ISSET(s.fd, &fds); else return false;}
 			void Remove(Socket& s);
 			void Clear() {fd_ints.clear(); FD_ZERO(&fds);}
 			int Wait(uint timeoutms);

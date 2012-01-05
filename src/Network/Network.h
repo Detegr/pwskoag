@@ -76,12 +76,16 @@ namespace pwskoag
 			void 				Append(e_Command c) {packet<<(uchar)c;}
 			void 				Send();
 			void 				Send(e_Command c) {C_Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
+			std::vector<C_ClientPlayer *> m_Players;
+			C_ClientPlayer*		m_OwnPlayer;
 		public:
 			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
 			PWSKOAG_API bool			M_Connect(const char* addr, ushort port);
 			PWSKOAG_API void 			M_Disconnect();
 			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
 			const ushort				M_Id() const {return tcpSocket.M_Id();}
+			std::vector<C_ClientPlayer *> M_Players() {return m_Players;}
+			C_ClientPlayer*				M_OwnPlayer() {return m_OwnPlayer;}
 	};
 
 	class C_Sendable
@@ -92,6 +96,7 @@ namespace pwskoag
 			TcpSocket* m_Tcp;
 			C_Packet* m_Packet;
 		public:
+			C_Sendable(bool t) : m_Tcp(NULL), m_Packet(NULL) {}
 			C_Sendable(TcpClient* t) : m_Tcp(&t->tcpSocket), m_Packet(&t->packet) {}
 			C_Sendable(TcpSocket* s, C_Packet* p) : m_Tcp(s), m_Packet(p) {}
 			virtual ~C_Sendable() {}

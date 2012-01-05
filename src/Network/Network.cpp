@@ -83,8 +83,11 @@ namespace pwskoag
 								lock->M_Lock();
 								for(std::vector<C_ServerPlayer*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
+									if((*it)->M_Id()==i) {(*it)->M_SetStr(str); break;}
+								}
+								for(std::vector<C_ServerPlayer*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								{
 									(*it)->m_Packet->M_Clear();
-									if((*it)->M_Id()==i) (*it)->M_SetStr(str);
 										for(std::vector<C_ServerPlayer*>::iterator it2=plrs->begin(); it2!=plrs->end(); ++it2) *((*it)->m_Packet)<<(uchar)Integer<<(int)(*it2)->M_Id()<<(uchar)String<<(*it2)->M_GetStr();
 									(*it)->M_Send();
 								}
@@ -114,6 +117,7 @@ namespace pwskoag
 					client->Clear();
 					lock->M_Unlock();
 					std::cout << "Couldn't receive data from client. Client disconnected?" << std::endl;
+					break;
 				}
 			}
 			else
@@ -122,6 +126,7 @@ namespace pwskoag
 				client->Clear();
 				lock->M_Unlock();
 				std::cout << "Client timed out" << std::endl;
+				break;
 			}
 		}
 	}
@@ -175,7 +180,7 @@ namespace pwskoag
 								m_Players.back()->M_SetId(client->M_Id());
 								std::cout << "Players: " << m_Players.size() << std::endl;
 								clients.push_back(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
-								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock,client, &clients.back().second.timer, &m_Players, &stopNow);
+								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock,client, &clients.back().second.timer, &m_Players, NULL, &stopNow);
 								C_Thread* run=new C_Thread(TCPReceiveThread_Server, (void*)data);
 								clients.back().first=run;
 								client->Send(p);
@@ -390,6 +395,10 @@ namespace pwskoag
 					p >> id;
 					tcpSocket.M_Id(id);
 					std::cout << "Got handshake with id: " << tcpSocket.M_Id() << std::endl;
+					C_ClientPlayer* n = new C_ClientPlayer(this);
+					m_OwnPlayer=n;
+					m_Players.push_back(m_OwnPlayer);
+					m_Players.back()->M_SetId(id);
 					Start();
 					return true;
 				}
@@ -405,12 +414,17 @@ namespace pwskoag
 		Stop();
 		//Lock lock(Client::selfMutex);
 		tcpSocket.Disconnect();
+		for(std::vector<C_ClientPlayer *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+		{
+			delete *it;
+		}
 	}
 
 	void TCPReceiveThread_Client(void *args)
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
 		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
+		std::vector<C_ClientPlayer *>* plrs=data->m_CPlayers;
 		bool* stopNow=data->stopNow;
 		bool connect=true;
 		delete data;
@@ -435,8 +449,25 @@ namespace pwskoag
 							case Integer:
 							{
 								int i;
+								std::string str;
 								p>>i;
-								std::cout << "To ID: " << i << std::endl;
+								bool newplr=true;
+								for(std::vector<C_ClientPlayer *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								{
+									if((*it)->M_Id()==i) {newplr=false; break;}
+								}
+								if(newplr)
+								{
+									std::cout << "New player: " << i << std::endl;
+									plrs->push_back(new C_ClientPlayer(false));
+									plrs->back()->M_SetId(i);
+								}
+								p>>str;
+								std::cout << str << " for " << i << std::endl;
+								for(std::vector<C_ClientPlayer *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								{
+									if((*it)->M_Id()==i) (*it)->M_SetStr(str);
+								}
 								break;
 							}
 							case String:
@@ -461,7 +492,7 @@ namespace pwskoag
 	PWSKOAG_API void TcpClient::ClientLoop()
 	{
 		C_Timer timer;
-		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, NULL, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, NULL, &m_Players, &(Client::stopNow));
 		C_Thread t(TCPReceiveThread_Client, data);
 		while(!stopNow)
 		{
@@ -515,7 +546,7 @@ namespace pwskoag
 	}
 	PWSKOAG_API void UdpClient::ClientLoop()
 	{
-		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, NULL, &(Client::stopNow));
 		C_Thread t(UDPReceiveThread_Client, data);
 		while(!stopNow)
 		{

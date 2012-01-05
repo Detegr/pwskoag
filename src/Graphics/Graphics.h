@@ -10,7 +10,7 @@ namespace pwskoag
 	{
 		friend class C_Renderer;
 		private:
-			sf::RenderWindow				window;
+			sf::RenderWindow					window;
 			std::vector<const sf::Drawable *> 	objectsToDraw;
 			void M_Draw()
 			{
@@ -36,6 +36,15 @@ namespace pwskoag
 			C_Renderer(uint w, uint h);
 			~C_Renderer();
 			void M_AddObject(const sf::Drawable& obj) {impl->objectsToDraw.push_back(&obj);}
+			void M_AddObjectCheckExisting(const sf::Drawable& obj)
+			{
+				for(t_Drawable::const_iterator it=impl->objectsToDraw.begin(); it!=impl->objectsToDraw.end(); ++it)
+				{
+					if(*it==&obj) return;
+				}
+				std::cout << "Adding object to renderer..." << std::endl;
+				impl->objectsToDraw.push_back(&obj);
+			}
 			void M_Draw() {impl->M_Draw();}
 			bool M_Running() const {return impl->window.IsOpened();}
 			void M_Stop() {impl->window.Close();}

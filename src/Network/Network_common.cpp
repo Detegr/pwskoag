@@ -154,7 +154,7 @@ namespace pwskoag
 			tv.tv_sec=timeoutms/1000;
 			tv.tv_usec=(timeoutms%1000)*1000;
 			FD_ZERO(&fds);
-			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) if((*it)!=-1) FD_SET(*it, &fds);
 			return select(fd_ints.back()+1, &fds, NULL, NULL, &tv);
 		}
 		else
@@ -172,7 +172,7 @@ namespace pwskoag
 			tv.tv_sec=timeoutms/1000;
 			tv.tv_usec=(timeoutms%1000)*1000;
 			FD_ZERO(&fds);
-			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) if((*it)!=-1) FD_SET(*it, &fds);
 			return select(fd_ints.back()+1, NULL, &fds, NULL, &tv);
 		}
 		else

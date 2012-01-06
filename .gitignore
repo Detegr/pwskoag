@@ -21,3 +21,6 @@ obj/
 Debug/
 build/
 !build/Makefile
+xcuserdata
+.DS_Store
+Session.vim

@@ -1,4 +1,5 @@
 #include <Network/Network.h>
+#include <Network/Server.h>
 #include <iostream>
 #include <signal.h>
 

@@ -1,575 +1,212 @@
-#include <Util/Version.h>
 #include "Network.h"
-#include "Network_common.h"
+#include <signal.h>
 #include <iostream>
 #include <assert.h>
-#include <Game/Player.h>
-#include <Game/ClientPlayer.h>
-
-#ifdef _WIN32
-#else
-	#include <sys/time.h>
-#endif
+#include <cstdio>
 
 namespace pwskoag
-{
-	static void EndOfPacket(TcpSocket* client)
+{ 
+	PWSKOAG_API Socket::Socket(IpAddress& ip, ushort port, Type type) : m_Id(0), ip(ip), port(port), fd(0), type(type)
 	{
-		C_Packet toClient;
-		std::string str("Hi, this is server speaking.");
-		if(!TcpSend(String, str, client, toClient))
+		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
+		if(fd<=0) throw std::runtime_error("Failed to create socket.");
+		memset(&addr, 0, sizeof(addr));
+		addr.sin_family=AF_INET;
+		addr.sin_port=htons(port);
+		addr.sin_addr=ip.addr;
+		int yes=1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&yes, sizeof(yes));
+	}
+
+	PWSKOAG_API Socket::Socket(ushort port, Type type) : m_Id(0), ip(), port(port), fd(0), type(type)
+	{
+		fd=socket(AF_INET, type, type==TCP ? IPPROTO_TCP : IPPROTO_UDP);
+		if(fd<=0) throw std::runtime_error(Error("Socket"));
+		memset(&addr, 0, sizeof(addr));
+		addr.sin_family=AF_INET;
+		addr.sin_port=htons(port);
+		addr.sin_addr.s_addr=htonl(INADDR_ANY);
+		int yes=1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&yes, sizeof(yes));
+	}
+
+	PWSKOAG_API void Socket::Bind()
+	{
+		socklen_t len=sizeof(addr);
+		if(bind(fd, (struct sockaddr*)&addr, len)!=0) throw std::runtime_error(Error("Bind", type));
+	}
+
+	bool TcpSocket::Receive(C_Packet& p)
+	{
+		uchar buf[C_Packet::MAXSIZE];
+		ssize_t r=recv(fd, (char*)buf, C_Packet::MAXSIZE, 0);
+		if(r<=0) return false;
+		for(int i=0;i<r;++i)p<<buf[i];
+		return true;
+	}
+	bool UdpSocket::Receive(C_Packet& p, IpAddress* ip, ushort* port)
+	{
+		uchar buf[C_Packet::MAXSIZE];
+		struct sockaddr_in a;
+		socklen_t len=sizeof(a);
+		ssize_t r=recvfrom(fd, (char*)buf, C_Packet::MAXSIZE, 0, (struct sockaddr*)&a, &len);
+		if(r<0) return false;
+		for(int i=0;i<r;++i)p<<buf[i];
+		if(ip) *ip=IpAddress(a.sin_addr);
+		if(port) *port=ntohs(a.sin_port);
+		return true;
+	}
+
+	void TcpSocket::Connect()
+ 	{
+		fd_set set;
+		FD_ZERO(&set);
+		FD_SET(fd, &set);
+		socklen_t len=sizeof(addr);
+		int ret=-1;
+		ret=connect(fd, (sockaddr*)&addr, len);
+		if(ret<0)
 		{
-			std::cout << "Client disconnected: Terminating the connection." << std::endl;
+			throw std::runtime_error("Connection refused");
 		}
-		std::cout << "Sent: " << str << std::endl;
 	}
 
-	void UdpClient::Send(IpAddress& ip, ushort port)
+	bool TcpSocket::Send(C_Packet& p)
 	{
-		Append(EOP);
-		C_Lock l(m_Lock);
-		udpSocket.Send(packet, ip, port);
-		packet.M_Clear();
-	}
-
-	void TcpClient::Send()
-	{
-		Append(EOP);
-		C_Lock l(m_Lock);
-		tcpSocket.Send(packet);
-		packet.M_Clear();
-	}
-
-	void TCPReceiveThread_Server(void *args)
-	{
-		C_ThreadData* data=(C_ThreadData*)args;
-		C_Mutex* lock=data->lock;
-		C_Timer* timer=data->timer;
-		std::vector<C_Player *>* plrs=data->m_Players;
-		TcpSocket* client=(TcpSocket*)data->socket;
-		bool* stopNow=data->stopNow;
-		delete data;
-
-		Selector s;
-		while(!*stopNow)
+		fd_set set;
+		FD_ZERO(&set);
+		FD_SET(fd, &set);
+		struct timeval tv;
+		tv.tv_sec=2;
+		tv.tv_usec=0;
+		ssize_t bytes=-1;
+		int ret=select(fd+1, NULL, &set, NULL, &tv);
+		if(ret>0 && FD_ISSET(fd, &set))
 		{
-			C_Packet p;
-			s.Clear();
-			s.Add(*client);
-			s.Wait(4000);
-			if(s.IsReady(*client))
+			FD_CLR(fd, &set);
+			bytes=send(fd, (char*)p.M_RawData(), p.M_Size(), 0);
+			if(bytes==-1)
 			{
-				if(client->Receive(p))
+				if(errno==EPIPE || errno==ECONNRESET || errno==ENOTCONN)
 				{
-					uchar header=0;
-					while(p.M_Size())
-					{
-						p>>header;
-						switch (header)
-						{
-							case String:
-							{
-								std::string str;
-								p>>str;
-								std::cout << "Str: " << str << " from " << client->GetIp() << ":" << client->GetPort() << std::endl;
-								break;
-							}
-							case Integer:
-							{
-								int i;
-								p>>i;
-								std::string str;
-								p>>str;
-								std::cout << "ID: " << i << ": " << str << std::endl;
-								lock->M_Lock();
-								for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
-								{
-									if((*it)->M_Id()==i) {(*it)->M_SetStr(str); break;}
-								}
-								for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
-								{
-									C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);
-									plr->m_Packet->M_Clear();
-									for(std::vector<C_Player*>::iterator it2=plrs->begin(); it2!=plrs->end(); ++it2)
-									{
-										C_ServerPlayer* plr2=dynamic_cast<C_ServerPlayer*>(*it2);
-										*(plr->m_Packet)<<(uchar)Integer<<(int)plr2->M_Id()<<(uchar)String<<plr2->M_GetStr();
-										std::cout << "Sent " << (int)plr2->M_Id() << "," << plr2->M_GetStr() << " to " << plr->M_Id() << std::endl;
-									}
-									plr->M_Send();
-								}
-								lock->M_Unlock();
-								break;
-							}
-							case Heartbeat:
-								lock->M_Lock();
-								timer->M_Reset();
-								lock->M_Unlock();
-								std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
-								break;
-							case Disconnect:		
-								lock->M_Lock();
-								client->Clear();
-								lock->M_Unlock();
-								std::cout << "Client disconnected." << std::endl;
-								return;
-							case EOP: /*EndOfPacket(client);*/ break;
-							default: break;
-						}
-					}
+					std::cerr << "Connection lost." << std::endl;
+					return false;
 				}
-				else
-				{
-					lock->M_Lock();
-					client->Clear();
-					lock->M_Unlock();
-					std::cout << "Couldn't receive data from client. Client disconnected?" << std::endl;
-					break;
-				}
+				perror("SEND");
 			}
-			else
+		}
+		else
+		{
+			std::cout << "Something went wrong." << std::endl;
+			#ifdef _WIN32
+				closesocket(fd);
+			#else
+				close(fd);
+			#endif
+			exit(1);
+		}
+		assert(bytes==p.M_Size());
+		p.M_Clear();
+		return true;
+	}
+
+	bool UdpSocket::Send(C_Packet& p, IpAddress& ip, ushort port)
+	{
+		struct sockaddr_in a;
+		a.sin_family=AF_INET;
+		a.sin_port=htons(port);
+		a.sin_addr=ip.addr;
+		socklen_t len=sizeof(a);
+		sendto(fd, (char*)p.M_RawData(), p.M_Size(), 0, (struct sockaddr*)&a, len);
+		p.M_Clear();
+		return true;
+	}
+
+	TcpSocket* TcpSocket::Accept()
+	{
+		socklen_t len=sizeof(addr);
+		int newfd=accept(fd, (sockaddr*)&addr, &len);
+		if(newfd<0) return NULL;
+		IpAddress ip(addr.sin_addr);
+		return new TcpSocket(ip, htons(addr.sin_port), Socket::TCP, newfd);
+	}
+
+
+	void Selector::Remove(Socket& s)
+	{
+		for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it)
+		{
+			if(*it==s.fd)
 			{
-				lock->M_Lock();
-				client->Clear();
-				lock->M_Unlock();
-				std::cout << "Client timed out" << std::endl;
+				std::cout << "Erasing: " << *it << std::endl;
+				it=fd_ints.erase(it);
 				break;
 			}
 		}
+		std::sort(fd_ints.begin(), fd_ints.end());
 	}
 
-	PWSKOAG_API void TcpServer::ServerLoop()
+	int Selector::Wait(uint timeoutms)
 	{
-		tcpListener.Bind();
-		tcpListener.Listen();
-		Selector selector;
-		selector.Add(tcpListener);
-		while(!stopNow)
+		if(fd_ints.size())
 		{
-			selector.Wait(TICK_WAITTIME_TCP);
-			if(selector.IsReady(tcpListener))
-			{
-				TcpSocket* client = tcpListener.Accept();
-				if(client)
-				{
-					C_Packet p;
-					if(client->Receive(p))
-					{
-						uchar header; p>>header;
-						if(header==TCPConnect)
-						{
-							uint version; p>>version;
-							std::cout << "Version: " << version << std::endl;
-							if(!C_Version::M_Equal(version))
-							{
-								std::cerr << "Version mismatch!" << std::endl;
-								delete client;
-							}
-							else
-							{
-								p.M_Clear();
-								p<<HandShake;
-								bool ok=false;
-								do
-								{
-									ok=true;
-									ushort id=rand()%(((ushort)1)<<15);
-									for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
-									{
-										if(it->second.socket->M_Id()==id) {ok=false; break;}
-									}
-									client->M_Id(id);
-								} while(!ok);
-								p << client->M_Id();
-								std::cout << "Generated id: " << client->M_Id() << std::endl;
-								std::cout << "Client connected" << std::endl;
-								m_Players.push_back(new C_ServerPlayer(client, new C_Packet));
-								m_Players.back()->M_SetId(client->M_Id());
-								std::cout << "Players: " << m_Players.size() << std::endl;
-								clients.push_back(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
-								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock,client, &clients.back().second.timer, &m_Players, &stopNow);
-								C_Thread* run=new C_Thread(TCPReceiveThread_Server, (void*)data);
-								clients.back().first=run;
-								client->Send(p);
-							}
-						}
-					}
-				}
-			}
-			t_Clients::iterator it=clients.begin();
-			while(it!=clients.end())
-			{
-				it->second.lock.M_Lock();
-				bool closed=it->second.socket->M_Closed();
-				it->second.lock.M_Unlock();
-				if(closed)
-				{
-					it->first->M_Join();
-					it->second.lock.M_Lock();
-					std::cout << "Removed disconnected client from clients." << std::endl;
-					std::vector<C_Player *>::iterator pt=m_Players.begin();
-					while(pt!=m_Players.end())
-					{
-						C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*pt);
-						if(plr->m_Tcp->M_Id()==it->second.socket->M_Id())
-						{
-							std::cout << "Deleting player " << plr->m_Tcp->M_Id() << std::endl;
-							delete plr->m_Packet;
-							delete plr;
-							std::vector<C_Player *>::iterator del=pt;
-							++pt;
-							m_Players.erase(del);
-							break;
-						}
-						++pt;
-					}
-					delete it->first;
-					delete it->second.socket;
-					it->second.lock.M_Unlock();
-					t_Clients::iterator prev=it;
-					++it;
-					it=clients.erase(prev);
+			struct timeval tv;
+			tv.tv_sec=timeoutms/1000;
+			tv.tv_usec=(timeoutms%1000)*1000;
+			FD_ZERO(&fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) if((*it)!=-1) FD_SET(*it, &fds);
+			return select(fd_ints.back()+1, &fds, NULL, NULL, &tv);
+		}
+		else
+		{
+			msSleep(timeoutms);
+			return 0;
+		}
+	};
 
-					continue;
-				}
-				else ++it;
-			}
+	int Selector::WaitWrite(uint timeoutms)
+	{
+		if(fd_ints.size())
+		{
+			struct timeval tv;
+			tv.tv_sec=timeoutms/1000;
+			tv.tv_usec=(timeoutms%1000)*1000;
+			FD_ZERO(&fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) if((*it)!=-1) FD_SET(*it, &fds);
+			return select(fd_ints.back()+1, NULL, &fds, NULL, &tv);
 		}
-		tcpListener.Close();
+		else
+		{
+			msSleep(timeoutms);
+			return 0;
+		}
+	};
 
-		if(clients.size()>0) {std::cout << "There were " << clients.size() << " clients connected." << std::endl;}
-		for(std::vector<C_Player*>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
-		{
-			C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);
-			delete plr->m_Packet;
-			delete plr;
-		}
-		std::cout << "Shut down successful." << std::endl;
-	}
-	void UDPReceiveThread_Client(void *args)
+	int Selector::WaitReadWrite(uint timeoutms)
 	{
-		C_Packet p;
-		C_ThreadData* data=(C_ThreadData*)args;
-		C_Mutex* lock=data->lock;
-		C_Timer* timer=data->timer;
-		UdpSocket* client=(UdpSocket*)data->socket;
-		bool* stopNow=data->stopNow;
-		delete data;
+		if(fd_ints.size())
+		{
+			struct timeval tv;
+			tv.tv_sec=timeoutms/1000;
+			tv.tv_usec=(timeoutms%1000)*1000;
+			FD_ZERO(&fds);
+			for(std::vector<int>::iterator it=fd_ints.begin(); it!=fd_ints.end(); ++it) FD_SET(*it, &fds);
+			return select(fd_ints.back()+1, &fds, &fds, NULL, &tv);
+		}
+		else
+		{
+			msSleep(timeoutms);
+			return 0;
+		}
+	};
 
-		while(!*stopNow)
-		{
-			p.M_Clear();
-			if(client->Receive(p))
-			{
-				uchar header=0;
-				bool eop=false;
-				while(p.M_Size() && !eop)
-				{
-					p>>header;
-					switch (header)
-					{
-						case String:
-						{
-							std::string str;
-							p>>str;
-							std::cout << "UDP from server: " << str << std::endl;
-							break;
-						}
-						case EOP:
-						{
-							eop=true;
-							break;
-						}
-					}
-				}
-
-			}
-			msSleep(TICK_WAITTIME_UDP);
-		}
-	}
-
-	PWSKOAG_API void UdpServer::ServerLoop()
+	void IpAddress::StrToAddr(const char* a)
 	{
-		const t_Clients& c = master->GetClients();
-		C_Packet p;
-		Selector sel;
-		while(!stopNow)
+		if(std::string(a)=="localhost") a="127.0.0.1";
+		if(inet_pton(AF_INET, a, &addr)==0)
 		{
-			sel.Clear();
-			sel.Add(udpSocket);
-			if(sel.Wait(TICK_WAITTIME_UDP))
-			{
-				if(sel.IsReady(udpSocket))
-				{
-					p.M_Clear();
-					IpAddress ip;
-					ushort port;
-					if(udpSocket.Receive(p, &ip, &port))
-					{
-						for(t_Clients::const_iterator it=c.begin(); it!=c.end(); ++it)
-						{
-							TcpSocket* s=dynamic_cast<TcpSocket*>(it->second.socket);
-							if(ip==s->GetIp())
-							{
-								if(!s->M_UdpPort())
-								{
-									for(;;)
-									{
-										uchar header=0;
-										p >> header;
-										if(header==UDPConnect)
-										{
-											ushort id;
-											p>>id;
-											if(id==s->M_Id())
-											{
-												s->M_UdpPort(port);
-												std::cout << "Bound id " << id << " to UDP port " << port << std::endl;
-												p.M_Clear();
-												p<<HandShake<<EOP;
-												if(sel.WaitWrite(TICK_WAITTIME_UDP))
-												{
-													if(sel.IsReady(udpSocket))
-													{
-														udpSocket.Send(p, ip, port);
-														std::cout << "Sent confirmation to " << ip  << ":" << port << std::endl;
-													}
-													else std::cout << "Client wasn't ready." << std::endl;
-												}
-												else std::cout << "Socket wasn't ready to write." << std::endl;
-											}
-											else std::cout << "Wrong ID, discarding connection..." << std::endl;
-										}
-										break;
-									}
-									continue;
-								}
-								if(s->M_UdpPort()==port)
-								{
-									uchar header=0;
-									while(p.M_Size())
-									{
-										p>>header;
-										switch (header)
-										{
-											case String:
-											{
-												std::string str;
-												p>>str;
-												std::cout << "Str: " << str << " from " << ip << ":" << port << std::endl;
-												break;
-											}
-											case EOP:
-											{
-												C_Packet p;
-												p << String << std::string("UDP response") << EOP;
-												udpSocket.Send(p, ip, port);
-												break;
-											}
-										}
-									}
-									break;
-								}
-							}
-						}
-					}
-					else std::cerr << "Data wasn't ready." << std::endl;
-				}
-			}
-		}
-	}
-		
-	TcpServer::~TcpServer()
-	{
-		C_Lock lock(selfMutex);
-		for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) delete it->first;
-	}
-	PWSKOAG_API bool TcpClient::M_Connect(const char* addr, ushort port)
-	{
-		C_Lock lock(Client::selfMutex);
-		serverAddress=addr;
-		serverPort=port;
-		tcpSocket=TcpSocket(IpAddress(addr), port);
-		tcpSocket.Connect();
-		packet << TCPConnect << C_Version::M_Get();
-		Send();
-		C_Packet p;
-		Selector s;
-		s.Add(tcpSocket);
-		s.Wait(CONNECTTIME);
-		if(s.IsReady(tcpSocket))
-		{
-			if(tcpSocket.Receive(p))
-			{
-				uchar c; p>>c;
-				if(c==HandShake)
-				{
-					ushort id;
-					p >> id;
-					tcpSocket.M_Id(id);
-					std::cout << "Got handshake with id: " << tcpSocket.M_Id() << std::endl;
-					C_ClientPlayer* n = new C_ClientPlayer(this);
-					m_OwnPlayer=n;
-					m_Players.push_back(m_OwnPlayer);
-					m_Players.back()->M_SetId(id);
-					Start();
-					return true;
-				}
-			}
-			else {std::cout << "Couldn't connect to server." << std::endl; return false;}
-		}
-		std::cout << "Couldn't connect to server." << std::endl;
-		return false;
-	}
-	PWSKOAG_API void TcpClient::M_Disconnect()
-	{
-		Send(Disconnect);
-		Stop();
-		//Lock lock(Client::selfMutex);
-		tcpSocket.Disconnect();
-		for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
-		{
-			delete *it;
-		}
-	}
-
-	void TCPReceiveThread_Client(void *args)
-	{
-		C_ThreadData* data=(C_ThreadData*)args;
-		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
-		std::vector<C_Player *>* plrs=data->m_Players;
-		bool* stopNow=data->stopNow;
-		bool connect=true;
-		delete data;
-		Selector s;
-		while(!*stopNow)
-		{
-			C_Packet p;
-			uchar header=0;
-			bool end=false;
-			s.Clear();
-			s.Add(*tcpSocket);
-			s.Wait(1000);
-			if(s.IsReady(*tcpSocket))
-			{
-				if(tcpSocket->Receive(p))
-				{
-					while(p.M_Size() && !end)
-					{
-						p>>header;
-						switch (header)
-						{
-							case Integer:
-							{
-								int i;
-								std::string str;
-								p>>i;
-								bool newplr=true;
-								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
-								{
-									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
-									if(plr->M_Id()==i) {newplr=false; break;}
-								}
-								if(newplr)
-								{
-									std::cout << "New player: " << i << std::endl;
-									plrs->push_back(new C_ClientPlayer(false));
-									plrs->back()->M_SetId(i);
-								}
-								p>>str;
-								std::cout << str << " for " << i << std::endl;
-								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
-								{
-									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
-									if(plr->M_Id()==i) plr->M_SetStr(str);
-								}
-								std::cout << "GOT: " << i << ", " << str << ", size: " << p.M_Size() << std::endl;
-								break;
-							}
-							case String:
-							{
-								std::string str;
-								p >> str;
-								std::cout << "GOT: " << str << std::endl;
-								break;
-							}
-							case EOP:
-								std::cout << "EOP" << std::endl;
-								//end=true;
-								break;
-							default:
-								std::cout << "Invalid packet. Terminating." << std::endl; break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	PWSKOAG_API void TcpClient::ClientLoop()
-	{
-		C_Timer timer;
-		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, &(Client::stopNow));
-		C_Thread t(TCPReceiveThread_Client, data);
-		while(!stopNow)
-		{
-			msSleep(TICK_WAITTIME_TCP);
-			if(timer.M_Get()>2000)
-			{
-				Append(Heartbeat);
-				timer.M_Reset();
-			}
-			if(packet.M_Size()) Send();
-		}
-	}
-	PWSKOAG_API bool UdpClient::M_Connect(const char* addr, ushort port)
-	{
-		m_Address=IpAddress(addr);
-		m_Port=port;
-		udpSocket=UdpSocket(m_Address, m_Port);
-
-		Selector s;
-		s.Add(udpSocket);
-		if(s.WaitWrite(CONNECTTIME))
-		{
-			if(s.IsReady(udpSocket))
-			{
-				std::cout << "Connecting to UDP server..." << std::endl;
-				packet << UDPConnect << m_Master->M_Id();
-				udpSocket.Send(packet, m_Address, m_Port);
-			}
-		}
-		C_Packet p;
-		if(s.Wait(CONNECTTIME))
-		{
-			if(s.IsReady(udpSocket))
-			{
-				if(udpSocket.Receive(p))
-				{
-					uchar c; p>>c;
-					if(c==HandShake)
-					{
-						std::cout << "Got UDP confirmation." << std::endl;
-						Start();
-						return true;
-					}
-				}
-				else {std::cout << "Received broken data when connecting to UDP server." << std::endl; return false;}
-			}
-			else {std::cout << "Server didn't send confirmation data." << std::endl; return false;}
-		}
-		else {std::cout << "Couldn't connect to UDP server, connection timed out." << std::endl; return false;}
-		return true;
-	}
-	PWSKOAG_API void UdpClient::ClientLoop()
-	{
-		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, &(Client::stopNow));
-		C_Thread t(UDPReceiveThread_Client, data);
-		while(!stopNow)
-		{
-			Append(String, std::string("UDP Data."));
-			Send(m_Master->serverAddress, m_Port);
-			msSleep(100);
+			std::string errmsg=("IpAddress is not a valid address.");
+			throw std::runtime_error(errmsg);
 		}
 	}
 }

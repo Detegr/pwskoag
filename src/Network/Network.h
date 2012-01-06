@@ -1,92 +1,187 @@
 #pragma once
-
 #include <Util/Base.h>
 #include <Concurrency/Concurrency.h>
-#include <Util/Timer.h>
-#include "ThreadData.h"
-#include "Network_common.h"
-#include <list>
+#include "Packet.h"
+
+#include <algorithm>
+#include <vector>
 #include <stdexcept>
 #include <string.h>
-#include <iostream>
+#include <fcntl.h>
+
+#ifdef _WIN32
+	#pragma warning( disable : 4800 )
+#else
+	#include <arpa/inet.h>
+#endif
 
 namespace pwskoag
 {
-	class C_Thread; struct LocalThreadData;
-	typedef std::list<std::pair<C_Thread*, LocalThreadData> > t_Clients;
-
+	
 	const uint TIMEOUTMS=10000;
 	const uint TICKS_PER_SEC_TCP=1;
 	const uint TICK_WAITTIME_TCP=250/TICKS_PER_SEC_TCP;
 	const uint CONNECTTIME=3000;
-
+	
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;
 	
-	struct TcpData;
-	struct LocalThreadData;
-	/*
-	 * TcpServer class
-	 *
-	 * Listens Tcp-connections.
-	 */
-	class TcpServer : public Server
-	{	
+	#ifdef _WIN32
+		class C_SocketInitializer
+		{
+			private:
+				WSADATA m_Data;
+			public:
+				C_SocketInitializer()
+				{
+					if(WSAStartup(MAKEWORD(2,2), &m_Data)!=0)
+					{
+						std::runtime_error("Couldn't find Winsock DLL");
+						exit(1);
+					}
+				}
+				~C_SocketInitializer()
+				{
+					WSACleanup();
+				}
+		};
+	#endif
+
+	class IpAddress
+	{
+		friend class Socket;
+		friend class TcpSocket;
+		friend struct UdpSocket;
 		private:
-			TcpSocket 			tcpListener;
-			t_Clients			clients;
-			C_Mutex				m_PlayerLock;
-			std::vector<C_Player *> m_Players;
-			PWSKOAG_API void	ServerLoop();
+			struct in_addr addr;
+			void StrToAddr(const char* a);
 		public:
-			PWSKOAG_API TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
-			PWSKOAG_API ~TcpServer();
-			const t_Clients& GetClients() const {return clients;}
+			IpAddress() : addr() {}
+			IpAddress(const char* a) {StrToAddr(a);}
+			IpAddress(const IpAddress& rhs) {addr=rhs.addr;}
+			IpAddress(struct in_addr a) {addr=a;}
+			const IpAddress&		operator=(const char* a) {StrToAddr(a); return *this;}
+			bool					operator==(const IpAddress& rhs) const {return strncmp(toString().c_str(), rhs.toString().c_str(), 15)==0;}
+			bool					operator==(const char* rhs) const {return strncmp(toString().c_str(), rhs, 15)==0;}
+			std::string 			toString() const {return std::string(inet_ntoa(addr));}
+			friend std::ostream& 	operator<<(std::ostream& o, const IpAddress& rhs) {o << rhs.toString(); return o;}
 	};
 
-	class UdpServer : public Server
+	class Socket
+	{
+		friend class Selector;
+		protected:
+			ushort		m_Id;
+			IpAddress	ip;
+			ushort		port;
+			int			type;
+			sockaddr_in	addr;
+
+			Socket() : m_Id(0) {}
+		public:
+			int			fd;
+			enum Type
+			{
+				TCP=SOCK_STREAM,
+				UDP=SOCK_DGRAM
+			};
+			PWSKOAG_API Socket(IpAddress& ip, ushort port, Type type);
+			PWSKOAG_API Socket(ushort port, Type type);
+			PWSKOAG_API Socket(const Socket& s) {*this=s;}
+			PWSKOAG_API virtual ~Socket() {}
+			PWSKOAG_API const Socket& operator=(const Socket& s) {ip=s.ip;port=s.port;fd=s.fd;type=s.type;addr=s.addr; return *this;}
+			PWSKOAG_API void Bind();
+			PWSKOAG_API void Close()
+			{
+				#ifdef _WIN32
+					closesocket(fd);
+				#else
+					shutdown(fd, SHUT_RDWR);
+					close(fd);
+				#endif
+			}
+			PWSKOAG_API const IpAddress&	GetIp() const {return ip;}
+			PWSKOAG_API const ushort		GetPort() const {return port;}
+			PWSKOAG_API const ushort		M_Id() const {return m_Id;}
+			PWSKOAG_API void				M_Id(ushort id) {m_Id=id;}
+			PWSKOAG_API bool 				M_Closed() const {return this->fd<0;}
+	};
+
+	class TcpSocket : public Socket
 	{
 		private:
-			TcpServer*			master;
-			UdpSocket			udpSocket;
-			PWSKOAG_API void	ServerLoop();
+			TcpSocket(IpAddress& ip, ushort port, Type type, int fd) : Socket(ip, port, type) {m_UdpPort=0; this->fd=fd;}
+			ushort m_UdpPort;
 		public:
-			UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp), udpSocket(UdpSocket(port)) {udpSocket.Bind();}
+			TcpSocket() {}
+			TcpSocket(IpAddress ip, ushort port) : Socket(ip, port, TCP) {}
+			TcpSocket(IpAddress& ip, ushort port) : Socket(ip, port, TCP) {}
+			TcpSocket(ushort port) : Socket(port, TCP) {}
+			void Listen(int buffer=5) {if(listen(fd,buffer)!=0) throw std::runtime_error(Error("Listen"));}
+			void Connect();
+			void Disconnect() {if(fd>0)Close();}
+			void Clear() {Close(); this->fd=-1;}
+			TcpSocket* Accept(); 
+			bool Send(C_Packet& p); 
+			bool Receive(C_Packet& p);
+			void M_UdpPort(ushort port) {m_UdpPort=port;}
+			const ushort M_UdpPort() const {return m_UdpPort;}
 	};
+
+	struct UdpSocket : public Socket
+	{
+		UdpSocket() {}
+		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, UDP) {}
+		UdpSocket(ushort port) : Socket(port, UDP) {}
+		bool Send(C_Packet& p, IpAddress& ip, ushort port);
+		bool Receive(C_Packet& p, IpAddress* ip=NULL, ushort* port=NULL);
+	};
+
+	class Selector
+	{
+		private:
+			std::vector<int> fd_ints;
+			fd_set fds;
+		public:
+			Selector() {FD_ZERO(&fds);}
+			void Add(Socket& s) {fd_ints.push_back(s.fd); std::sort(fd_ints.begin(), fd_ints.end());}
+			bool IsReady(Socket& s) {if(s.fd!=-1) return FD_ISSET(s.fd, &fds); else return false;}
+			void Remove(Socket& s);
+			void Clear() {fd_ints.clear(); FD_ZERO(&fds);}
+			int Wait(uint timeoutms);
+			int WaitWrite(uint timeoutms);
+			int WaitReadWrite(uint timeoutms);
+	};
+
+	// Functions for sending and appending.
+	static void Append(e_Command c, C_Packet& p) {p<<(uchar)c;}
+	template <class type> void Append(type& t, C_Packet& p){p<<t;}
+	template <class type> void Append(e_Command c, type& t, C_Packet& p){Append(c,p);Append(t,p);}
+
+	// Tcp-functions
+	static bool TcpSend(e_Command c, TcpSocket* sock, C_Packet& p)
+	{
+		p << (uchar)c << (uchar)EOP;
+		return sock->Send(p);
+	}
+	static bool TcpSend(TcpSocket* sock, C_Packet& p) {return sock->Send(p);}
+	template <class type> bool TcpSend(e_Command c, type t, TcpSocket* sock, C_Packet& p)
+	{
+			p.M_Clear();
+			Append(c,t,p); Append(EOP, p);
+			return TcpSend(sock,p);
+	}
+
+	// Udp-Functions
+	static bool UdpSend(UdpSocket* sock, C_Packet& p, IpAddress& ip, ushort port) {return sock->Send(p, ip, port);}
+	template <class type>
+	bool UdpSend(e_Command c, type t, UdpSocket* sock, C_Packet& p, IpAddress& ip, ushort port)
+	{
+		p.M_Clear();
+		Append(c, t, p); Append(EOP, p);
+		return UdpSend(sock, p, ip, port);
+	}
 	
-	/*
-	 * TcpClient class
-	 */
-	class TcpClient : public Client
-	{
-		friend class UdpClient;
-		friend class C_ClientPlayer;
-		friend class C_ServerPlayer;
-		friend class C_Sendable;
-		private:
-			IpAddress			serverAddress;
-			uint 				serverPort;
-			TcpSocket 			tcpSocket;
-			bool				m_Connected;
-			C_Mutex				m_Lock;
-			C_Mutex				m_ConnectMutex;
-			C_Packet			packet;
-			PWSKOAG_API void 	ClientLoop();
-			void 				Append(e_Command c) {packet<<(uchar)c;}
-			void 				Send();
-			void 				Send(e_Command c) {C_Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
-			std::vector<C_Player *> m_Players;
-			C_ClientPlayer*		m_OwnPlayer;
-		public:
-			TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
-			PWSKOAG_API bool			M_Connect(const char* addr, ushort port);
-			PWSKOAG_API void 			M_Disconnect();
-			template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
-			const ushort				M_Id() const {return tcpSocket.M_Id();}
-			std::vector<C_Player *> M_Players() {return m_Players;}
-			C_ClientPlayer*				M_OwnPlayer() {return m_OwnPlayer;}
-	};
-
 	class C_Sendable
 	{
 		private:
@@ -94,31 +189,11 @@ namespace pwskoag
 		public:
 			TcpSocket* m_Tcp;
 			C_Packet* m_Packet;
-
+			
 			C_Sendable(bool t) : m_Tcp(NULL), m_Packet(NULL) {}
-			C_Sendable(TcpClient* t) : m_Tcp(&t->tcpSocket), m_Packet(&t->packet) {}
 			C_Sendable(TcpSocket* s, C_Packet* p) : m_Tcp(s), m_Packet(p) {}
 			virtual ~C_Sendable() {}
 			virtual void M_Send()=0;
 	};
 
-	class UdpClient : public Client
-	{
-		private:
-			TcpClient*			m_Master;
-			IpAddress			m_Address;
-			ushort				m_Port;
-			UdpSocket 			udpSocket;
-			C_Packet			packet;
-			C_Mutex				m_Lock;
-			PWSKOAG_API void	ClientLoop();
-			void 				Append(e_Command c) {packet<<(uchar)c;}
-			void 				Send(IpAddress& ip, ushort port);
-		public:
-			UdpClient(TcpClient* t) :	m_Master(t), m_Port(0), udpSocket() {}
-			PWSKOAG_API bool						M_Connect(const char* addr, ushort port);
-			PWSKOAG_API void 						M_Disconnect() {udpSocket.Close(); Stop();}
-			template<class type> void				Append(e_Command c, type t) {Append(c); packet<<t;}
-	};
-	
 }

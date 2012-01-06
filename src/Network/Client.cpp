@@ -1,4 +1,6 @@
+#include <Util/Version.h>
 #include "Client.h"
+#include <Network/ThreadData.h>
 
 namespace pwskoag
 {
@@ -49,7 +51,7 @@ namespace pwskoag
 		packet.M_Clear();
 	}
 
-	void UDPReceive(void *args)
+	static void UDPReceive(void *args)
 	{
 		C_Packet p;
 		C_ThreadData* data=(C_ThreadData*)args;
@@ -141,13 +143,12 @@ namespace pwskoag
 		}
 	}
 	
-	void TCPReceive(void *args)
+	static void TCPReceive(void *args)
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
 		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
 		std::vector<C_Player *>* plrs=data->m_Players;
 		bool* stopNow=data->stopNow;
-		bool connect=true;
 		delete data;
 		Selector s;
 		while(!*stopNow)

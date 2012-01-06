@@ -12,7 +12,7 @@
 #else
 	#include <arpa/inet.h>
 	#include <errno.h>
-	#define PWSKOAG_API
+	#define PWSKOAG_API __attribute__((visibility("default")))
 #endif
 #include <iostream>
 #include <cstring>

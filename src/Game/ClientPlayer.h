@@ -1,54 +1,28 @@
 #pragma once
 #include <Util/Base.h>
-#include <Network/Network_common.h>
 #include <Network/Network.h>
 #include <Concurrency/Concurrency.h>
+#include <Game/Player.h>
+#include <Graphics/PlayerGfx.h>
 #include <SFML/Graphics.hpp>
 
 /* Test player class */
 
 namespace pwskoag
 {
-	struct C_Drawable
-	{
-		virtual ~C_Drawable() {}
-		virtual const sf::Drawable* M_GetDrawableObj() const=0;
-	};
-
-	class C_DRAWPlayer : public C_Drawable
-	{
-		private:
-			sf::Font	m_Font;
-			sf::String	m_Text;
-		public:
-			C_DRAWPlayer()
-			{
-				static uint y=0;
-				m_Font.LoadFromFile("play.ttf");
-				m_Text.SetFont(m_Font);
-				m_Text.SetSize(20);
-				m_Text.SetPosition(0,y);
-				y+=20;
-			}
-			void M_SetStr(std::string& str)
-			{
-				m_Text.SetText(str);
-			}
-			const sf::Drawable* M_GetDrawableObj() const { return &m_Text; }
-	};
-
 	class TcpClient;
+	class C_PlayerGfx;
 	class C_ClientPlayer : public C_Player, public C_Sendable
 	{
 		private:
 			ushort			m_Id;
 			std::string		m_Str;
 			C_Mutex			m_Lock;
-			C_DRAWPlayer*	m_Draw;
+			C_PlayerGfx*	m_Draw;
 		public:
-			C_ClientPlayer(TcpClient* t) : C_Sendable(t) { m_Draw = new C_DRAWPlayer(); }
+			C_ClientPlayer(TcpClient* t) : C_Sendable(t) { m_Draw = new C_PlayerGfx(); }
 			~C_ClientPlayer() { delete m_Draw; }
-			C_DRAWPlayer* M_GetDRAW() {return m_Draw;}
+			C_PlayerGfx* M_GetDRAW() {return m_Draw;}
 			void M_SetId(ushort id)
 			{
 				m_Id=id;

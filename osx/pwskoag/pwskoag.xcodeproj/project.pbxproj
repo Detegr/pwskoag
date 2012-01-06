@@ -7,14 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F366D63014B723A000A740D0 /* Concurrency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F366D61614B723A000A740D0 /* Concurrency.cpp */; };
-		F366D63114B723A000A740D0 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F366D61A14B723A000A740D0 /* Player.cpp */; };
 		F366D63414B723A000A740D0 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F366D62114B723A000A740D0 /* Server.cpp */; };
-		F366D63614B723A000A740D0 /* Network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F366D62614B723A000A740D0 /* Network.cpp */; };
-		F366D63714B723A000A740D0 /* Packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F366D62814B723A000A740D0 /* Packet.cpp */; };
-		F366D63814B723A000A740D0 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F366D62D14B723A000A740D0 /* Timer.cpp */; };
 		F392A81714B74C1F000A98C2 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A81614B74C1F000A98C2 /* Server.cpp */; };
+		F392A88514B76AAE000A98C2 /* libpwskoag-dylib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A83C14B765B3000A98C2 /* libpwskoag-dylib.dylib */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F392A83B14B765B3000A98C2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F392A83014B765B2000A98C2;
+			remoteInfo = "pwskoag-dylib";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		F3F70A1514B720EC00E4BA27 /* CopyFiles */ = {
@@ -29,23 +35,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		F366D61614B723A000A740D0 /* Concurrency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Concurrency.cpp; sourceTree = "<group>"; };
-		F366D61714B723A000A740D0 /* Concurrency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Concurrency.h; sourceTree = "<group>"; };
-		F366D61A14B723A000A740D0 /* Player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Player.cpp; sourceTree = "<group>"; };
-		F366D61B14B723A000A740D0 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
 		F366D62114B723A000A740D0 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
-		F366D62614B723A000A740D0 /* Network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Network.cpp; sourceTree = "<group>"; };
-		F366D62714B723A000A740D0 /* Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Network.h; sourceTree = "<group>"; };
-		F366D62814B723A000A740D0 /* Packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Packet.cpp; sourceTree = "<group>"; };
-		F366D62914B723A000A740D0 /* Packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Packet.h; sourceTree = "<group>"; };
-		F366D62A14B723A000A740D0 /* ThreadData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadData.h; sourceTree = "<group>"; };
-		F366D62C14B723A000A740D0 /* Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base.h; sourceTree = "<group>"; };
-		F366D62D14B723A000A740D0 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
-		F366D62E14B723A000A740D0 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
-		F366D62F14B723A000A740D0 /* Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Version.h; sourceTree = "<group>"; };
 		F392A81314B74AA6000A98C2 /* Server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
 		F392A81614B74C1F000A98C2 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
 		F392A81C14B74FAA000A98C2 /* ServerPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServerPlayer.h; sourceTree = "<group>"; };
+		F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "pwskoag-dylib.xcodeproj"; path = "pwskoag-dylib/pwskoag-dylib.xcodeproj"; sourceTree = "<group>"; };
 		F3F70A1714B720EC00E4BA27 /* server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = server; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -54,27 +48,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F392A88514B76AAE000A98C2 /* libpwskoag-dylib.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		F366D61514B723A000A740D0 /* Concurrency */ = {
-			isa = PBXGroup;
-			children = (
-				F366D61614B723A000A740D0 /* Concurrency.cpp */,
-				F366D61714B723A000A740D0 /* Concurrency.h */,
-			);
-			name = Concurrency;
-			path = ../../../src/Concurrency;
-			sourceTree = "<group>";
-		};
 		F366D61814B723A000A740D0 /* Game */ = {
 			isa = PBXGroup;
 			children = (
-				F366D61A14B723A000A740D0 /* Player.cpp */,
-				F366D61B14B723A000A740D0 /* Player.h */,
 				F392A81C14B74FAA000A98C2 /* ServerPlayer.h */,
 			);
 			name = Game;
@@ -93,11 +76,6 @@
 		F366D62214B723A000A740D0 /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				F366D62614B723A000A740D0 /* Network.cpp */,
-				F366D62714B723A000A740D0 /* Network.h */,
-				F366D62814B723A000A740D0 /* Packet.cpp */,
-				F366D62914B723A000A740D0 /* Packet.h */,
-				F366D62A14B723A000A740D0 /* ThreadData.h */,
 				F392A81314B74AA6000A98C2 /* Server.h */,
 				F392A81614B74C1F000A98C2 /* Server.cpp */,
 			);
@@ -105,21 +83,18 @@
 			path = ../../../src/Network;
 			sourceTree = "<group>";
 		};
-		F366D62B14B723A000A740D0 /* Util */ = {
+		F392A83814B765B2000A98C2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F366D62C14B723A000A740D0 /* Base.h */,
-				F366D62D14B723A000A740D0 /* Timer.cpp */,
-				F366D62E14B723A000A740D0 /* Timer.h */,
-				F366D62F14B723A000A740D0 /* Version.h */,
+				F392A83C14B765B3000A98C2 /* libpwskoag-dylib.dylib */,
 			);
-			name = Util;
-			path = ../../../src/Util;
+			name = Products;
 			sourceTree = "<group>";
 		};
 		F3F709FB14B71F3500E4BA27 = {
 			isa = PBXGroup;
 			children = (
+				F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */,
 				F3F70A1914B720EC00E4BA27 /* server */,
 				F3F70A0714B71F3500E4BA27 /* Products */,
 			);
@@ -137,11 +112,9 @@
 		F3F70A1914B720EC00E4BA27 /* server */ = {
 			isa = PBXGroup;
 			children = (
-				F366D61514B723A000A740D0 /* Concurrency */,
 				F366D61814B723A000A740D0 /* Game */,
 				F366D61D14B723A000A740D0 /* Main */,
 				F366D62214B723A000A740D0 /* Network */,
-				F366D62B14B723A000A740D0 /* Util */,
 			);
 			path = server;
 			sourceTree = "<group>";
@@ -184,6 +157,12 @@
 			mainGroup = F3F709FB14B71F3500E4BA27;
 			productRefGroup = F3F70A0714B71F3500E4BA27 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F392A83814B765B2000A98C2 /* Products */;
+					ProjectRef = F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				F3F70A1614B720EC00E4BA27 /* server */,
@@ -191,17 +170,22 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXReferenceProxy section */
+		F392A83C14B765B3000A98C2 /* libpwskoag-dylib.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = "libpwskoag-dylib.dylib";
+			remoteRef = F392A83B14B765B3000A98C2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
 /* Begin PBXSourcesBuildPhase section */
 		F3F70A1314B720EC00E4BA27 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F366D63014B723A000A740D0 /* Concurrency.cpp in Sources */,
-				F366D63114B723A000A740D0 /* Player.cpp in Sources */,
 				F366D63414B723A000A740D0 /* Server.cpp in Sources */,
-				F366D63614B723A000A740D0 /* Network.cpp in Sources */,
-				F366D63714B723A000A740D0 /* Packet.cpp in Sources */,
-				F366D63814B723A000A740D0 /* Timer.cpp in Sources */,
 				F392A81714B74C1F000A98C2 /* Server.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -213,7 +197,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -231,7 +215,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "../src/**";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -240,7 +224,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -252,6 +236,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "../src/**";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Release;

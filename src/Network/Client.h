@@ -1,4 +1,8 @@
 #pragma once
+#include <Util/Base.h>
+#include <Concurrency/Concurrency.h>
+#include <Network/Network.h>
+#include <Game/ClientPlayer.h>
 
 namespace pwskoag
 {
@@ -33,6 +37,7 @@ namespace pwskoag
 	/*
 	 * TcpClient class
 	 */
+	
 	class TcpClient : public Client
 	{
 		friend class UdpClient;

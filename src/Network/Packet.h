@@ -45,6 +45,7 @@ namespace pwskoag
 			C_Packet& operator<<(const char* str)
 			{
 				M_Append(str, strlen(str)+1);
+				return *this;
 			}
 			C_Packet& operator<<(const std::string& str)
 			{

@@ -36,6 +36,8 @@ namespace pwskoag
 			PWSKOAG_API bool IsRunning() const { return selfThread!=NULL; }
 	};
 	
+	void TCPReceive(void* args);
+	
 	/*
 	 * TcpServer class
 	 *

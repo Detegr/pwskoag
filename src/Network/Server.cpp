@@ -40,8 +40,7 @@ namespace pwskoag
 		C_Lock lock(selfMutex);
 		for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) delete it->first;
 	}
-	
-	void TCPReceive(void *args)
+	void TCPReceive(void* args)
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
 		C_Mutex* lock=data->lock;

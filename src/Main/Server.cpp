@@ -7,6 +7,7 @@ using namespace pwskoag;
 
 bool stopNow=false;
 
+void sighandler(int);
 void sighandler(int)
 {
 	stopNow=true;

@@ -26,6 +26,7 @@ namespace pwskoag
 		{
 			C_Thread::C_Data* d=(C_Thread::C_Data*)args;
 			d->m_Func(d->m_Arg);
+			return NULL;
 		}
 		C_Thread::C_Thread(t_ThreadFunc f, void* args) : m_Thread(0), m_Data(C_Data(f, args))
 		{

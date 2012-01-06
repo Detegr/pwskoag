@@ -82,7 +82,7 @@ namespace pwskoag
 		if(!m_Previous.M_Size()) return rhs;
 
 		C_Packet out;
-		int s=rhs.M_Sections();
+		size_t s=rhs.M_Sections();
 		for(int i=0; i<s; ++i)
 		{
 			uchar* ps = m_Previous.M_GetSection(i);

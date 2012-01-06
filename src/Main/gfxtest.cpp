@@ -1,5 +1,6 @@
 #include <Graphics/Graphics.h>
 #include <Network/Network.h>
+#include <Network/Client.h>
 #include <Game/Player.h>
 #include <Game/ClientPlayer.h>
 #include <vector>
@@ -12,6 +13,7 @@ int main()
 	//r.M_AddObject(*p.M_GetDRAW()->M_GetDrawableObj());
 	bool key=false;
 	pwskoag::C_ClientPlayer* p;
+	pwskoag::C_ClientPlayer fallbackp;
 	try
 	{
 		c.M_Connect("localhost", 55555);
@@ -20,6 +22,7 @@ int main()
 	}
 	catch(...)
 	{
+		p=&fallbackp;
 		std::cout << "Failed to connect..." << std::endl;
 	}
 	std::string s;

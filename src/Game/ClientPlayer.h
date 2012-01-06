@@ -20,7 +20,8 @@ namespace pwskoag
 			C_Mutex			m_Lock;
 			C_PlayerGfx*	m_Draw;
 		public:
-			C_ClientPlayer(TcpClient* t) : C_Sendable(t) { m_Draw = new C_PlayerGfx(); }
+			C_ClientPlayer() : C_Sendable() { m_Draw = new C_PlayerGfx(); }
+			C_ClientPlayer(TcpSocket *s, C_Packet* p) : C_Sendable(s,p) { m_Draw = new C_PlayerGfx(); }
 			~C_ClientPlayer() { delete m_Draw; }
 			C_PlayerGfx* M_GetDRAW() {return m_Draw;}
 			void M_SetId(ushort id)
@@ -47,9 +48,12 @@ namespace pwskoag
 			void M_Send()
 			{
 				C_Lock l(m_Lock);
-				*m_Packet<<(uchar)Integer<<(int)m_Tcp->M_Id();
-				*m_Packet<<(uchar)String<<m_Str;
-				m_Tcp->Send(*m_Packet);
+				if(m_Packet && m_Tcp)
+				{
+					*m_Packet<<(uchar)Integer<<(int)m_Tcp->M_Id();
+					*m_Packet<<(uchar)String<<m_Str;
+					m_Tcp->Send(*m_Packet);
+				}
 			}
 	};
 }

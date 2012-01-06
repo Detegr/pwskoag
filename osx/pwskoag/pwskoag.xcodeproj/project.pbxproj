@@ -7,9 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F366D63414B723A000A740D0 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F366D62114B723A000A740D0 /* Server.cpp */; };
-		F392A81714B74C1F000A98C2 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A81614B74C1F000A98C2 /* Server.cpp */; };
 		F392A88514B76AAE000A98C2 /* libpwskoag-dylib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A83C14B765B3000A98C2 /* libpwskoag-dylib.dylib */; };
+		F392A8A814B76DB0000A98C2 /* ClientPlayer.h in Sources */ = {isa = PBXBuildFile; fileRef = F392A88A14B76CF9000A98C2 /* ClientPlayer.h */; };
+		F392A8A914B76DB0000A98C2 /* Client.h in Sources */ = {isa = PBXBuildFile; fileRef = F392A88914B76CDF000A98C2 /* Client.h */; };
+		F392A8AA14B76DB0000A98C2 /* Client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A88714B76CD6000A98C2 /* Client.cpp */; };
+		F392A8AB14B76DB0000A98C2 /* gfxtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A89214B76D14000A98C2 /* gfxtest.cpp */; };
+		F392A8AC14B76DB0000A98C2 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A88E14B76D08000A98C2 /* Graphics.cpp */; };
+		F392A8AD14B76DB0000A98C2 /* Graphics.h in Sources */ = {isa = PBXBuildFile; fileRef = F392A88F14B76D08000A98C2 /* Graphics.h */; };
+		F392A8AE14B76DB0000A98C2 /* PlayerGfx.h in Sources */ = {isa = PBXBuildFile; fileRef = F392A89014B76D08000A98C2 /* PlayerGfx.h */; };
+		F392A8AF14B76DFF000A98C2 /* libpwskoag-dylib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A83C14B765B3000A98C2 /* libpwskoag-dylib.dylib */; };
+		F392A8B114B76E08000A98C2 /* SFML.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A8B014B76E08000A98C2 /* SFML.framework */; };
+		F392A8B314B76FCC000A98C2 /* sfml-graphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A8B214B76FCC000A98C2 /* sfml-graphics.framework */; };
+		F392A8B514B76FEC000A98C2 /* sfml-window.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A8B414B76FEC000A98C2 /* sfml-window.framework */; };
+		F392A8B714B77009000A98C2 /* sfml-system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A8B614B77009000A98C2 /* sfml-system.framework */; };
+		F392A8E614B7911B000A98C2 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A8D814B7911B000A98C2 /* Server.cpp */; };
+		F392A8EA14B7911B000A98C2 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A8E014B7911B000A98C2 /* Server.cpp */; };
+		F392A8EC14B7921D000A98C2 /* play.ttf in CopyFiles */ = {isa = PBXBuildFile; fileRef = F392A8B914B78B19000A98C2 /* play.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,9 +33,33 @@
 			remoteGlobalIDString = F392A83014B765B2000A98C2;
 			remoteInfo = "pwskoag-dylib";
 		};
+		F392A8ED14B79C86000A98C2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F392A82F14B765B2000A98C2;
+			remoteInfo = "pwskoag-dylib";
+		};
+		F392A8EF14B79C8E000A98C2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F392A82F14B765B2000A98C2;
+			remoteInfo = "pwskoag-dylib";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		F392A89814B76D75000A98C2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				F392A8EC14B7921D000A98C2 /* play.ttf in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F3F70A1514B720EC00E4BA27 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -35,15 +72,40 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		F366D62114B723A000A740D0 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
-		F392A81314B74AA6000A98C2 /* Server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
-		F392A81614B74C1F000A98C2 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
-		F392A81C14B74FAA000A98C2 /* ServerPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServerPlayer.h; sourceTree = "<group>"; };
 		F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "pwskoag-dylib.xcodeproj"; path = "pwskoag-dylib/pwskoag-dylib.xcodeproj"; sourceTree = "<group>"; };
+		F392A88714B76CD6000A98C2 /* Client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Client.cpp; path = ../../src/Network/Client.cpp; sourceTree = "<group>"; };
+		F392A88914B76CDF000A98C2 /* Client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Client.h; path = ../../src/Network/Client.h; sourceTree = "<group>"; };
+		F392A88A14B76CF9000A98C2 /* ClientPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ClientPlayer.h; path = ../../src/Game/ClientPlayer.h; sourceTree = "<group>"; };
+		F392A88E14B76D08000A98C2 /* Graphics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Graphics.cpp; sourceTree = "<group>"; };
+		F392A88F14B76D08000A98C2 /* Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Graphics.h; sourceTree = "<group>"; };
+		F392A89014B76D08000A98C2 /* PlayerGfx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerGfx.h; sourceTree = "<group>"; };
+		F392A89214B76D14000A98C2 /* gfxtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gfxtest.cpp; path = ../../src/Main/gfxtest.cpp; sourceTree = "<group>"; };
+		F392A89A14B76D75000A98C2 /* client */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = client; sourceTree = BUILT_PRODUCTS_DIR; };
+		F392A8B014B76E08000A98C2 /* SFML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SFML.framework; path = Library/Frameworks/SFML.framework; sourceTree = SDKROOT; };
+		F392A8B214B76FCC000A98C2 /* sfml-graphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-graphics.framework"; path = "../../../../../../Library/Frameworks/sfml-graphics.framework"; sourceTree = "<group>"; };
+		F392A8B414B76FEC000A98C2 /* sfml-window.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-window.framework"; path = "../../../../../../Library/Frameworks/sfml-window.framework"; sourceTree = "<group>"; };
+		F392A8B614B77009000A98C2 /* sfml-system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-system.framework"; path = "../../../../../../Library/Frameworks/sfml-system.framework"; sourceTree = "<group>"; };
+		F392A8B914B78B19000A98C2 /* play.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = play.ttf; path = ../../build/play.ttf; sourceTree = "<group>"; };
+		F392A8D314B7911B000A98C2 /* ServerPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServerPlayer.h; sourceTree = "<group>"; };
+		F392A8D814B7911B000A98C2 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
+		F392A8E014B7911B000A98C2 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
+		F392A8E114B7911B000A98C2 /* Server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
 		F3F70A1714B720EC00E4BA27 /* server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = server; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F392A89714B76D75000A98C2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F392A8AF14B76DFF000A98C2 /* libpwskoag-dylib.dylib in Frameworks */,
+				F392A8B714B77009000A98C2 /* sfml-system.framework in Frameworks */,
+				F392A8B514B76FEC000A98C2 /* sfml-window.framework in Frameworks */,
+				F392A8B314B76FCC000A98C2 /* sfml-graphics.framework in Frameworks */,
+				F392A8B114B76E08000A98C2 /* SFML.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F3F70A1414B720EC00E4BA27 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -55,34 +117,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		F366D61814B723A000A740D0 /* Game */ = {
-			isa = PBXGroup;
-			children = (
-				F392A81C14B74FAA000A98C2 /* ServerPlayer.h */,
-			);
-			name = Game;
-			path = ../../../src/Game;
-			sourceTree = "<group>";
-		};
-		F366D61D14B723A000A740D0 /* Main */ = {
-			isa = PBXGroup;
-			children = (
-				F366D62114B723A000A740D0 /* Server.cpp */,
-			);
-			name = Main;
-			path = ../../../src/Main;
-			sourceTree = "<group>";
-		};
-		F366D62214B723A000A740D0 /* Network */ = {
-			isa = PBXGroup;
-			children = (
-				F392A81314B74AA6000A98C2 /* Server.h */,
-				F392A81614B74C1F000A98C2 /* Server.cpp */,
-			);
-			name = Network;
-			path = ../../../src/Network;
-			sourceTree = "<group>";
-		};
 		F392A83814B765B2000A98C2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -91,11 +125,102 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		F392A88614B76CA6000A98C2 /* client */ = {
+			isa = PBXGroup;
+			children = (
+				F392A8EB14B79200000A98C2 /* Resources */,
+				F392A89514B76D24000A98C2 /* Network */,
+				F392A89414B76D1A000A98C2 /* Game */,
+				F392A88B14B76D08000A98C2 /* Graphics */,
+			);
+			name = client;
+			sourceTree = "<group>";
+		};
+		F392A88B14B76D08000A98C2 /* Graphics */ = {
+			isa = PBXGroup;
+			children = (
+				F392A88E14B76D08000A98C2 /* Graphics.cpp */,
+				F392A88F14B76D08000A98C2 /* Graphics.h */,
+				F392A89014B76D08000A98C2 /* PlayerGfx.h */,
+			);
+			name = Graphics;
+			path = ../../src/Graphics;
+			sourceTree = "<group>";
+		};
+		F392A89414B76D1A000A98C2 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				F392A89214B76D14000A98C2 /* gfxtest.cpp */,
+			);
+			name = Game;
+			sourceTree = "<group>";
+		};
+		F392A89514B76D24000A98C2 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				F392A88A14B76CF9000A98C2 /* ClientPlayer.h */,
+				F392A88914B76CDF000A98C2 /* Client.h */,
+				F392A88714B76CD6000A98C2 /* Client.cpp */,
+			);
+			name = Network;
+			sourceTree = "<group>";
+		};
+		F392A8CE14B790F2000A98C2 /* server */ = {
+			isa = PBXGroup;
+			children = (
+				F392A8CF14B7911B000A98C2 /* Game */,
+				F392A8D514B7911B000A98C2 /* Main */,
+				F392A8D914B7911B000A98C2 /* Network */,
+			);
+			name = server;
+			sourceTree = "<group>";
+		};
+		F392A8CF14B7911B000A98C2 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				F392A8D314B7911B000A98C2 /* ServerPlayer.h */,
+			);
+			name = Game;
+			path = ../../src/Game;
+			sourceTree = "<group>";
+		};
+		F392A8D514B7911B000A98C2 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				F392A8D814B7911B000A98C2 /* Server.cpp */,
+			);
+			name = Main;
+			path = ../../src/Main;
+			sourceTree = "<group>";
+		};
+		F392A8D914B7911B000A98C2 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				F392A8E014B7911B000A98C2 /* Server.cpp */,
+				F392A8E114B7911B000A98C2 /* Server.h */,
+			);
+			name = Network;
+			path = ../../src/Network;
+			sourceTree = "<group>";
+		};
+		F392A8EB14B79200000A98C2 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F392A8B914B78B19000A98C2 /* play.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 		F3F709FB14B71F3500E4BA27 = {
 			isa = PBXGroup;
 			children = (
 				F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */,
-				F3F70A1914B720EC00E4BA27 /* server */,
+				F392A8B614B77009000A98C2 /* sfml-system.framework */,
+				F392A8B414B76FEC000A98C2 /* sfml-window.framework */,
+				F392A8B214B76FCC000A98C2 /* sfml-graphics.framework */,
+				F392A8B014B76E08000A98C2 /* SFML.framework */,
+				F392A8CE14B790F2000A98C2 /* server */,
+				F392A88614B76CA6000A98C2 /* client */,
 				F3F70A0714B71F3500E4BA27 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -105,23 +230,32 @@
 			isa = PBXGroup;
 			children = (
 				F3F70A1714B720EC00E4BA27 /* server */,
+				F392A89A14B76D75000A98C2 /* client */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		F3F70A1914B720EC00E4BA27 /* server */ = {
-			isa = PBXGroup;
-			children = (
-				F366D61814B723A000A740D0 /* Game */,
-				F366D61D14B723A000A740D0 /* Main */,
-				F366D62214B723A000A740D0 /* Network */,
-			);
-			path = server;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		F392A89914B76D75000A98C2 /* client */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F392A8A114B76D75000A98C2 /* Build configuration list for PBXNativeTarget "client" */;
+			buildPhases = (
+				F392A89614B76D75000A98C2 /* Sources */,
+				F392A89714B76D75000A98C2 /* Frameworks */,
+				F392A89814B76D75000A98C2 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F392A8EE14B79C86000A98C2 /* PBXTargetDependency */,
+			);
+			name = client;
+			productName = client;
+			productReference = F392A89A14B76D75000A98C2 /* client */;
+			productType = "com.apple.product-type.tool";
+		};
 		F3F70A1614B720EC00E4BA27 /* server */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F3F70A1E14B720EC00E4BA27 /* Build configuration list for PBXNativeTarget "server" */;
@@ -133,6 +267,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F392A8F014B79C8E000A98C2 /* PBXTargetDependency */,
 			);
 			name = server;
 			productName = server;
@@ -166,6 +301,7 @@
 			projectRoot = "";
 			targets = (
 				F3F70A1614B720EC00E4BA27 /* server */,
+				F392A89914B76D75000A98C2 /* client */,
 			);
 		};
 /* End PBXProject section */
@@ -181,18 +317,67 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
+		F392A89614B76D75000A98C2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F392A8A814B76DB0000A98C2 /* ClientPlayer.h in Sources */,
+				F392A8A914B76DB0000A98C2 /* Client.h in Sources */,
+				F392A8AA14B76DB0000A98C2 /* Client.cpp in Sources */,
+				F392A8AB14B76DB0000A98C2 /* gfxtest.cpp in Sources */,
+				F392A8AC14B76DB0000A98C2 /* Graphics.cpp in Sources */,
+				F392A8AD14B76DB0000A98C2 /* Graphics.h in Sources */,
+				F392A8AE14B76DB0000A98C2 /* PlayerGfx.h in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F3F70A1314B720EC00E4BA27 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F366D63414B723A000A740D0 /* Server.cpp in Sources */,
-				F392A81714B74C1F000A98C2 /* Server.cpp in Sources */,
+				F392A8E614B7911B000A98C2 /* Server.cpp in Sources */,
+				F392A8EA14B7911B000A98C2 /* Server.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		F392A8EE14B79C86000A98C2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "pwskoag-dylib";
+			targetProxy = F392A8ED14B79C86000A98C2 /* PBXContainerItemProxy */;
+		};
+		F392A8F014B79C8E000A98C2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "pwskoag-dylib";
+			targetProxy = F392A8EF14B79C8E000A98C2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		F392A8A214B76D75000A98C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				HEADER_SEARCH_PATHS = "../../src/**";
+				INSTALL_PATH = ../build;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F392A8A314B76D75000A98C2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				HEADER_SEARCH_PATHS = "../../src/**";
+				INSTALL_PATH = ../build;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		F3F70A0E14B71F3600E4BA27 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -245,6 +430,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../src/**";
+				INSTALL_PATH = ../build;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -253,6 +439,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../src/**";
+				INSTALL_PATH = ../build;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -260,6 +447,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		F392A8A114B76D75000A98C2 /* Build configuration list for PBXNativeTarget "client" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F392A8A214B76D75000A98C2 /* Debug */,
+				F392A8A314B76D75000A98C2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F3F70A0014B71F3500E4BA27 /* Build configuration list for PBXProject "pwskoag" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -185,12 +185,10 @@ namespace pwskoag
 	class C_Sendable
 	{
 		private:
-			C_Sendable() {}
 		public:
 			TcpSocket* m_Tcp;
 			C_Packet* m_Packet;
-			
-			C_Sendable(bool t) : m_Tcp(NULL), m_Packet(NULL) {}
+			C_Sendable() : m_Tcp(NULL), m_Packet(NULL) {}
 			C_Sendable(TcpSocket* s, C_Packet* p) : m_Tcp(s), m_Packet(p) {}
 			virtual ~C_Sendable() {}
 			virtual void M_Send()=0;

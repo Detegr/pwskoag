@@ -117,7 +117,7 @@ namespace pwskoag
 					p >> id;
 					tcpSocket.M_Id(id);
 					std::cout << "Got handshake with id: " << tcpSocket.M_Id() << std::endl;
-					C_ClientPlayer* n = new C_ClientPlayer(this);
+					C_ClientPlayer* n = new C_ClientPlayer(&tcpSocket, &packet);
 					m_OwnPlayer=n;
 					m_Players.push_back(m_OwnPlayer);
 					m_Players.back()->M_SetId(id);
@@ -182,7 +182,7 @@ namespace pwskoag
 								if(newplr)
 								{
 									std::cout << "New player: " << i << std::endl;
-									plrs->push_back(new C_ClientPlayer(false));
+									plrs->push_back(new C_ClientPlayer);
 									plrs->back()->M_SetId(i);
 								}
 								p>>str;

@@ -249,7 +249,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				INSTALL_PATH = ../../build;
+				LD_DYLIB_INSTALL_NAME = "./$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SYMROOT = ../build;
 			};
 			name = Debug;
 		};
@@ -257,7 +260,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				INSTALL_PATH = ../../build;
+				LD_DYLIB_INSTALL_NAME = "./$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SYMROOT = ../build;
 			};
 			name = Release;
 		};

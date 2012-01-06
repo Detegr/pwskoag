@@ -38,17 +38,80 @@ namespace pwskoag
 	TcpServer::~TcpServer()
 	{
 		C_Lock lock(selfMutex);
-		for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it) delete it->first;
+		for(t_Clients::iterator it=m_Clients.begin(); it!=m_Clients.end(); ++it) delete it->first;
 	}
-	static void TCPReceive(void* args)
+	
+	static bool M_ParsePacket(C_Packet& p, e_Command header, C_ThreadData* data)
 	{
-		C_ThreadData* data=(C_ThreadData*)args;
 		C_Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
 		std::vector<C_Player *>* plrs=data->m_Players;
 		TcpSocket* client=(TcpSocket*)data->socket;
+		
+		if(header==String)
+		{
+		}
+		else if(header==Message || header==Integer)
+		{
+			/*
+			 * Message:
+			 * [int|std::string]
+			 */
+			int i; p>>i;
+			std::string str; p>>str;
+			std::cout << "ID: " << i << ": " << str << std::endl;
+			lock->M_Lock();
+			for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+			{
+				if((*it)->M_Id()==i)
+				{
+					(*it)->M_SetStr(str);
+					break;
+				}
+			}
+			for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+			{
+				C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);
+				plr->m_Packet->M_Clear();
+				for(std::vector<C_Player*>::iterator it2=plrs->begin(); it2!=plrs->end(); ++it2)
+				{
+					C_ServerPlayer* plr2=dynamic_cast<C_ServerPlayer*>(*it2);
+					*(plr->m_Packet)
+						<<(uchar)Integer
+						<<(int)plr2->M_Id()
+						<<(uchar)String
+						<<plr2->M_GetStr();
+				}
+				plr->M_Send();
+			}
+			lock->M_Unlock();		
+		}
+		else if(header==Heartbeat)
+		{
+			lock->M_Lock();
+			timer->M_Reset();
+			lock->M_Unlock();
+			std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
+		}
+		else if(header==Disconnect)
+		{
+			lock->M_Lock();
+			client->Clear();
+			lock->M_Unlock();
+			std::cout << "Client disconnected." << std::endl;
+			return false;
+		}
+		else if(header==EOP) return true;
+		else throw std::runtime_error("Invalid packet header.");
+		return true;
+	}
+	
+	static void TCPReceive(void* args)
+	{
+		C_ThreadData* data=(C_ThreadData*)args;
+		C_Mutex* lock=data->lock;
+		TcpSocket* client=(TcpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
-		delete data;
 		
 		Selector s;
 		while(!*stopNow)
@@ -65,57 +128,7 @@ namespace pwskoag
 					while(p.M_Size())
 					{
 						p>>header;
-						switch (header)
-						{
-							case String:
-							{
-								std::string str;
-								p>>str;
-								std::cout << "Str: " << str << " from " << client->GetIp() << ":" << client->GetPort() << std::endl;
-								break;
-							}
-							case Integer:
-							{
-								int i;
-								p>>i;
-								std::string str;
-								p>>str;
-								std::cout << "ID: " << i << ": " << str << std::endl;
-								lock->M_Lock();
-								for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
-								{
-									if((*it)->M_Id()==i) {(*it)->M_SetStr(str); break;}
-								}
-								for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
-								{
-									C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);
-									plr->m_Packet->M_Clear();
-									for(std::vector<C_Player*>::iterator it2=plrs->begin(); it2!=plrs->end(); ++it2)
-									{
-										C_ServerPlayer* plr2=dynamic_cast<C_ServerPlayer*>(*it2);
-										*(plr->m_Packet)<<(uchar)Integer<<(int)plr2->M_Id()<<(uchar)String<<plr2->M_GetStr();
-										std::cout << "Sent " << (int)plr2->M_Id() << "," << plr2->M_GetStr() << " to " << plr->M_Id() << std::endl;
-									}
-									plr->M_Send();
-								}
-								lock->M_Unlock();
-								break;
-							}
-							case Heartbeat:
-								lock->M_Lock();
-								timer->M_Reset();
-								lock->M_Unlock();
-								std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
-								break;
-							case Disconnect:		
-								lock->M_Lock();
-								client->Clear();
-								lock->M_Unlock();
-								std::cout << "Client disconnected." << std::endl;
-								return;
-							case EOP: /*EndOfPacket(client);*/ break;
-							default: break;
-						}
+						if(!M_ParsePacket(p, (e_Command)header, data)) {delete data; return;}
 					}
 				}
 				else
@@ -123,7 +136,7 @@ namespace pwskoag
 					lock->M_Lock();
 					client->Clear();
 					lock->M_Unlock();
-					std::cout << "Couldn't receive data from client. Client disconnected?" << std::endl;
+					std::cout << "Client disconnected?" << std::endl;
 					break;
 				}
 			}
@@ -136,114 +149,128 @@ namespace pwskoag
 				break;
 			}
 		}
+		delete data;
 	}
 	
-	PWSKOAG_API void TcpServer::ServerLoop()
+	void TcpServer::M_ParseClient(TcpSocket* client)
 	{
-		tcpListener.Bind();
-		tcpListener.Listen();
-		Selector selector;
-		selector.Add(tcpListener);
-		while(!stopNow)
+		C_Packet p;
+		if(client->Receive(p))
 		{
-			selector.Wait(TICK_WAITTIME_TCP);
-			if(selector.IsReady(tcpListener))
+			uchar header; p>>header;
+			if(header==TCPConnect)
 			{
-				TcpSocket* client = tcpListener.Accept();
-				if(client)
+				uint version; p>>version;
+				std::cout << "Version: " << version << std::endl;
+				if(!C_Version::M_Equal(version))
 				{
-					C_Packet p;
-					if(client->Receive(p))
-					{
-						uchar header; p>>header;
-						if(header==TCPConnect)
-						{
-							uint version; p>>version;
-							std::cout << "Version: " << version << std::endl;
-							if(!C_Version::M_Equal(version))
-							{
-								std::cerr << "Version mismatch!" << std::endl;
-								delete client;
-							}
-							else
-							{
-								p.M_Clear();
-								p<<HandShake;
-								bool ok=false;
-								do
-								{
-									ok=true;
-									ushort id=rand()%(((ushort)1)<<15);
-									for(t_Clients::iterator it=clients.begin(); it!=clients.end(); ++it)
-									{
-										if(it->second.socket->M_Id()==id) {ok=false; break;}
-									}
-									client->M_Id(id);
-								} while(!ok);
-								p << client->M_Id();
-								std::cout << "Generated id: " << client->M_Id() << std::endl;
-								std::cout << "Client connected" << std::endl;
-								m_Players.push_back(new C_ServerPlayer(client, new C_Packet));
-								m_Players.back()->M_SetId(client->M_Id());
-								std::cout << "Players: " << m_Players.size() << std::endl;
-								clients.push_back(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
-								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock,client, &clients.back().second.timer, &m_Players, &stopNow);
-								C_Thread* run=new C_Thread(TCPReceive, (void*)data);
-								clients.back().first=run;
-								client->Send(p);
-							}
-						}
-					}
+					std::cerr << "Version mismatch!" << std::endl;
+					delete client;
 				}
-			}
-			t_Clients::iterator it=clients.begin();
-			while(it!=clients.end())
-			{
-				it->second.lock.M_Lock();
-				bool closed=it->second.socket->M_Closed();
-				it->second.lock.M_Unlock();
-				if(closed)
+				else
 				{
-					it->first->M_Join();
-					it->second.lock.M_Lock();
-					std::cout << "Removed disconnected client from clients." << std::endl;
-					std::vector<C_Player *>::iterator pt=m_Players.begin();
-					while(pt!=m_Players.end())
+					p.M_Clear();
+					p<<HandShake;
+					bool ok=false;
+					do
 					{
-						C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*pt);
-						if(plr->m_Tcp->M_Id()==it->second.socket->M_Id())
+						ok=true;
+						ushort id=rand()%(((ushort)1)<<15);
+						for(t_Clients::iterator it=m_Clients.begin(); it!=m_Clients.end(); ++it)
 						{
-							std::cout << "Deleting player " << plr->m_Tcp->M_Id() << std::endl;
-							delete plr->m_Packet;
-							delete plr;
-							std::vector<C_Player *>::iterator del=pt;
-							++pt;
-							m_Players.erase(del);
-							break;
+							if(it->second.socket->M_Id()==id) {ok=false; break;}
 						}
-						++pt;
-					}
-					delete it->first;
-					delete it->second.socket;
-					it->second.lock.M_Unlock();
-					t_Clients::iterator prev=it;
-					++it;
-					it=clients.erase(prev);
-					
-					continue;
-				}
-				else ++it;
+						client->M_Id(id);
+					} while(!ok);
+					p << client->M_Id();
+					std::cout << "Generated id: " << client->M_Id() << std::endl;
+					std::cout << "Client connected" << std::endl;
+					m_Players.push_back(new C_ServerPlayer(client, new C_Packet));
+					m_Players.back()->M_SetId(client->M_Id());
+					std::cout << "Players: " << m_Players.size() << std::endl;
+					m_Clients.push_back(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
+					C_ThreadData* data=new C_ThreadData(&m_Clients.back().second.lock,client, &m_Clients.back().second.timer, &m_Players, &stopNow);
+					C_Thread* run=new C_Thread(TCPReceive, (void*)data);
+					m_Clients.back().first=run;
+					client->Send(p);
+				}	
 			}
 		}
-		tcpListener.Close();
-		
-		if(clients.size()>0) {std::cout << "There were " << clients.size() << " clients connected." << std::endl;}
+	}
+	
+	void TcpServer::M_DeleteDisconnected()
+	{
+		t_Clients::iterator it=m_Clients.begin();
+		while(it!=m_Clients.end())
+		{
+			it->second.lock.M_Lock();
+			bool closed=it->second.socket->M_Closed();
+			uint64 lastbeat=it->second.timer.M_Get();
+			it->second.lock.M_Unlock();
+			if(closed || lastbeat>TIMEOUTMS)
+			{
+				it->first->M_Join();
+				it->second.lock.M_Lock();
+				std::cout << "Removed disconnected client from clients." << std::endl;
+				std::vector<C_Player *>::iterator pt=m_Players.begin();
+				while(pt!=m_Players.end())
+				{
+					C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*pt);
+					if(plr->m_Tcp->M_Id()==it->second.socket->M_Id())
+					{
+						std::cout << "Deleting player " << plr->m_Tcp->M_Id() << std::endl;
+						delete plr->m_Packet;
+						delete plr;
+						std::vector<C_Player *>::iterator del=pt;
+						++pt;
+						m_Players.erase(del);
+						break;
+					}
+					++pt;
+				}
+				delete it->first;
+				delete it->second.socket;
+				it->second.lock.M_Unlock();
+				t_Clients::iterator prev=it;
+				++it;
+				it=m_Clients.erase(prev);
+				
+				continue;
+			}
+			else ++it;
+		}
+	}
+	
+	void TcpServer::M_ClearPlayers()
+	{
 		for(std::vector<C_Player*>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
 		{
 			C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);
 			delete plr->m_Packet;
 			delete plr;
 		}
+	}
+	
+	PWSKOAG_API void TcpServer::ServerLoop()
+	{
+		m_TcpListener.Bind();
+		m_TcpListener.Listen();
+		Selector selector;
+		selector.Add(m_TcpListener);
+		while(!stopNow)
+		{
+			selector.Wait(TICK_WAITTIME_TCP);
+			if(selector.IsReady(m_TcpListener))
+			{
+				TcpSocket* client = m_TcpListener.Accept();
+				if(client) M_ParseClient(client);
+			}
+			M_DeleteDisconnected();
+		}
+		m_TcpListener.Close();
+		
+		if(m_Clients.size()>0) std::cout << "There were " << m_Clients.size() << " clients connected." << std::endl;
+		M_ClearPlayers();
 		std::cout << "Shut down successful." << std::endl;
 	}
 	

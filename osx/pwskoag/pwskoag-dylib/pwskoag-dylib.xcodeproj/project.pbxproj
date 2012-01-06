@@ -250,7 +250,7 @@
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
 				INSTALL_PATH = ../../build;
-				LD_DYLIB_INSTALL_NAME = "./$(EXECUTABLE_PATH)";
+				LD_DYLIB_INSTALL_NAME = "@executable_path/$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SYMROOT = ../build;
 			};
@@ -261,7 +261,7 @@
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
 				INSTALL_PATH = ../../build;
-				LD_DYLIB_INSTALL_NAME = "./$(EXECUTABLE_PATH)";
+				LD_DYLIB_INSTALL_NAME = "@executable_path/$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SYMROOT = ../build;
 			};
@@ -286,6 +286,7 @@
 				F392A83614B765B2000A98C2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

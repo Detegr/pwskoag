@@ -44,15 +44,18 @@ namespace pwskoag
 	class TcpServer : public Server
 	{	
 	private:
-		TcpSocket 			tcpListener;
-		t_Clients			clients;
+		TcpSocket 			m_TcpListener;
+		t_Clients			m_Clients;
 		C_Mutex				m_PlayerLock;
 		std::vector<C_Player *> m_Players;
 		PWSKOAG_API void	ServerLoop();
+		void				M_ParseClient(TcpSocket* client);
+		void				M_DeleteDisconnected();
+		void				M_ClearPlayers();
 	public:
-		PWSKOAG_API TcpServer(ushort port) : Server(port), tcpListener(TcpSocket(port)) {}
+		PWSKOAG_API TcpServer(ushort port) : Server(port), m_TcpListener(TcpSocket(port)) {}
 		PWSKOAG_API ~TcpServer();
-		const t_Clients& GetClients() const {return clients;}
+		const t_Clients& GetClients() const {return m_Clients;}
 	};
 	
 	/*

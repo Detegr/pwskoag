@@ -1,6 +1,7 @@
 #include <Graphics/Graphics.h>
 #include <Network/Network.h>
 #include <Game/Player.h>
+#include <Game/ClientPlayer.h>
 #include <vector>
 
 int main()
@@ -24,10 +25,11 @@ int main()
 	std::string s;
 	while(r.M_Running())
 	{
-		std::vector<pwskoag::C_ClientPlayer*> plrs=c.M_Players();
-		for(std::vector<pwskoag::C_ClientPlayer*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
+		std::vector<pwskoag::C_Player*> plrs=c.M_Players();
+		for(std::vector<pwskoag::C_Player*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 		{
-			r.M_AddObjectCheckExisting(*(*it)->M_GetDRAW()->M_GetDrawableObj());
+			pwskoag::C_ClientPlayer* plr=dynamic_cast<pwskoag::C_ClientPlayer*>(*it);
+			r.M_AddObjectCheckExisting(*plr->M_GetDRAW()->M_GetDrawableObj());
 		}
 		r.M_Draw();
 		switch(r.M_GetEvent().Type)

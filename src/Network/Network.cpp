@@ -4,6 +4,7 @@
 #include <iostream>
 #include <assert.h>
 #include <Game/Player.h>
+#include <Game/ClientPlayer.h>
 
 #ifdef _WIN32
 #else
@@ -44,7 +45,7 @@ namespace pwskoag
 		C_ThreadData* data=(C_ThreadData*)args;
 		C_Mutex* lock=data->lock;
 		C_Timer* timer=data->timer;
-		std::vector<C_ServerPlayer *>* plrs=data->m_Players;
+		std::vector<C_Player *>* plrs=data->m_Players;
 		TcpSocket* client=(TcpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
 		delete data;
@@ -77,19 +78,25 @@ namespace pwskoag
 							{
 								int i;
 								p>>i;
-								std::cout << "ID: " << i << std::endl;
 								std::string str;
 								p>>str;
+								std::cout << "ID: " << i << ": " << str << std::endl;
 								lock->M_Lock();
-								for(std::vector<C_ServerPlayer*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
 									if((*it)->M_Id()==i) {(*it)->M_SetStr(str); break;}
 								}
-								for(std::vector<C_ServerPlayer*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
-									(*it)->m_Packet->M_Clear();
-										for(std::vector<C_ServerPlayer*>::iterator it2=plrs->begin(); it2!=plrs->end(); ++it2) *((*it)->m_Packet)<<(uchar)Integer<<(int)(*it2)->M_Id()<<(uchar)String<<(*it2)->M_GetStr();
-									(*it)->M_Send();
+									C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);
+									plr->m_Packet->M_Clear();
+									for(std::vector<C_Player*>::iterator it2=plrs->begin(); it2!=plrs->end(); ++it2)
+									{
+										C_ServerPlayer* plr2=dynamic_cast<C_ServerPlayer*>(*it2);
+										*(plr->m_Packet)<<(uchar)Integer<<(int)plr2->M_Id()<<(uchar)String<<plr2->M_GetStr();
+										std::cout << "Sent " << (int)plr2->M_Id() << "," << plr2->M_GetStr() << " to " << plr->M_Id() << std::endl;
+									}
+									plr->M_Send();
 								}
 								lock->M_Unlock();
 								break;
@@ -180,7 +187,7 @@ namespace pwskoag
 								m_Players.back()->M_SetId(client->M_Id());
 								std::cout << "Players: " << m_Players.size() << std::endl;
 								clients.push_back(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
-								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock,client, &clients.back().second.timer, &m_Players, NULL, &stopNow);
+								C_ThreadData* data=new C_ThreadData(&clients.back().second.lock,client, &clients.back().second.timer, &m_Players, &stopNow);
 								C_Thread* run=new C_Thread(TCPReceiveThread_Server, (void*)data);
 								clients.back().first=run;
 								client->Send(p);
@@ -200,15 +207,16 @@ namespace pwskoag
 					it->first->M_Join();
 					it->second.lock.M_Lock();
 					std::cout << "Removed disconnected client from clients." << std::endl;
-					std::vector<C_ServerPlayer *>::iterator pt=m_Players.begin();
+					std::vector<C_Player *>::iterator pt=m_Players.begin();
 					while(pt!=m_Players.end())
 					{
-						if((*pt)->m_Tcp->M_Id()==it->second.socket->M_Id())
+						C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*pt);
+						if(plr->m_Tcp->M_Id()==it->second.socket->M_Id())
 						{
-							std::cout << "Deleting player " << (*pt)->m_Tcp->M_Id() << std::endl;
-							delete (*pt)->m_Packet;
-							delete (*pt);
-							std::vector<C_ServerPlayer *>::iterator del=pt;
+							std::cout << "Deleting player " << plr->m_Tcp->M_Id() << std::endl;
+							delete plr->m_Packet;
+							delete plr;
+							std::vector<C_Player *>::iterator del=pt;
 							++pt;
 							m_Players.erase(del);
 							break;
@@ -230,7 +238,12 @@ namespace pwskoag
 		tcpListener.Close();
 
 		if(clients.size()>0) {std::cout << "There were " << clients.size() << " clients connected." << std::endl;}
-		for(std::vector<C_ServerPlayer*>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it) {delete (*it)->m_Packet; delete *it;}
+		for(std::vector<C_Player*>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+		{
+			C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);
+			delete plr->m_Packet;
+			delete plr;
+		}
 		std::cout << "Shut down successful." << std::endl;
 	}
 	void UDPReceiveThread_Client(void *args)
@@ -414,7 +427,7 @@ namespace pwskoag
 		Stop();
 		//Lock lock(Client::selfMutex);
 		tcpSocket.Disconnect();
-		for(std::vector<C_ClientPlayer *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+		for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
 		{
 			delete *it;
 		}
@@ -424,7 +437,7 @@ namespace pwskoag
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
 		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
-		std::vector<C_ClientPlayer *>* plrs=data->m_CPlayers;
+		std::vector<C_Player *>* plrs=data->m_Players;
 		bool* stopNow=data->stopNow;
 		bool connect=true;
 		delete data;
@@ -452,9 +465,10 @@ namespace pwskoag
 								std::string str;
 								p>>i;
 								bool newplr=true;
-								for(std::vector<C_ClientPlayer *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
-									if((*it)->M_Id()==i) {newplr=false; break;}
+									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+									if(plr->M_Id()==i) {newplr=false; break;}
 								}
 								if(newplr)
 								{
@@ -464,10 +478,12 @@ namespace pwskoag
 								}
 								p>>str;
 								std::cout << str << " for " << i << std::endl;
-								for(std::vector<C_ClientPlayer *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
-									if((*it)->M_Id()==i) (*it)->M_SetStr(str);
+									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+									if(plr->M_Id()==i) plr->M_SetStr(str);
 								}
+								std::cout << "GOT: " << i << ", " << str << ", size: " << p.M_Size() << std::endl;
 								break;
 							}
 							case String:
@@ -478,7 +494,8 @@ namespace pwskoag
 								break;
 							}
 							case EOP:
-								end=true;
+								std::cout << "EOP" << std::endl;
+								//end=true;
 								break;
 							default:
 								std::cout << "Invalid packet. Terminating." << std::endl; break;
@@ -492,7 +509,7 @@ namespace pwskoag
 	PWSKOAG_API void TcpClient::ClientLoop()
 	{
 		C_Timer timer;
-		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, NULL, &m_Players, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, &(Client::stopNow));
 		C_Thread t(TCPReceiveThread_Client, data);
 		while(!stopNow)
 		{
@@ -546,7 +563,7 @@ namespace pwskoag
 	}
 	PWSKOAG_API void UdpClient::ClientLoop()
 	{
-		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, NULL, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, &(Client::stopNow));
 		C_Thread t(UDPReceiveThread_Client, data);
 		while(!stopNow)
 		{

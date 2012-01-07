@@ -11,7 +11,6 @@
 		F392A86514B765E0000A98C2 /* Concurrency.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A83F14B765DF000A98C2 /* Concurrency.h */; };
 		F392A86714B765E0000A98C2 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A84314B765DF000A98C2 /* Player.cpp */; };
 		F392A86814B765E0000A98C2 /* Player.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A84414B765DF000A98C2 /* Player.h */; };
-		F392A86A14B765E0000A98C2 /* World.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A84614B765DF000A98C2 /* World.h */; };
 		F392A87214B765E0000A98C2 /* Network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A85214B765DF000A98C2 /* Network.cpp */; };
 		F392A87314B765E0000A98C2 /* Network.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A85314B765DF000A98C2 /* Network.h */; };
 		F392A87414B765E0000A98C2 /* Packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A85414B765DF000A98C2 /* Packet.cpp */; };
@@ -29,7 +28,6 @@
 		F392A83F14B765DF000A98C2 /* Concurrency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Concurrency.h; sourceTree = "<group>"; };
 		F392A84314B765DF000A98C2 /* Player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Player.cpp; sourceTree = "<group>"; };
 		F392A84414B765DF000A98C2 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
-		F392A84614B765DF000A98C2 /* World.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = World.h; sourceTree = "<group>"; };
 		F392A85214B765DF000A98C2 /* Network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Network.cpp; sourceTree = "<group>"; };
 		F392A85314B765DF000A98C2 /* Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Network.h; sourceTree = "<group>"; };
 		F392A85414B765DF000A98C2 /* Packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Packet.cpp; sourceTree = "<group>"; };
@@ -86,7 +84,6 @@
 			children = (
 				F392A84314B765DF000A98C2 /* Player.cpp */,
 				F392A84414B765DF000A98C2 /* Player.h */,
-				F392A84614B765DF000A98C2 /* World.h */,
 			);
 			name = Game;
 			path = ../../../src/Game;
@@ -126,7 +123,6 @@
 			files = (
 				F392A86514B765E0000A98C2 /* Concurrency.h in Headers */,
 				F392A86814B765E0000A98C2 /* Player.h in Headers */,
-				F392A86A14B765E0000A98C2 /* World.h in Headers */,
 				F392A87314B765E0000A98C2 /* Network.h in Headers */,
 				F392A87514B765E0000A98C2 /* Packet.h in Headers */,
 				F392A87814B765E0000A98C2 /* ThreadData.h in Headers */,

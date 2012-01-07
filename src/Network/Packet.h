@@ -9,6 +9,7 @@ namespace pwskoag
 	 * TCPConnect 	[uchar(TCPConnect), uint]
 	 * UDPConnect 	[uchar(UDPConnect), ushort]
 	 * String		[uchar(String), std::string]
+	 * Message		[uchar(Message), int(Id), std::string]
 	 * EOP			[uchar(EOP)]
 	 */
 	enum e_Command
@@ -18,9 +19,8 @@ namespace pwskoag
 		TCPConnect,
 		UDPConnect,
 		Disconnect,
-		String,
 		Message,
-		Integer,
+		String,
 		EOP=255
 	};
 

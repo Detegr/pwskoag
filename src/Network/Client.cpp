@@ -121,6 +121,32 @@ namespace pwskoag
 					m_OwnPlayer=n;
 					m_Players.push_back(m_OwnPlayer);
 					m_Players.back()->M_SetId(id);
+					while(p.M_Size())
+					{
+								p>>c;
+								int i;
+								std::string str;
+								p>>i;
+								bool newplr=true;
+								for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+								{
+									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+									if(plr->M_Id()==i) {newplr=false; break;}
+								}
+								if(newplr)
+								{
+									std::cout << "New player: " << i << std::endl;
+									m_Players.push_back(new C_ClientPlayer);
+									m_Players.back()->M_SetId(i);
+								}
+								p>>str;
+								std::cout << str << " for " << i << std::endl;
+								for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+								{
+									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+									if(plr->M_Id()==i) plr->M_SetStr(str);
+								}
+					}
 					Start();
 					return true;
 				}
@@ -168,7 +194,7 @@ namespace pwskoag
 						p>>header;
 						switch (header)
 						{
-							case Integer:
+							case Message:
 							{
 								int i;
 								std::string str;
@@ -218,7 +244,7 @@ namespace pwskoag
 	PWSKOAG_API void TcpClient::ClientLoop()
 	{
 		C_Timer timer;
-		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, NULL, &(Client::stopNow));
 		C_Thread t(TCPReceive, data);
 		while(!stopNow)
 		{
@@ -273,7 +299,7 @@ namespace pwskoag
 
 	PWSKOAG_API void UdpClient::ClientLoop()
 	{
-		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, NULL, &(Client::stopNow));
 		C_Thread t(UDPReceive, data);
 		while(!stopNow)
 		{

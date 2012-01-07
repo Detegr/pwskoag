@@ -6,6 +6,22 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		F3B814E714B85D7F00EFF180 /* all */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = F3B814E814B85D7F00EFF180 /* Build configuration list for PBXAggregateTarget "all" */;
+			buildPhases = (
+			);
+			dependencies = (
+				F3B814EC14B85D9000EFF180 /* PBXTargetDependency */,
+				F3B814EE14B85D9000EFF180 /* PBXTargetDependency */,
+				F3B814F014B85D9000EFF180 /* PBXTargetDependency */,
+			);
+			name = all;
+			productName = all;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		F392A88514B76AAE000A98C2 /* libpwskoag-dylib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A83C14B765B3000A98C2 /* libpwskoag-dylib.dylib */; };
 		F392A8A814B76DB0000A98C2 /* ClientPlayer.h in Sources */ = {isa = PBXBuildFile; fileRef = F392A88A14B76CF9000A98C2 /* ClientPlayer.h */; };
@@ -47,6 +63,27 @@
 			remoteGlobalIDString = F392A82F14B765B2000A98C2;
 			remoteInfo = "pwskoag-dylib";
 		};
+		F3B814EB14B85D9000EFF180 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3F709FD14B71F3500E4BA27 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F3F70A1614B720EC00E4BA27;
+			remoteInfo = server;
+		};
+		F3B814ED14B85D9000EFF180 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3F709FD14B71F3500E4BA27 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F392A89914B76D75000A98C2;
+			remoteInfo = client;
+		};
+		F3B814EF14B85D9000EFF180 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F392A82F14B765B2000A98C2;
+			remoteInfo = "pwskoag-dylib";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -72,6 +109,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F373B54F14B858E2009DF15B /* ServerPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServerPlayer.h; sourceTree = "<group>"; };
 		F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "pwskoag-dylib.xcodeproj"; path = "pwskoag-dylib/pwskoag-dylib.xcodeproj"; sourceTree = "<group>"; };
 		F392A88714B76CD6000A98C2 /* Client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Client.cpp; path = ../../src/Network/Client.cpp; sourceTree = "<group>"; };
 		F392A88914B76CDF000A98C2 /* Client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Client.h; path = ../../src/Network/Client.h; sourceTree = "<group>"; };
@@ -86,7 +124,6 @@
 		F392A8B414B76FEC000A98C2 /* sfml-window.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-window.framework"; path = "../../../../../../Library/Frameworks/sfml-window.framework"; sourceTree = "<group>"; };
 		F392A8B614B77009000A98C2 /* sfml-system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-system.framework"; path = "../../../../../../Library/Frameworks/sfml-system.framework"; sourceTree = "<group>"; };
 		F392A8B914B78B19000A98C2 /* play.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = play.ttf; path = ../../build/play.ttf; sourceTree = "<group>"; };
-		F392A8D314B7911B000A98C2 /* ServerPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServerPlayer.h; sourceTree = "<group>"; };
 		F392A8D814B7911B000A98C2 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
 		F392A8E014B7911B000A98C2 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
 		F392A8E114B7911B000A98C2 /* Server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
@@ -178,7 +215,7 @@
 		F392A8CF14B7911B000A98C2 /* Game */ = {
 			isa = PBXGroup;
 			children = (
-				F392A8D314B7911B000A98C2 /* ServerPlayer.h */,
+				F373B54F14B858E2009DF15B /* ServerPlayer.h */,
 			);
 			name = Game;
 			path = ../../src/Game;
@@ -302,6 +339,7 @@
 			targets = (
 				F3F70A1614B720EC00E4BA27 /* server */,
 				F392A89914B76D75000A98C2 /* client */,
+				F3B814E714B85D7F00EFF180 /* all */,
 			);
 		};
 /* End PBXProject section */
@@ -353,6 +391,21 @@
 			name = "pwskoag-dylib";
 			targetProxy = F392A8EF14B79C8E000A98C2 /* PBXContainerItemProxy */;
 		};
+		F3B814EC14B85D9000EFF180 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F3F70A1614B720EC00E4BA27 /* server */;
+			targetProxy = F3B814EB14B85D9000EFF180 /* PBXContainerItemProxy */;
+		};
+		F3B814EE14B85D9000EFF180 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F392A89914B76D75000A98C2 /* client */;
+			targetProxy = F3B814ED14B85D9000EFF180 /* PBXContainerItemProxy */;
+		};
+		F3B814F014B85D9000EFF180 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "pwskoag-dylib";
+			targetProxy = F3B814EF14B85D9000EFF180 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -374,6 +427,20 @@
 				HEADER_SEARCH_PATHS = "../../src/**";
 				INSTALL_PATH = ../build;
 				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		F3B814E914B85D7F00EFF180 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F3B814EA14B85D7F00EFF180 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -452,6 +519,15 @@
 			buildConfigurations = (
 				F392A8A214B76D75000A98C2 /* Debug */,
 				F392A8A314B76D75000A98C2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F3B814E814B85D7F00EFF180 /* Build configuration list for PBXAggregateTarget "all" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3B814E914B85D7F00EFF180 /* Debug */,
+				F3B814EA14B85D7F00EFF180 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

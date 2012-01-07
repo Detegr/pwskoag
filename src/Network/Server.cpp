@@ -44,6 +44,7 @@ namespace pwskoag
 	static bool M_ParsePacket(C_Packet& p, e_Command header, C_ThreadData* data)
 	{
 		C_Mutex* lock=data->lock;
+		C_Mutex* plrlock=data->m_PlayerLock;
 		C_Timer* timer=data->timer;
 		std::vector<C_Player *>* plrs=data->m_Players;
 		TcpSocket* client=(TcpSocket*)data->socket;
@@ -51,7 +52,7 @@ namespace pwskoag
 		if(header==String)
 		{
 		}
-		else if(header==Message || header==Integer)
+		else if(header==Message)
 		{
 			/*
 			 * Message:
@@ -61,6 +62,7 @@ namespace pwskoag
 			std::string str; p>>str;
 			std::cout << "ID: " << i << ": " << str << std::endl;
 			lock->M_Lock();
+			plrlock->M_Lock();
 			for(std::vector<C_Player*>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 			{
 				if((*it)->M_Id()==i)
@@ -77,13 +79,13 @@ namespace pwskoag
 				{
 					C_ServerPlayer* plr2=dynamic_cast<C_ServerPlayer*>(*it2);
 					*(plr->m_Packet)
-						<<(uchar)Integer
+						<<(uchar)Message
 						<<(int)plr2->M_Id()
-						<<(uchar)String
 						<<plr2->M_GetStr();
 				}
 				plr->M_Send();
 			}
+			plrlock->M_Unlock();
 			lock->M_Unlock();		
 		}
 		else if(header==Heartbeat)
@@ -170,7 +172,7 @@ namespace pwskoag
 				else
 				{
 					p.M_Clear();
-					p<<HandShake;
+					//p<<HandShake;
 					bool ok=false;
 					do
 					{
@@ -182,17 +184,40 @@ namespace pwskoag
 						}
 						client->M_Id(id);
 					} while(!ok);
-					p << client->M_Id();
+					//p << client->M_Id();
 					std::cout << "Generated id: " << client->M_Id() << std::endl;
 					std::cout << "Client connected" << std::endl;
 					m_Players.push_back(new C_ServerPlayer(client, new C_Packet));
 					m_Players.back()->M_SetId(client->M_Id());
+					*(dynamic_cast<C_Sendable*>(m_Players.back())->m_Packet)<<HandShake<<client->M_Id();
 					std::cout << "Players: " << m_Players.size() << std::endl;
 					m_Clients.push_back(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
-					C_ThreadData* data=new C_ThreadData(&m_Clients.back().second.lock,client, &m_Clients.back().second.timer, &m_Players, &stopNow);
+					C_ThreadData* data=new C_ThreadData(&m_Clients.back().second.lock,client, &m_Clients.back().second.timer, &m_Players, &m_PlayerLock, &stopNow);
 					C_Thread* run=new C_Thread(TCPReceive, (void*)data);
 					m_Clients.back().first=run;
-					client->Send(p);
+					//client->Send(p);
+					m_PlayerLock.M_Lock();
+					for(std::vector<C_Player*>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+					{
+						C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);
+						//if(plr==m_Players.back()) continue;
+						
+						//plr->m_Packet->M_Clear();
+						std::cout << "Sending data of: "; std::cout.flush();
+						for(std::vector<C_Player*>::iterator it2=m_Players.begin(); it2!=m_Players.end(); ++it2)
+						{
+							C_ServerPlayer* plr2=dynamic_cast<C_ServerPlayer*>(*it2);
+														std::cout << plr2->M_Id() << ", "; std::cout.flush();
+							*(plr->m_Packet)
+							<<(uchar)Message
+							<<(int)plr2->M_Id()
+							<<plr2->M_GetStr();
+						}
+						std::cout << "to " << plr->M_Id() << std::endl;
+						plr->M_Send();
+						plr->m_Packet->M_Clear();
+					}
+					m_PlayerLock.M_Unlock();
 				}	
 			}
 		}

@@ -50,8 +50,7 @@ namespace pwskoag
 				C_Lock l(m_Lock);
 				if(m_Packet && m_Tcp)
 				{
-					*m_Packet<<(uchar)Integer<<(int)m_Tcp->M_Id();
-					*m_Packet<<(uchar)String<<m_Str;
+					*m_Packet<<(uchar)Message<<(int)m_Tcp->M_Id()<<m_Str;
 					m_Tcp->Send(*m_Packet);
 				}
 			}

@@ -14,16 +14,17 @@ namespace pwskoag
 		Socket*		socket;
 		C_Timer*	timer;
 		std::vector<C_Player *>* m_Players;
+		C_Mutex*	m_PlayerLock;
 		bool*		stopNow;
-		C_ThreadData(C_Mutex* l, Socket* sock, C_Timer* t, std::vector<C_Player *>* p, bool* stop) :
-			lock(l), socket(sock), timer(t), m_Players(p), stopNow(stop) {}
+		C_ThreadData(C_Mutex* l, Socket* sock, C_Timer* t, std::vector<C_Player *>* p, C_Mutex* pl, bool* stop) :
+			lock(l), socket(sock), timer(t), m_Players(p), m_PlayerLock(pl), stopNow(stop) {}
 	};
 
 	struct LocalThreadData
 	{
 		Socket*				socket;
 		C_Timer				timer;
-		C_Mutex	lock;
+		C_Mutex				lock;
 		LocalThreadData(Socket* s) : socket(s), timer(C_Timer()) {}
 	};
 }

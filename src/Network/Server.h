@@ -52,6 +52,7 @@ namespace pwskoag
 		void				M_ParseClient(TcpSocket* client);
 		void				M_DeleteDisconnected();
 		void				M_ClearPlayers();
+		void				M_NewPlayer(TcpSocket* client);
 	public:
 		PWSKOAG_API TcpServer(ushort port) : Server(port), m_TcpListener(TcpSocket(port)) {}
 		PWSKOAG_API ~TcpServer();

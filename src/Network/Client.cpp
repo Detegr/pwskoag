@@ -93,6 +93,23 @@ namespace pwskoag
 		}
 	}
 	
+	static void M_CheckNewPlayers(ushort id, std::vector<C_Player *>& plrs, C_Mutex& playerlock)
+	{
+		C_Lock l(playerlock);
+		bool newplr=true;
+		for(std::vector<C_Player *>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
+		{
+			C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+			if(plr->M_Id()==id) {newplr=false; break;}
+		}
+		if(newplr)
+		{
+			std::cout << "New player: " << id << std::endl;
+			plrs.push_back(new C_ClientPlayer);
+			plrs.back()->M_SetId(id);
+		}
+	}
+	
 	PWSKOAG_API bool TcpClient::M_Connect(const char* addr, ushort port)
 	{
 		C_Lock lock(Client::selfMutex);
@@ -123,29 +140,19 @@ namespace pwskoag
 					m_Players.back()->M_SetId(id);
 					while(p.M_Size())
 					{
-								p>>c;
-								int i;
-								std::string str;
-								p>>i;
-								bool newplr=true;
-								for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
-								{
-									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
-									if(plr->M_Id()==i) {newplr=false; break;}
-								}
-								if(newplr)
-								{
-									std::cout << "New player: " << i << std::endl;
-									m_Players.push_back(new C_ClientPlayer);
-									m_Players.back()->M_SetId(i);
-								}
-								p>>str;
-								std::cout << str << " for " << i << std::endl;
-								for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
-								{
-									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
-									if(plr->M_Id()==i) plr->M_SetStr(str);
-								}
+						p>>c;
+						if(c==Message)
+						{
+							ushort id; p>>id;
+							M_CheckNewPlayers(id, m_Players, m_PlayerLock);
+							std::string str; p>>str;
+							std::cout << str << " for " << id << std::endl;
+							for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+							{
+								C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+								if(plr->M_Id()==id) plr->M_SetStr(str);
+							}
+						}
 					}
 					Start();
 					return true;
@@ -175,7 +182,7 @@ namespace pwskoag
 		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
 		std::vector<C_Player *>* plrs=data->m_Players;
 		bool* stopNow=data->stopNow;
-		delete data;
+		C_Mutex* playerlock=data->m_PlayerLock;
 		Selector s;
 		while(!*stopNow)
 		{
@@ -196,29 +203,39 @@ namespace pwskoag
 						{
 							case Message:
 							{
-								int i;
+								ushort id;
 								std::string str;
-								p>>i;
-								bool newplr=true;
-								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
-								{
-									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
-									if(plr->M_Id()==i) {newplr=false; break;}
-								}
-								if(newplr)
-								{
-									std::cout << "New player: " << i << std::endl;
-									plrs->push_back(new C_ClientPlayer);
-									plrs->back()->M_SetId(i);
-								}
+								p>>id;
+								M_CheckNewPlayers(id, *plrs, *playerlock);
 								p>>str;
-								std::cout << str << " for " << i << std::endl;
+								std::cout << str << " for " << id << std::endl;
+								playerlock->M_Lock();
 								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
 									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
-									if(plr->M_Id()==i) plr->M_SetStr(str);
+									if(plr->M_Id()==id) plr->M_SetStr(str);
 								}
-								std::cout << "GOT: " << i << ", " << str << ", size: " << p.M_Size() << std::endl;
+								playerlock->M_Unlock();
+								std::cout << "GOT: " << id << ", " << str << ", size: " << p.M_Size() << std::endl;
+								break;
+							}
+							case ClientDisconnected:
+							{
+								ushort id;
+								p>>id;
+								std::cout << "Client " << id << " disconnected." << std::endl;
+								playerlock->M_Lock();
+								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								{
+									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+									if(plr->M_Id()==id)
+									{
+										delete *it;
+										plrs->erase(it);
+										break;
+									}
+								}
+								playerlock->M_Unlock();								
 								break;
 							}
 							case String:
@@ -244,8 +261,8 @@ namespace pwskoag
 	PWSKOAG_API void TcpClient::ClientLoop()
 	{
 		C_Timer timer;
-		C_ThreadData* data=new C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, NULL, &(Client::stopNow));
-		C_Thread t(TCPReceive, data);
+		C_ThreadData data(C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, &m_PlayerLock, &(Client::stopNow)));
+		C_Thread t(TCPReceive, &data);
 		while(!stopNow)
 		{
 			msSleep(TICK_WAITTIME_TCP);

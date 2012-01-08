@@ -1,5 +1,5 @@
 #pragma once
-#include <Graphics/Graphics.h>
+#include <Graphics/Drawable.h>
 namespace pwskoag
 {
 	class C_PlayerGfx : public C_Drawable
@@ -21,6 +21,6 @@ namespace pwskoag
 			{
 				m_Text.SetText(str);
 			}
-			const sf::Drawable* M_GetDrawableObj() const { return &m_Text; }
+			const sf::Drawable& M_GetDrawableObj() const { return m_Text; }
 	};
 }

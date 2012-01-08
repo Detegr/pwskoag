@@ -127,6 +127,7 @@
 		F392A8D814B7911B000A98C2 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
 		F392A8E014B7911B000A98C2 /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
 		F392A8E114B7911B000A98C2 /* Server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
+		F3D505EB14B9ED0A004D7564 /* Drawable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Drawable.h; sourceTree = "<group>"; };
 		F3F70A1714B720EC00E4BA27 /* server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = server; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -179,6 +180,7 @@
 				F392A88E14B76D08000A98C2 /* Graphics.cpp */,
 				F392A88F14B76D08000A98C2 /* Graphics.h */,
 				F392A89014B76D08000A98C2 /* PlayerGfx.h */,
+				F3D505EB14B9ED0A004D7564 /* Drawable.h */,
 			);
 			name = Graphics;
 			path = ../../src/Graphics;

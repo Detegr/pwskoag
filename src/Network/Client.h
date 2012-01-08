@@ -45,26 +45,28 @@ namespace pwskoag
 		friend class C_ServerPlayer;
 		friend class C_Sendable;
 	private:
-		IpAddress			serverAddress;
-		uint 				serverPort;
-		TcpSocket 			tcpSocket;
-		bool				m_Connected;
-		C_Mutex				m_Lock;
-		C_Mutex				m_ConnectMutex;
-		C_Packet			packet;
-		PWSKOAG_API void 	ClientLoop();
-		void 				Append(e_Command c) {packet<<(uchar)c;}
-		void 				Send();
-		void 				Send(e_Command c) {C_Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
+		IpAddress				serverAddress;
+		uint					serverPort;
+		TcpSocket				tcpSocket;
+		bool					m_Connected;
+		C_Mutex					m_Lock;
+		C_Mutex					m_ConnectMutex;
+		C_Packet				packet;
+		PWSKOAG_API void		ClientLoop();
+		void					Append(e_Command c) {packet<<(uchar)c;}
+		void					Send();
+		void					Send(e_Command c) {C_Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
+		C_Mutex					m_PlayerLock;
 		std::vector<C_Player *> m_Players;
-		C_ClientPlayer*		m_OwnPlayer;
+		C_ClientPlayer*			m_OwnPlayer;
 	public:
 		TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
 		PWSKOAG_API bool			M_Connect(const char* addr, ushort port);
 		PWSKOAG_API void 			M_Disconnect();
 		template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
 		const ushort				M_Id() const {return tcpSocket.M_Id();}
-		std::vector<C_Player *> M_Players() {return m_Players;}
+		std::vector<C_Player *>		M_Players() {return m_Players;}
+		void						M_PlayerLock(bool on=true) {on?m_PlayerLock.M_Lock():m_PlayerLock.M_Unlock();}
 		C_ClientPlayer*				M_OwnPlayer() {return m_OwnPlayer;}
 	};
 	

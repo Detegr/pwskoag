@@ -18,7 +18,7 @@ int main()
 	{
 		c.M_Connect("localhost", 55555);
 		p=c.M_OwnPlayer();
-		r.M_AddObject(*p->M_GetDRAW()->M_GetDrawableObj());
+		r.M_AddObject(*p);
 	}
 	catch(...)
 	{
@@ -29,11 +29,13 @@ int main()
 	while(r.M_Running())
 	{
 		std::vector<pwskoag::C_Player*> plrs=c.M_Players();
+		c.M_PlayerLock(true);
 		for(std::vector<pwskoag::C_Player*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 		{
 			pwskoag::C_ClientPlayer* plr=dynamic_cast<pwskoag::C_ClientPlayer*>(*it);
-			r.M_AddObjectCheckExisting(*plr->M_GetDRAW()->M_GetDrawableObj());
+			r.M_AddObjectCheckExisting(*plr);
 		}
+		c.M_PlayerLock(false);
 		r.M_Draw();
 		switch(r.M_GetEvent().Type)
 		{

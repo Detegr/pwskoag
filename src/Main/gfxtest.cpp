@@ -3,6 +3,7 @@
 #include <Network/Client.h>
 #include <Game/Player.h>
 #include <Game/ClientPlayer.h>
+#include <Game/Keyboard.h>
 #include <vector>
 
 int main()
@@ -16,7 +17,7 @@ int main()
 	pwskoag::C_ClientPlayer fallbackp;
 	try
 	{
-		c.M_Connect("localhost", 55555);
+		c.M_Connect("192.168.0.107", 55555);
 		p=c.M_OwnPlayer();
 		r.M_AddObject(*p);
 	}
@@ -44,14 +45,14 @@ int main()
 				case sf::Event::Closed: r.M_Stop(); break;
 				case sf::Event::TextEntered:
 				{
-					sf::Uint32 e=r.M_GetEvent().Text.Unicode;
-					if(e==278) {p->M_Send();}
-					else if(e==279) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
+					char c=pwskoag::Keyboard::M_GetChar(r.M_GetEvent().Text.Unicode);
+					if(c==pwskoag::Keyboard::RETURN) {p->M_Send();}
+					else if(c==pwskoag::Keyboard::BACKSPACE) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
+					else if(c==0);
 					else
 					{
 						std::string str;
-						if(e==277) e=' ';
-						str+=(char)e;
+						str+=c;
 						p->M_AddStr(str);
 					}
 				}

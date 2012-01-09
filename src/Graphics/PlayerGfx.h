@@ -11,7 +11,7 @@ namespace pwskoag
 			C_PlayerGfx()
 			{
 				static uint y=0;
-				m_Font.LoadFromFile("play.ttf");
+				m_Font.LoadFromFile("orbitron.otf");
 				m_Text.SetFont(m_Font);
 				m_Text.SetSize(20);
 				m_Text.SetPosition(0,y);

@@ -20,6 +20,7 @@
 		F392A87C14B765E0000A98C2 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A86114B765E0000A98C2 /* Timer.cpp */; };
 		F392A87D14B765E0000A98C2 /* Timer.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A86214B765E0000A98C2 /* Timer.h */; };
 		F392A87E14B765E0000A98C2 /* Version.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A86314B765E0000A98C2 /* Version.h */; };
+		F3A218D614BBAD410057477F /* Keyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A218D514BBAD410057477F /* Keyboard.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		F392A86114B765E0000A98C2 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
 		F392A86214B765E0000A98C2 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		F392A86314B765E0000A98C2 /* Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Version.h; sourceTree = "<group>"; };
+		F3A218D514BBAD410057477F /* Keyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Keyboard.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +86,7 @@
 			children = (
 				F392A84314B765DF000A98C2 /* Player.cpp */,
 				F392A84414B765DF000A98C2 /* Player.h */,
+				F3A218D514BBAD410057477F /* Keyboard.h */,
 			);
 			name = Game;
 			path = ../../../src/Game;
@@ -129,6 +132,7 @@
 				F392A87B14B765E0000A98C2 /* Base.h in Headers */,
 				F392A87D14B765E0000A98C2 /* Timer.h in Headers */,
 				F392A87E14B765E0000A98C2 /* Version.h in Headers */,
+				F3A218D614BBAD410057477F /* Keyboard.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

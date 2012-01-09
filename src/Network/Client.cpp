@@ -235,7 +235,8 @@ namespace pwskoag
 										break;
 									}
 								}
-								playerlock->M_Unlock();								
+								playerlock->M_Unlock();	
+								data->m_PlayersModified->M_Signal();							
 								break;
 							}
 							case String:
@@ -261,7 +262,7 @@ namespace pwskoag
 	PWSKOAG_API void TcpClient::ClientLoop()
 	{
 		C_Timer timer;
-		C_ThreadData data(C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, &m_PlayerLock, &(Client::stopNow)));
+		C_ThreadData data(C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, &m_PlayerLock, &m_PlayersModified, &(Client::stopNow)));
 		C_Thread t(TCPReceive, &data);
 		while(!stopNow)
 		{
@@ -316,7 +317,7 @@ namespace pwskoag
 
 	PWSKOAG_API void UdpClient::ClientLoop()
 	{
-		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, NULL, &(Client::stopNow));
+		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, NULL, NULL, &(Client::stopNow));
 		C_Thread t(UDPReceive, data);
 		while(!stopNow)
 		{

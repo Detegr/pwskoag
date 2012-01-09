@@ -26,36 +26,39 @@ int main()
 		std::cout << "Failed to connect..." << std::endl;
 	}
 	std::string s;
-	while(r.M_Running())
 	{
-		std::vector<pwskoag::C_Player*> plrs=c.M_Players();
-		c.M_PlayerLock(true);
-		for(std::vector<pwskoag::C_Player*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
+		pwskoag::C_RendererSyncer rs(r,c);
+		while(r.M_Running())
 		{
-			pwskoag::C_ClientPlayer* plr=dynamic_cast<pwskoag::C_ClientPlayer*>(*it);
-			r.M_AddObjectCheckExisting(*plr);
-		}
-		c.M_PlayerLock(false);
-		r.M_Draw();
-		switch(r.M_GetEvent().Type)
-		{
-			case sf::Event::Closed: r.M_Stop(); break;
-			case sf::Event::TextEntered:
+			std::vector<pwskoag::C_Player*> plrs=c.M_Players();
+			c.M_PlayerLock(true);
+			for(std::vector<pwskoag::C_Player*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 			{
-				sf::Uint32 e=r.M_GetEvent().Text.Unicode;
-				if(e==278) {p->M_Send();}
-				else if(e==279) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
-				else
-				{
-					std::string str;
-					if(e==277) e=' ';
-					str+=(char)e;
-					p->M_AddStr(str);
-				}
+				pwskoag::C_ClientPlayer* plr=dynamic_cast<pwskoag::C_ClientPlayer*>(*it);
+				r.M_AddObjectCheckExisting(*plr, c.M_Players(), c.M_GetPlayerLock());
 			}
-			case sf::Event::KeyReleased: key=false; break;
+			c.M_PlayerLock(false);
+			r.M_Draw();
+			switch(r.M_GetEvent().Type)
+			{
+				case sf::Event::Closed: r.M_Stop(); break;
+				case sf::Event::TextEntered:
+				{
+					sf::Uint32 e=r.M_GetEvent().Text.Unicode;
+					if(e==278) {p->M_Send();}
+					else if(e==279) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
+					else
+					{
+						std::string str;
+						if(e==277) e=' ';
+						str+=(char)e;
+						p->M_AddStr(str);
+					}
+				}
+				case sf::Event::KeyReleased: key=false; break;
+			}
+			pwskoag::msSleep(1000/30);
 		}
-		pwskoag::msSleep(1000/30);
 	}
 	c.M_Disconnect();
 }

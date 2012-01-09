@@ -16,6 +16,7 @@ namespace pwskoag
 			#else
 				struct timeval m_Time;
 			#endif
+			PWSKOAG_API C_Timer(const C_Timer& t) {}
 		public:
 			PWSKOAG_API C_Timer();
 			PWSKOAG_API uint64 M_Get() const;

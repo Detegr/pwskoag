@@ -21,7 +21,7 @@ namespace pwskoag
 	const uint TIMEOUTMS=10000;
 	const uint TICKS_PER_SEC_TCP=1;
 	const uint TICK_WAITTIME_TCP=250/TICKS_PER_SEC_TCP;
-	const uint CONNECTTIME=3000;
+	const uint CONNECTTIME=60000;
 	
 	const uint TICKS_PER_SEC_UDP=33;
 	const uint TICK_WAITTIME_UDP=1000/TICKS_PER_SEC_UDP;

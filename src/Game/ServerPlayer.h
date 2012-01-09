@@ -4,10 +4,10 @@
 
 namespace pwskoag
 {	
-	class C_ServerPlayer : public C_Player, public C_Sendable
+	class C_ServerPlayer : public C_Player//, public C_Sendable
 	{
 		public:
-			C_ServerPlayer(TcpSocket* s, C_Packet* p) : C_Sendable(s,p) {}
+			C_ServerPlayer(TcpSocket* s, C_Packet* p) : C_Player(s,p) {}
 			~C_ServerPlayer() {}
 			void M_SetId(ushort id)
 			{

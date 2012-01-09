@@ -97,7 +97,9 @@ namespace pwskoag
 		else if(header==Heartbeat)
 		{
 			lock->M_Lock();
+			std::cout << "Time from last beat: " << timer->M_Get() << std::endl;
 			timer->M_Reset();
+			std::cout << "Time now: " << timer->M_Get() << std::endl;
 			lock->M_Unlock();
 			std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
 		}
@@ -122,9 +124,9 @@ namespace pwskoag
 		bool* stopNow=data->stopNow;
 		
 		Selector s;
+		C_Packet p;
 		while(!*stopNow)
 		{
-			C_Packet p;
 			s.Clear();
 			s.Add(*client);
 			s.Wait(4000);
@@ -167,10 +169,12 @@ namespace pwskoag
 		{
 			ok=true;
 			ushort id=rand()%(((ushort)1)<<15);
+			m_ClientLock.M_Lock();
 			for(t_Clients::iterator it=m_Clients.begin(); it!=m_Clients.end(); ++it)
 			{
 				if(it->second.socket->M_Id()==id) {ok=false; break;}
 			}
+			m_ClientLock.M_Unlock();
 			client->M_Id(id);
 		} while(!ok);
 		std::cout << "Generated id: " << client->M_Id() << std::endl;
@@ -185,12 +189,14 @@ namespace pwskoag
 		
 		std::cout << "Players: " << m_Players.size() << std::endl;
 		std::pair<C_Thread*, LocalThreadData> localdata(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
-		C_ThreadData* data=new C_ThreadData(&localdata.second.lock,client, &localdata.second.timer, &m_Players, &m_PlayerLock, &stopNow);
+		C_ThreadData* data=new C_ThreadData(&localdata.second.lock,client,localdata.second.timer, &m_Players, &m_PlayerLock, NULL, &stopNow);
 		C_Thread* run=new C_Thread(TCPReceive, (void*)data);
-		localdata.first=run;
 		localdata.second.lock.M_Lock();
+		m_ClientLock.M_Lock();
 		m_Clients.push_back(localdata);
+		m_ClientLock.M_Unlock();
 		localdata.second.lock.M_Unlock();
+		localdata.first=run;
 	}
 	
 	void TcpServer::M_ParseClient(TcpSocket* client)
@@ -219,17 +225,19 @@ namespace pwskoag
 	
 	void TcpServer::M_DeleteDisconnected()
 	{
+		m_ClientLock.M_Lock();
 		t_Clients::iterator it=m_Clients.begin();
+		std::vector<ushort> discoids;
 		while(it!=m_Clients.end())
 		{
 			it->second.lock.M_Lock();
 			bool closed=it->second.socket->M_Closed();
-			uint64 lastbeat=it->second.timer.M_Get();
+			uint64 lastbeat=it->second.timer->M_Get();
 			it->second.lock.M_Unlock();
 			if(closed || lastbeat>TIMEOUTMS)
 			{
-				it->first->M_Join();
 				it->second.lock.M_Lock();
+				if(it->first) it->first->M_Join();
 				std::cout << "Removed disconnected client from clients." << std::endl;
 				std::vector<C_Player *>::iterator pt=m_Players.begin();
 				while(pt!=m_Players.end())
@@ -243,32 +251,39 @@ namespace pwskoag
 						delete plr;
 						std::vector<C_Player *>::iterator del=pt;
 						++pt;
+						m_PlayerLock.M_Lock();
 						m_Players.erase(del);
-						C_Lock l(m_PlayerLock);
-						for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
-						{
-							*(dynamic_cast<C_Sendable *>(*it)->m_Packet) << ClientDisconnected << id;
-							(*it)->M_Send();
-						}
+						m_PlayerLock.M_Unlock();
 						break;
 					}
-					++pt;
+					else ++pt;
 				}
+				discoids.push_back(it->second.socket->M_Id());
 				delete it->first;
+				delete it->second.timer;
 				delete it->second.socket;
 				it->second.lock.M_Unlock();
 				t_Clients::iterator prev=it;
 				++it;
-				it=m_Clients.erase(prev);
-				
+				m_Clients.erase(prev);
 				continue;
 			}
 			else ++it;
 		}
+		for(std::vector<ushort>::const_iterator di=discoids.begin(); di!=discoids.end(); ++di)
+		{
+			for(std::vector<C_Player *>::iterator rp=m_Players.begin(); rp!=m_Players.end(); ++rp)
+			{
+				*(*rp)->m_Packet << ClientDisconnected << *di;
+				(*rp)->M_Send();
+			}
+		}
+		m_ClientLock.M_Unlock();
 	}
 	
 	void TcpServer::M_ClearPlayers()
 	{
+		C_Lock l(m_PlayerLock);
 		for(std::vector<C_Player*>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
 		{
 			C_ServerPlayer* plr=dynamic_cast<C_ServerPlayer*>(*it);

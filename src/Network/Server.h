@@ -45,6 +45,7 @@ namespace pwskoag
 	{	
 	private:
 		TcpSocket 			m_TcpListener;
+		C_Mutex				m_ClientLock;
 		t_Clients			m_Clients;
 		C_Mutex				m_PlayerLock;
 		std::vector<C_Player *> m_Players;

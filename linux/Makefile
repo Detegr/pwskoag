@@ -18,9 +18,11 @@ LIBOBJECTS=$(LIBSRC:.cpp=.shared.o)
 INCLUDE=../src
 CLIBS=-lpthread
 FPIC=-fPIC
+ALL=server libpwskoag.so
 
-server:	$(SERVEROBJECTS)
-	$(CC) $(SERVERBIN) -o $@ $(SERVEROBJECTS) -I $(INCLUDE) $(CLIBS) -L. -lpwskoag
+all: $(ALL)
+server:	$(SERVEROBJECTS) libpwskoag.so
+	$(CC) $(SERVERBIN) -Wl,-rpath,. -o $@ $(SERVEROBJECTS) -I $(INCLUDE) $(CLIBS) -L. -lpwskoag
 libpwskoag.so: $(LIBOBJECTS)
 	$(CC) -fPIC -shared -Wl,-soname,$@ -o $@ $(LIBOBJECTS)
 %.o : %.cpp
@@ -30,7 +32,7 @@ libpwskoag.so: $(LIBOBJECTS)
 $(LIBOBJECTS) : $(LIBSRC) $(LIBHEADERS)
 $(SERVEROBJECTS): $(SERVERSRC) $(SERVERHEADERS)
 clean:
-	-rm libpwskoag.so
+	-rm $(ALL)
 	-rm $(shell find ../src \( -name '*.shared.o' -o -name '*.d' \))
 
-.PHONY: clean
+.PHONY: clean all

@@ -41,10 +41,10 @@ namespace pwskoag
 	{
 		friend class C_RendererSyncer;
 		private:
-			sf::Event				m_Event;
 			static C_RendererImpl* 	impl;
 			static uint				references;
 		public:
+					sf::Event				m_Event;
 			C_Renderer(uint w, uint h);
 			~C_Renderer();
 			void M_AddObject(const C_EntityGfx& p)
@@ -66,7 +66,8 @@ namespace pwskoag
 			void M_Draw() {impl->M_Draw();}
 			bool M_Running() const {return impl->window.IsOpened();}
 			void M_Stop() {C_Lock l(impl->m_Lock); impl->window.Close();}
-			virtual sf::Event& M_GetEvent() {impl->window.GetEvent(m_Event); return m_Event;}
+			void M_UpdateEvent() {impl->window.GetEvent(m_Event);}
+			virtual sf::Event& M_GetEvent() {return m_Event;}
 	};
 	
 	static void M_SyncRenderer(void* args)

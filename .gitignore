@@ -13,6 +13,7 @@
 *.pdb
 *.dll
 *.opensdf
+*.d
 a.out
 tags
 ipch/

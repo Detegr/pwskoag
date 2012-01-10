@@ -1,6 +1,6 @@
 #pragma once
 #include "Player.h"
-#include "Network.h"
+#include <Network/Network.h>
 
 namespace pwskoag
 {	

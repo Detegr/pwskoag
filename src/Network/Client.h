@@ -88,8 +88,12 @@ namespace pwskoag
 			PWSKOAG_API void	ClientLoop();
 			void 				Append(e_Command c) {packet<<(uchar)c;}
 			void 				Send(IpAddress& ip, ushort port);
+			bool				m_Initialized;
 		public:
-			UdpClient(TcpClient* t) :	m_Master(t), m_Port(0), udpSocket() {}
+			UdpClient() : m_Master(NULL), m_Port(0), udpSocket() {}
+			UdpClient(TcpClient* t) : m_Master(t), m_Port(0), udpSocket() {m_Initialized=true;}
+			void									M_Initialize(TcpClient* t) {m_Master=t; m_Initialized=true;}
+			bool									M_Initialized() const {return m_Initialized;}
 			PWSKOAG_API bool						M_Connect(const char* addr, ushort port);
 			PWSKOAG_API void 						M_Disconnect() {udpSocket.Close(); Stop();}
 			template<class type> void				Append(e_Command c, type t) {Append(c); packet<<t;}

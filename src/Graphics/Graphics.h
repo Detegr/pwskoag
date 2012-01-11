@@ -1,6 +1,6 @@
 #pragma once
-#include <Util/Base.h>
 #include <SFML/Graphics.hpp>
+#include <Util/Base.h>
 #include <Network/Client.h>
 #include <Game/ClientPlayer.h>
 #include <Network/ThreadData.h>
@@ -9,7 +9,7 @@
 
 namespace pwskoag
 {
-	typedef std::vector<std::pair<ushort, const sf::Drawable *> > t_Drawable;
+	typedef std::vector<std::pair<ushort, const C_Drawable *> > t_Drawable;
 	class C_RendererImpl
 	{
 		friend class C_Renderer;
@@ -24,7 +24,7 @@ namespace pwskoag
 				m_Lock.M_Lock();
 				for(t_Drawable::const_iterator it=m_Objects.begin(); it!=m_Objects.end(); ++it)
 				{
-					window.Draw(*it->second);
+					it->second->M_Draw(window);
 				}
 				m_Lock.M_Unlock();
 				window.Display();
@@ -50,18 +50,18 @@ namespace pwskoag
 			void M_AddObject(const C_EntityGfx& p)
 			{
 				std::cout << "Adding object to renderer..." << std::endl;
-				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW().M_GetDrawableObj()));
+				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW()));
 			}
 			void M_AddObjectCheckExisting(const C_EntityGfx& p, const std::vector<C_Player *>& plrs, C_Mutex& playerlock)
 			{
 				impl->m_Lock.M_Lock();
 				for(t_Drawable::iterator it=impl->m_Objects.begin(); it!=impl->m_Objects.end(); ++it)
 				{
-					if(it->second==&p.M_GetDRAW().M_GetDrawableObj()) {impl->m_Lock.M_Unlock(); return;}
+					if(it->second==&p.M_GetDRAW()) {impl->m_Lock.M_Unlock(); return;}
 				}
 				impl->m_Lock.M_Unlock();
 				std::cout << "Adding object to renderer..." << std::endl;
-				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW().M_GetDrawableObj()));
+				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW()));
 			}
 			void M_Draw() {impl->M_Draw();}
 			bool M_Running() const {return impl->window.IsOpened();}

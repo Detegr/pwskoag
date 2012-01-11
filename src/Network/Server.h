@@ -42,7 +42,8 @@ namespace pwskoag
 	 * Listens Tcp-connections.
 	 */
 	class TcpServer : public Server
-	{	
+	{
+		friend class UdpServer;
 	private:
 		TcpSocket 			m_TcpListener;
 		C_Mutex				m_ClientLock;
@@ -71,6 +72,8 @@ namespace pwskoag
 		TcpServer*			master;
 		UdpSocket			udpSocket;
 		PWSKOAG_API void	ServerLoop();
+		void				M_NewPlayer(Selector& sel, C_Packet& p, const IpAddress& ip, ushort port, TcpSocket* s);
+		void				M_ParsePacket(C_Packet& p);
 	public:
 		UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp), udpSocket(UdpSocket(port)) {udpSocket.Bind();}
 	};

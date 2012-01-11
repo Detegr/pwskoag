@@ -110,7 +110,7 @@ namespace pwskoag
 		return true;
 	}
 
-	bool UdpSocket::Send(C_Packet& p, IpAddress& ip, ushort port)
+	bool UdpSocket::Send(C_Packet& p, const IpAddress& ip, ushort port)
 	{
 		struct sockaddr_in a;
 		a.sin_family=AF_INET;

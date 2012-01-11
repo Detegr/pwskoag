@@ -315,6 +315,66 @@ namespace pwskoag
 		std::cout << "Shut down successful." << std::endl;
 	}
 	
+	void UdpServer::M_NewPlayer(Selector& sel, C_Packet& p, const IpAddress& ip, ushort port, TcpSocket* s)
+	{
+		for(;;)
+		{
+			uchar header=0;
+			p >> header;
+			if(header==UDPConnect)
+			{
+				ushort id;
+				p>>id;
+				if(id==s->M_Id())
+				{
+					// Potential multithread problem.
+						s->M_UdpPort(port);
+					// !!!
+					std::cout << "Bound id " << id << " to UDP port " << port << std::endl;
+					p.M_Clear();
+					p<<HandShake<<EOP;
+					if(sel.WaitWrite(TICK_WAITTIME_UDP))
+					{
+						if(sel.IsReady(udpSocket))
+						{
+							udpSocket.Send(p, ip, port);
+							std::cout << "Sent confirmation to " << ip  << ":" << port << std::endl;
+						}
+						else std::cout << "Client wasn't ready." << std::endl;
+					}
+					else std::cout << "Socket wasn't ready to write." << std::endl;
+				}
+				else std::cout << "Wrong ID, discarding connection..." << std::endl;
+			}
+			break;
+		}
+	}
+	
+	void UdpServer::M_ParsePacket(C_Packet& p)
+	{
+		uchar header=0;
+		while(p.M_Size())
+		{
+			p>>header;
+			if(header==String)
+			{
+				std::string str; p>>str;
+				std::cout << str << std::endl;
+			}
+			else if(header==EOP) break;
+			else if(header==MessageTimer)
+			{
+				ushort id;
+				p>>id;
+				std::cout << "Message timer request: " << id << std::endl;
+			}
+			else
+			{
+				throw std::runtime_error("Invalid UDP packet header.");
+			}
+		}
+	}
+	
 	PWSKOAG_API void UdpServer::ServerLoop()
 	{
 		const t_Clients& c = master->GetClients();
@@ -333,6 +393,7 @@ namespace pwskoag
 					ushort port;
 					if(udpSocket.Receive(p, &ip, &port))
 					{
+						master->m_ClientLock.M_Lock();
 						for(t_Clients::const_iterator it=c.begin(); it!=c.end(); ++it)
 						{
 							TcpSocket* s=dynamic_cast<TcpSocket*>(it->second.socket);
@@ -340,65 +401,17 @@ namespace pwskoag
 							{
 								if(!s->M_UdpPort())
 								{
-									for(;;)
-									{
-										uchar header=0;
-										p >> header;
-										if(header==UDPConnect)
-										{
-											ushort id;
-											p>>id;
-											if(id==s->M_Id())
-											{
-												s->M_UdpPort(port);
-												std::cout << "Bound id " << id << " to UDP port " << port << std::endl;
-												p.M_Clear();
-												p<<HandShake<<EOP;
-												if(sel.WaitWrite(TICK_WAITTIME_UDP))
-												{
-													if(sel.IsReady(udpSocket))
-													{
-														udpSocket.Send(p, ip, port);
-														std::cout << "Sent confirmation to " << ip  << ":" << port << std::endl;
-													}
-													else std::cout << "Client wasn't ready." << std::endl;
-												}
-												else std::cout << "Socket wasn't ready to write." << std::endl;
-											}
-											else std::cout << "Wrong ID, discarding connection..." << std::endl;
-										}
-										break;
-									}
+									M_NewPlayer(sel,p,ip,port,s);
 									continue;
 								}
 								if(s->M_UdpPort()==port)
 								{
-									uchar header=0;
-									while(p.M_Size())
-									{
-										p>>header;
-										switch (header)
-										{
-											case String:
-											{
-												std::string str;
-												p>>str;
-												std::cout << "Str: " << str << " from " << ip << ":" << port << std::endl;
-												break;
-											}
-											case EOP:
-											{
-												C_Packet p;
-												p << String << std::string("UDP response") << EOP;
-												udpSocket.Send(p, ip, port);
-												break;
-											}
-										}
-									}
+									M_ParsePacket(p);
 									break;
 								}
 							}
 						}
+						master->m_ClientLock.M_Unlock();
 					}
 					else std::cerr << "Data wasn't ready." << std::endl;
 				}

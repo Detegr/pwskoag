@@ -10,12 +10,15 @@ int main()
 {
 	pwskoag::C_Renderer r(640,480);
 	pwskoag::TcpClient c;
+	pwskoag::UdpClient u;
 	pwskoag::C_ClientPlayer* p;
 	pwskoag::C_ClientPlayer fallbackp;
 	try
 	{
 		c.M_Connect("localhost", 55555);
 		p=c.M_OwnPlayer();
+		u.M_Initialize(&c);
+		u.M_Connect("localhost", 55556);
 	}
 	catch(...)
 	{
@@ -57,5 +60,6 @@ int main()
 			pwskoag::msSleep(1000/30);
 		}
 	}
+	u.M_Disconnect();
 	c.M_Disconnect();
 }

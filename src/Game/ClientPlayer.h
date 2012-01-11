@@ -11,7 +11,6 @@
 namespace pwskoag
 {
 	class TcpClient;
-	class C_PlayerGfx;
 	
 	struct C_EntityGfx : public C_Entity
 	{
@@ -59,5 +58,7 @@ namespace pwskoag
 					m_Tcp->Send(*m_Packet);
 				}
 			}
+			uint M_Time() const {return this->m_Time;}
+			void M_Time(uint time) {this->m_Time=time;}
 	};
 }

@@ -133,7 +133,7 @@ namespace pwskoag
 		UdpSocket() {}
 		UdpSocket(IpAddress& ip, ushort port) : Socket(ip, port, UDP) {}
 		UdpSocket(ushort port) : Socket(port, UDP) {}
-		bool Send(C_Packet& p, IpAddress& ip, ushort port);
+		bool Send(C_Packet& p, const IpAddress& ip, ushort port);
 		bool Receive(C_Packet& p, IpAddress* ip=NULL, ushort* port=NULL);
 	};
 

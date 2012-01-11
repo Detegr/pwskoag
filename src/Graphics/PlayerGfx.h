@@ -1,5 +1,7 @@
 #pragma once
 #include <Graphics/Drawable.h>
+#include <sstream>
+
 namespace pwskoag
 {
 	class C_PlayerGfx : public C_Drawable
@@ -7,6 +9,7 @@ namespace pwskoag
 		private:
 			sf::Font	m_Font;
 			sf::String	m_Text;
+			sf::String	m_Time;
 		public:
 			C_PlayerGfx()
 			{
@@ -21,6 +24,18 @@ namespace pwskoag
 			{
 				m_Text.SetText(str);
 			}
-			const sf::Drawable& M_GetDrawableObj() const { return m_Text; }
+			void M_SetTime(uint time)
+			{
+				std::stringstream ss;
+				ss<<time;
+				std::string timestr;
+				ss>>timestr;
+				m_Time=sf::String(timestr);
+			}
+			void M_Draw(sf::RenderWindow& w) const
+			{
+				w.Draw(m_Text);
+				w.Draw(m_Time);
+			}
 	};
 }

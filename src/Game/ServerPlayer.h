@@ -4,7 +4,7 @@
 
 namespace pwskoag
 {	
-	class C_ServerPlayer : public C_Player//, public C_Sendable
+	class C_ServerPlayer : public C_Player
 	{
 		public:
 			C_ServerPlayer(TcpSocket* s, C_Packet* p) : C_Player(s,p) {}
@@ -33,5 +33,7 @@ namespace pwskoag
 				C_Lock l(m_Lock);
 				this->m_Tcp->Send(*m_Packet);
 			}
+			uint M_Time() const {return this->m_Time;}
+			void M_Time(uint time) {this->m_Time=time;}
 	};
 }

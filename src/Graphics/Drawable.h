@@ -1,8 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-struct C_Drawable
+namespace pwskoag
 {
-	virtual ~C_Drawable() {}
-	virtual const sf::Drawable& M_GetDrawableObj() const=0;
-};
+	struct C_Drawable
+	{
+		virtual ~C_Drawable() {}
+		virtual void M_Draw(sf::RenderWindow& w) const=0;
+	};
+}

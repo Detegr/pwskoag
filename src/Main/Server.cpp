@@ -21,8 +21,9 @@ int main()
 	signal(SIGINT, sighandler);
 	TcpServer s(55555);
 	UdpServer u(&s, 55556);
-	std::cout << "Starting server." << std::endl;
+	std::cout << "Starting TCP server." << std::endl;
 	s.Start();
+	std::cout << "Starting UDP server." << std::endl;
 	u.Start();
 	while(!stopNow) msSleep((unsigned int)~0);
 	u.Stop();

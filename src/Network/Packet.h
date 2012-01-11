@@ -22,6 +22,7 @@ namespace pwskoag
 		ClientDisconnected,
 		Message,
 		String,
+		MessageTimer,
 		EOP=255
 	};
 

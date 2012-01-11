@@ -80,6 +80,10 @@ namespace pwskoag
 							std::cout << "UDP from server: " << str << std::endl;
 							break;
 						}
+						case MessageTimer:
+						{
+							break;
+						}
 						case EOP:
 						{
 							eop=true;
@@ -277,42 +281,46 @@ namespace pwskoag
 	}
 	PWSKOAG_API bool UdpClient::M_Connect(const char* addr, ushort port)
 	{
-		m_Address=IpAddress(addr);
-		m_Port=port;
-		udpSocket=UdpSocket(m_Address, m_Port);
-		
-		Selector s;
-		s.Add(udpSocket);
-		if(s.WaitWrite(CONNECTTIME))
+		if(m_Initialized)
 		{
-			if(s.IsReady(udpSocket))
+			m_Address=IpAddress(addr);
+			m_Port=port;
+			udpSocket=UdpSocket(m_Address, m_Port);
+			
+			Selector s;
+			s.Add(udpSocket);
+			if(s.WaitWrite(CONNECTTIME))
 			{
-				std::cout << "Connecting to UDP server..." << std::endl;
-				packet << UDPConnect << m_Master->M_Id();
-				udpSocket.Send(packet, m_Address, m_Port);
-			}
-		}
-		C_Packet p;
-		if(s.Wait(CONNECTTIME))
-		{
-			if(s.IsReady(udpSocket))
-			{
-				if(udpSocket.Receive(p))
+				if(s.IsReady(udpSocket))
 				{
-					uchar c; p>>c;
-					if(c==HandShake)
-					{
-						std::cout << "Got UDP confirmation." << std::endl;
-						Start();
-						return true;
-					}
+					std::cout << "Connecting to UDP server..." << std::endl;
+					packet << UDPConnect << m_Master->M_Id();
+					udpSocket.Send(packet, m_Address, m_Port);
 				}
-				else {std::cout << "Received broken data when connecting to UDP server." << std::endl; return false;}
 			}
-			else {std::cout << "Server didn't send confirmation data." << std::endl; return false;}
+			C_Packet p;
+			if(s.Wait(CONNECTTIME))
+			{
+				if(s.IsReady(udpSocket))
+				{
+					if(udpSocket.Receive(p))
+					{
+						uchar c; p>>c;
+						if(c==HandShake)
+						{
+							std::cout << "Got UDP confirmation." << std::endl;
+							Start();
+							return true;
+						}
+					}
+					else {std::cout << "Received broken data when connecting to UDP server." << std::endl; return false;}
+				}
+				else {std::cout << "Server didn't send confirmation data." << std::endl; return false;}
+			}
+			else {std::cout << "Couldn't connect to UDP server, connection timed out." << std::endl; return false;}
+			return true;
 		}
-		else {std::cout << "Couldn't connect to UDP server, connection timed out." << std::endl; return false;}
-		return true;
+		else {std::cout << "Socket not initialized." << std::endl; return false;}
 	}
 
 	PWSKOAG_API void UdpClient::ClientLoop()
@@ -321,7 +329,7 @@ namespace pwskoag
 		C_Thread t(UDPReceive, data);
 		while(!stopNow)
 		{
-			Append(String, std::string("UDP Data."));
+			packet<<MessageTimer<<m_Master->M_OwnPlayer()->M_Id();
 			Send(m_Master->serverAddress, m_Port);
 			msSleep(100);
 		}

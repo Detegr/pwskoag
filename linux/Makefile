@@ -59,6 +59,6 @@ $(SERVEROBJECTS): $(SERVERSRC) $(SERVERHEADERS)
 $(CLIENTOBJECTS): $(CLIENTSRC) $(CLIENTHEADERS)
 clean:
 	-rm $(ALL)
-	-rm $(shell find ../src \( -name '*.shared.o' -o -name '*.d' \))
+	-rm $(shell find ../src \( -name '*.shared.o' -o -name '*.d' -o -name '*.o' \))
 
 .PHONY: clean all

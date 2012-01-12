@@ -20,8 +20,8 @@ ipch/
 bin/
 obj/
 Debug/
-build/
-!build/Makefile
 xcuserdata
 .DS_Store
 Session.vim
+linux/
+!linux/Makefile

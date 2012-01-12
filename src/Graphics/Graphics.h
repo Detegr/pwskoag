@@ -29,7 +29,7 @@ namespace pwskoag
 				m_Lock.M_Unlock();
 				window.Display();
 			}
-			C_RendererImpl(uint w, uint h) : window(sf::VideoMode(w,h,32), "") {}
+			C_RendererImpl(uint w, uint h) : window(sf::VideoMode(w,h,32), "pwskoag-client") {}
 	};
 
 	class C_Pollable
@@ -43,8 +43,8 @@ namespace pwskoag
 		private:
 			static C_RendererImpl* 	impl;
 			static uint				references;
+			sf::Event				m_Event;
 		public:
-					sf::Event				m_Event;
 			C_Renderer(uint w, uint h);
 			~C_Renderer();
 			void M_AddObject(const C_EntityGfx& p)

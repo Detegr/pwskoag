@@ -20,6 +20,6 @@ namespace pwskoag
 		public:
 			PWSKOAG_API C_Timer();
 			PWSKOAG_API uint64 M_Get() const;
-			PWSKOAG_API inline void M_Reset();
+			PWSKOAG_API void M_Reset();
 	};
 }

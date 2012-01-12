@@ -12,7 +12,7 @@ namespace pwskoag
 			return uint64(((cur.tv_sec*1000)+(cur.tv_usec/1000))-((m_Time.tv_sec*1000)+(m_Time.tv_usec/1000)));
 		#endif
 	}
-	PWSKOAG_API inline void C_Timer::M_Reset()
+	PWSKOAG_API void C_Timer::M_Reset()
 	{
 		#ifdef _WIN32
 			m_Time=GetTickCount64();

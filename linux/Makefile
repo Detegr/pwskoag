@@ -56,6 +56,7 @@ libpwskoag.so: $(LIBOBJECTS)
 	$(CC) -c -fPIC -MMD $< -o $@ -I $(INCLUDE) $(CLIBS)
 $(LIBOBJECTS) : $(LIBSRC) $(LIBHEADERS)
 $(SERVEROBJECTS): $(SERVERSRC) $(SERVERHEADERS)
+$(CLIENTOBJECTS): $(CLIENTSRC) $(CLIENTHEADERS)
 clean:
 	-rm $(ALL)
 	-rm $(shell find ../src \( -name '*.shared.o' -o -name '*.d' \))

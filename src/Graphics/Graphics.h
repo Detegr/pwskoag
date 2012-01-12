@@ -120,8 +120,10 @@ namespace pwskoag
 				m_Client(&c),
 				m_Wait(&m_Client->M_GetPlayersModified()),
 				m_Data(C_ThreadData(NULL, NULL, NULL, &m_Client->M_Players(), &m_Client->M_GetPlayerLock(), m_Wait, &m_StopNow, &m_Renderer->impl->m_Objects, &m_Renderer->impl->m_Lock)),
-				m_Thread(M_SyncRenderer,&m_Data)
-				{}
+				m_Thread()
+				{
+					m_Thread.M_Start(M_SyncRenderer, &m_Data);
+				}
 			~C_RendererSyncer()
 			{
 				M_Stop();

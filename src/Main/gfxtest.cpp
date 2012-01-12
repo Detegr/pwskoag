@@ -15,10 +15,13 @@ int main()
 	pwskoag::C_ClientPlayer fallbackp;
 	try
 	{
-		c.M_Connect("localhost", 55555);
-		p=c.M_OwnPlayer();
-		u.M_Initialize(&c);
-		u.M_Connect("localhost", 55556);
+		if(c.M_Connect("localhost", 55555))
+		{
+			p=c.M_OwnPlayer();
+			u.M_Initialize(&c);
+			u.M_Connect("localhost", 55556);
+		}
+		else throw std::runtime_error("fuu");
 	}
 	catch(...)
 	{
@@ -30,8 +33,8 @@ int main()
 		pwskoag::C_RendererSyncer rs(r,c);
 		while(r.M_Running())
 		{
-			std::vector<pwskoag::C_Player*> plrs=c.M_Players();
 			c.M_PlayerLock(true);
+			std::vector<pwskoag::C_Player*> plrs=c.M_Players();
 			for(std::vector<pwskoag::C_Player*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 			{
 				pwskoag::C_ClientPlayer* plr=dynamic_cast<pwskoag::C_ClientPlayer*>(*it);

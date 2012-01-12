@@ -31,7 +31,9 @@ namespace pwskoag
 
 			C_Data m_Data;
 		public:
+			PWSKOAG_API C_Thread() : m_Thread(0) {}
 			PWSKOAG_API C_Thread(t_ThreadFunc f, void* args=NULL);
+			PWSKOAG_API void M_Start(t_ThreadFunc f, void* args=NULL);
 			PWSKOAG_API ~C_Thread();
 			PWSKOAG_API void M_Join();
 	};

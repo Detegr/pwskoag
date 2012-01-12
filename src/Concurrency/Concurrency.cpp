@@ -36,6 +36,16 @@ namespace pwskoag
 				throw std::runtime_error("Error creating a thread.");
 			}
 		}
+		void C_Thread::M_Start(t_ThreadFunc f, void* args)
+		{
+			m_Thread=0;
+			m_Data=C_Data(f, args);
+			int ret=pthread_create(&m_Thread, NULL, M_ThreadInit, &m_Data);
+			if(ret)
+			{
+				throw std::runtime_error("Error creating a thread.");
+			}
+		}
 	#endif
 
 	void C_Thread::M_Join()

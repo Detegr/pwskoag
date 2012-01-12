@@ -44,9 +44,9 @@ FPIC=-fPIC
 ALL=client server libpwskoag.so
 
 all: $(ALL)
-client: $(CLIENTOBJECTS) libpwskoag.so
+client: $(CLIENTBIN) $(CLIENTOBJECTS) libpwskoag.so
 	$(CC) $(CLIENTBIN) -Wl,-rpath,.,-rpath,/usr/local/lib -o $@ $(CLIENTOBJECTS) -I $(INCLUDE) $(CLIBS) $(SFML)
-server:	$(SERVEROBJECTS) libpwskoag.so
+server:	$(SERVERBIN) $(SERVEROBJECTS) libpwskoag.so
 	$(CC) $(SERVERBIN) -Wl,-rpath,. -o $@ $(SERVEROBJECTS) -I $(INCLUDE) $(CLIBS)
 libpwskoag.so: $(LIBOBJECTS)
 	$(CC) -fPIC -shared -Wl,-soname,$@ -o $@ $(LIBOBJECTS)

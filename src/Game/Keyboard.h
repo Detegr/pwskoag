@@ -6,7 +6,7 @@ namespace pwskoag
 	struct Keyboard
 	{
 		static const char RETURN=13;
-		#ifdef _APPLE_
+		#ifdef __APPLE__
 			static const char BACKSPACE=127;
 		#else
 			static const char BACKSPACE=8;

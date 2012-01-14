@@ -1,5 +1,6 @@
 #pragma once
 #include <Util/Base.h>
+#include <Util/Timer.h>
 #include <Concurrency/Concurrency.h>
 #include <Network/Network.h>
 
@@ -27,15 +28,14 @@ namespace pwskoag
 	{
 		protected:
 			std::string	m_Str;
-			uint		m_Time;
 		public:
+			C_Timer		m_Time;
 			C_Player() : C_SendableEntity() {}
 			C_Player(TcpSocket* s, C_Packet* p) : C_SendableEntity(s,p) {}
 			virtual void M_AddStr(std::string& str)=0;
 			virtual void M_SetStr(std::string& str)=0;
 			virtual std::string& M_GetStr()=0;
 			virtual void M_Send()=0;
-			virtual uint M_Time() const=0;
-			virtual void M_Time(uint time)=0;
-	};
+			virtual void M_SendUdp(UdpSocket& s)=0;
+		};
 }

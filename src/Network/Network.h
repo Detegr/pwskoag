@@ -192,6 +192,7 @@ namespace pwskoag
 			C_Sendable(TcpSocket* s, C_Packet* p) : m_Tcp(s), m_Packet(p) {}
 			virtual ~C_Sendable() {}
 			virtual void M_Send()=0;
+			virtual void M_SendUdp(UdpSocket& s)=0;
 	};
 
 }

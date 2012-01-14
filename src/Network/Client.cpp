@@ -55,11 +55,10 @@ namespace pwskoag
 	{
 		C_Packet p;
 		C_ThreadData* data=(C_ThreadData*)args;
-		C_Mutex* lock=data->lock;
-		C_Timer* timer=data->timer;
 		UdpSocket* client=(UdpSocket*)data->socket;
+		std::vector<C_Player *>* plrs=data->m_Players;
+		C_Mutex* plrlock=data->m_PlayerLock;
 		bool* stopNow=data->stopNow;
-		delete data;
 		
 		while(!*stopNow)
 		{
@@ -82,6 +81,23 @@ namespace pwskoag
 						}
 						case MessageTimer:
 						{
+							break;
+						}
+						case PlayerUpdate:
+						{
+							ushort id; uint64 time;
+							p>>id; p>>time;
+							C_Lock(*plrlock);
+							for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+							{
+								C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer *>((*it));
+								if(plr->M_Id()==id)
+								{
+									plr->M_Time(time);
+									break;
+								}
+							}
+							//std::cout << "Id: " << id << ", time: " << time << std::endl;
 							break;
 						}
 						case EOP:
@@ -325,12 +341,12 @@ namespace pwskoag
 
 	PWSKOAG_API void UdpClient::ClientLoop()
 	{
-		C_ThreadData* data=new C_ThreadData(NULL, &udpSocket, NULL, NULL, NULL, NULL, &(Client::stopNow));
-		C_Thread t(UDPReceive, data);
+		C_ThreadData data(NULL, &udpSocket, NULL, &m_Master->M_Players(), &m_Master->m_PlayerLock, NULL, &(Client::stopNow));
+		C_Thread t(UDPReceive, &data);
 		while(!stopNow)
 		{
-			packet<<MessageTimer<<m_Master->M_OwnPlayer()->M_Id();
-			Send(m_Master->serverAddress, m_Port);
+			//packet<<MessageTimer<<m_Master->M_OwnPlayer()->M_Id();
+			//Send(m_Master->serverAddress, m_Port);
 			msSleep(100);
 		}
 	}

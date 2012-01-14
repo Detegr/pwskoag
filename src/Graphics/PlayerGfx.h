@@ -18,6 +18,11 @@ namespace pwskoag
 				m_Text.SetFont(m_Font);
 				m_Text.SetSize(20);
 				m_Text.SetPosition(0,y);
+
+				m_Time.SetFont(m_Font);
+				m_Time.SetSize(20);
+				m_Time.SetPosition(560,y);
+				
 				y+=20;
 			}
 			void M_SetStr(std::string& str)
@@ -30,7 +35,7 @@ namespace pwskoag
 				ss<<time;
 				std::string timestr;
 				ss>>timestr;
-				m_Time=sf::String(timestr);
+				m_Time.SetText(timestr);
 			}
 			void M_Draw(sf::RenderWindow& w) const
 			{

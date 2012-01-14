@@ -23,6 +23,7 @@ namespace pwskoag
 		Message,
 		String,
 		MessageTimer,
+		PlayerUpdate,
 		EOP=255
 	};
 

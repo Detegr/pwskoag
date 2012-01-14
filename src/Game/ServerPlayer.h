@@ -33,7 +33,10 @@ namespace pwskoag
 				C_Lock l(m_Lock);
 				this->m_Tcp->Send(*m_Packet);
 			}
-			uint M_Time() const {return this->m_Time;}
-			void M_Time(uint time) {this->m_Time=time;}
+			void M_SendUdp(UdpSocket& s)
+			{
+				C_Lock l(m_Lock);
+				s.Send(*m_Packet, m_Tcp->GetIp(), m_Tcp->M_UdpPort());
+			}
 	};
 }

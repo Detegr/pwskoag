@@ -25,7 +25,15 @@ int main()
 	s.Start();
 	std::cout << "Starting UDP server." << std::endl;
 	u.Start();
-	while(!stopNow) msSleep((unsigned int)~0);
+	while(!stopNow)
+	{
+		s.M_PlayerLock(true);
+		std::vector<C_Player*>& plrs=s.M_Players();
+		for(std::vector<C_Player*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
+		{
+		}
+		s.M_PlayerLock(false);
+	}
 	u.Stop();
 	s.Stop();
 	return 0;

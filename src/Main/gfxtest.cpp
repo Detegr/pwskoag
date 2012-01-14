@@ -29,6 +29,7 @@ int main()
 		std::cout << "Failed to connect..." << std::endl;
 	}
 	r.M_AddObject(*p);
+	p->M_Time(1000);
 	{
 		pwskoag::C_RendererSyncer rs(r,c);
 		while(r.M_Running())

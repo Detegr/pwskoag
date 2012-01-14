@@ -87,6 +87,7 @@ namespace pwskoag
 				if((*it)->M_Id()==i)
 				{
 					(*it)->M_SetStr(str);
+					(*it)->m_Time.M_Reset();
 					break;
 				}
 			}
@@ -315,7 +316,7 @@ namespace pwskoag
 		std::cout << "Shut down successful." << std::endl;
 	}
 	
-	void UdpServer::M_NewPlayer(Selector& sel, C_Packet& p, const IpAddress& ip, ushort port, TcpSocket* s)
+	static void M_NewPlayer(Selector& sel, C_Packet& p, const IpAddress& ip, ushort port, TcpSocket* s, UdpSocket* us)
 	{
 		for(;;)
 		{
@@ -335,9 +336,9 @@ namespace pwskoag
 					p<<HandShake<<EOP;
 					if(sel.WaitWrite(TICK_WAITTIME_UDP))
 					{
-						if(sel.IsReady(udpSocket))
+						if(sel.IsReady(*us))
 						{
-							udpSocket.Send(p, ip, port);
+							us->Send(p, ip, port);
 							std::cout << "Sent confirmation to " << ip  << ":" << port << std::endl;
 						}
 						else std::cout << "Client wasn't ready." << std::endl;
@@ -350,7 +351,7 @@ namespace pwskoag
 		}
 	}
 	
-	void UdpServer::M_ParsePacket(C_Packet& p)
+	static void M_ParsePacket(const IpAddress& ip, ushort port, C_Packet& p)
 	{
 		uchar header=0;
 		while(p.M_Size())
@@ -366,7 +367,6 @@ namespace pwskoag
 			{
 				ushort id;
 				p>>id;
-				std::cout << "Message timer request: " << id << std::endl;
 			}
 			else
 			{
@@ -375,47 +375,77 @@ namespace pwskoag
 		}
 	}
 	
-	PWSKOAG_API void UdpServer::ServerLoop()
+	static void UDPReceive(void* args)
 	{
-		const t_Clients& c = master->GetClients();
+		C_ThreadData* data=static_cast<C_ThreadData*>(args);
+		TcpServer* master=static_cast<TcpServer *>(data->m_Void1);
+		UdpSocket* s=dynamic_cast<UdpSocket *>(data->socket);
+		bool* stopNow=data->stopNow;
 		C_Packet p;
 		Selector sel;
-		while(!stopNow)
+		while(!*stopNow)
 		{
 			sel.Clear();
-			sel.Add(udpSocket);
+			sel.Add(*s);
 			if(sel.Wait(TICK_WAITTIME_UDP))
 			{
-				if(sel.IsReady(udpSocket))
+				if(sel.IsReady(*s))
 				{
 					p.M_Clear();
 					IpAddress ip;
 					ushort port;
-					if(udpSocket.Receive(p, &ip, &port))
+					if(s->Receive(p, &ip, &port))
 					{
-						master->m_ClientLock.M_Lock();
+						master->M_ClientLock(true);
+						const t_Clients& c=master->GetClients();
 						for(t_Clients::const_iterator it=c.begin(); it!=c.end(); ++it)
 						{
-							TcpSocket* s=dynamic_cast<TcpSocket*>(it->second.socket);
-							if(ip==s->GetIp())
+							TcpSocket* tcps=dynamic_cast<TcpSocket*>(it->second.socket);
+							if(ip==tcps->GetIp())
 							{
-								if(!s->M_UdpPort())
+								if(!tcps->M_UdpPort())
 								{
-									M_NewPlayer(sel,p,ip,port,s);
+									M_NewPlayer(sel,p,ip,port,tcps,s);
 									continue;
 								}
-								if(s->M_UdpPort()==port)
+								if(tcps->M_UdpPort()==port)
 								{
-									M_ParsePacket(p);
+									M_ParsePacket(ip,port,p);
 									break;
 								}
 							}
 						}
-						master->m_ClientLock.M_Unlock();
+						master->M_ClientLock(false);
 					}
 					else std::cerr << "Data wasn't ready." << std::endl;
 				}
 			}
+		}
+	}
+	void UdpServer::M_UpdateGamestate(C_Packet& p)
+	{
+		master->M_PlayerLock(true);
+		std::vector<C_Player *>& plrs=master->M_Players();
+		for(std::vector<C_Player *>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
+		{
+			for(std::vector<C_Player *>::iterator pt=plrs.begin(); pt!=plrs.end(); ++pt)
+			{
+				(*(*it)->m_Packet)<<PlayerUpdate<<(*pt)->M_Id()<<(*pt)->m_Time.M_Get();
+			}
+			(*it)->M_SendUdp(udpSocket);
+		}
+		master->M_PlayerLock(false);
+	}
+	
+	PWSKOAG_API void UdpServer::ServerLoop()
+	{
+		C_ThreadData data(NULL, &udpSocket, NULL, NULL, NULL, NULL, &stopNow, master);
+		C_Thread t(UDPReceive, &data);
+		C_Packet p;
+		while(!stopNow)
+		{
+			M_UpdateGamestate(p);
+			msSleep(TICK_WAITTIME_UDP);
 		}
 	}
 }

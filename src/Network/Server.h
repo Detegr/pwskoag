@@ -58,7 +58,10 @@ namespace pwskoag
 	public:
 		PWSKOAG_API TcpServer(ushort port) : Server(port), m_TcpListener(TcpSocket(port)) {}
 		PWSKOAG_API ~TcpServer();
-		const t_Clients& GetClients() const {return m_Clients;}
+		const t_Clients&			GetClients() const {return m_Clients;}
+		void						M_ClientLock(bool t) {t?m_ClientLock.M_Lock():m_ClientLock.M_Unlock();}
+		void						M_PlayerLock(bool t) {t?m_PlayerLock.M_Lock():m_PlayerLock.M_Unlock();}
+		std::vector<C_Player *>&	M_Players() {return m_Players;}
 	};
 	
 	/*
@@ -72,8 +75,7 @@ namespace pwskoag
 		TcpServer*			master;
 		UdpSocket			udpSocket;
 		PWSKOAG_API void	ServerLoop();
-		void				M_NewPlayer(Selector& sel, C_Packet& p, const IpAddress& ip, ushort port, TcpSocket* s);
-		void				M_ParsePacket(C_Packet& p);
+		void				M_UpdateGamestate(C_Packet& p);
 	public:
 		UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp), udpSocket(UdpSocket(port)) {udpSocket.Bind();}
 	};

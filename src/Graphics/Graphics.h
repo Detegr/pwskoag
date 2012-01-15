@@ -64,9 +64,9 @@ namespace pwskoag
 				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW()));
 			}
 			void M_Draw() {impl->M_Draw();}
-			bool M_Running() const {return impl->window.IsOpened();}
+			bool M_Running() const {return impl->window.IsOpen();}
 			void M_Stop() {C_Lock l(impl->m_Lock); impl->window.Close();}
-			void M_UpdateEvent() {impl->window.GetEvent(m_Event);}
+			void M_UpdateEvent() {impl->window.PollEvent(m_Event);}
 			virtual sf::Event& M_GetEvent() {return m_Event;}
 	};
 	

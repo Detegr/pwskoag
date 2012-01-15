@@ -5,10 +5,11 @@ namespace pwskoag
 {
 	struct Keyboard
 	{
-		static const char RETURN=13;
 		#ifdef __APPLE__
-			static const char BACKSPACE=127;
+			static const char RETURN=58;
+			static const char BACKSPACE=59;
 		#else
+			static const char RETURN=13;
 			static const char BACKSPACE=8;
 		#endif
 		static char M_GetChar(uint c);
@@ -16,9 +17,6 @@ namespace pwskoag
 	
 	char Keyboard::M_GetChar(uint c)
 	{
-		switch(c)
-		{
-			default: return (char)c;
-		}
+		return (char)c;
 	}
 }

@@ -97,7 +97,6 @@ namespace pwskoag
 									break;
 								}
 							}
-							//std::cout << "Id: " << id << ", time: " << time << std::endl;
 							break;
 						}
 						case EOP:

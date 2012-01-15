@@ -15,11 +15,11 @@ int main()
 	pwskoag::C_ClientPlayer fallbackp;
 	try
 	{
-		if(c.M_Connect("localhost", 55555))
+		if(c.M_Connect("80.221.48.241", 55555))
 		{
 			p=c.M_OwnPlayer();
 			u.M_Initialize(&c);
-			u.M_Connect("localhost", 55556);
+			u.M_Connect("80.221.48.241", 55556);
 		}
 		else throw std::runtime_error("fuu");
 	}
@@ -29,7 +29,8 @@ int main()
 		std::cout << "Failed to connect..." << std::endl;
 	}
 	r.M_AddObject(*p);
-	p->M_Time(1000);
+	char prev;
+	pwskoag::C_Timer chatclock;
 	{
 		pwskoag::C_RendererSyncer rs(r,c);
 		while(r.M_Running())
@@ -44,24 +45,26 @@ int main()
 			c.M_PlayerLock(false);
 			r.M_Draw();
 			r.M_UpdateEvent();
-			switch(r.M_GetEvent().Type)
+			if(r.M_GetEvent().Type==sf::Event::Closed) break;
+			else if(r.M_GetEvent().Type==sf::Event::TextEntered)
 			{
-				case sf::Event::Closed: r.M_Stop(); break;
-				case sf::Event::TextEntered:
+				char c=pwskoag::Keyboard::M_GetChar(r.M_GetEvent().Text.Unicode);
+				if(!(prev==c && chatclock.M_Get()<200))
 				{
-					char c=pwskoag::Keyboard::M_GetChar(r.M_GetEvent().Text.Unicode);				
-					if(c==pwskoag::Keyboard::RETURN) {p->M_Send();}
-					else if(c==pwskoag::Keyboard::BACKSPACE) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
-					else if(c==0);
-					else
-					{
-						std::string str;
-						str+=c;
-						p->M_AddStr(str);
-					}
+					std::string str;
+					str+=c;
+					p->M_AddStr(str);
+					prev=c;
+					chatclock.M_Reset();
 				}
 			}
-			pwskoag::msSleep(1000/30);
+			else if(r.M_GetEvent().Type==sf::Event::KeyPressed)
+			{
+				char c=pwskoag::Keyboard::M_GetChar(r.M_GetEvent().Key.Code);
+				if(c==pwskoag::Keyboard::RETURN) {p->M_Send();}
+				else if(c==pwskoag::Keyboard::BACKSPACE) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
+			}
+			pwskoag::msSleep(1);
 		}
 	}
 	u.M_Disconnect();

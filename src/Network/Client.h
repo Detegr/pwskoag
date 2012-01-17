@@ -6,6 +6,7 @@
 
 namespace pwskoag
 {
+	typedef std::vector<C_NetEntity *> t_Entities;
 	/*
 	 * Client class
 	 * Meant to be inherited. Includes routines for starting and
@@ -58,7 +59,7 @@ namespace pwskoag
 		void					Send(e_Command c) {C_Lock l(m_Lock); TcpSend(c, &tcpSocket, packet);}
 		C_CondVar				m_PlayersModified;
 		C_Mutex					m_PlayerLock;
-		std::vector<C_Player *> m_Players;
+		t_Entities				m_Players;
 		C_ClientPlayer*			m_OwnPlayer;
 	public:
 		TcpClient() : serverAddress(), serverPort(0), tcpSocket(), m_Connected(false) {}
@@ -66,7 +67,7 @@ namespace pwskoag
 		PWSKOAG_API void 			M_Disconnect();
 		template<class type> void 	Append(e_Command c, type t) {Append(c); packet<<t;}
 		const ushort				M_Id() const {return tcpSocket.M_Id();}
-		std::vector<C_Player *>&	M_Players() {return m_Players;}
+		t_Entities&					M_Players() {return m_Players;}
 		void						M_PlayerLock(bool on=true) {on?m_PlayerLock.M_Lock():m_PlayerLock.M_Unlock();}
 		C_Mutex&					M_GetPlayerLock() {return m_PlayerLock;}
 		C_ClientPlayer*				M_OwnPlayer() {return m_OwnPlayer;}

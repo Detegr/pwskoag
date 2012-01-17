@@ -3,7 +3,8 @@ CC=g++ -g3
 # CLIENT
 CLIENTBIN=	../src/Main/gfxtest.cpp
 CLIENTSRC=	../src/Network/Client.cpp \
-		../src/Graphics/Graphics.cpp
+		../src/Graphics/Graphics.cpp \
+		../src/Game/ClientPlayer.cpp
 CLIENTHEADERS=	../src/Network/Client.h \
 		../src/Game/ClientPlayer.h \
 		../src/Graphics/PlayerGfx.h \
@@ -14,7 +15,8 @@ CLIENTOBJECTS=$(CLIENTSRC:.cpp=.o)
 #********************************************
 # SERVER
 SERVERBIN=	../src/Main/Server.cpp
-SERVERSRC=	../src/Network/Server.cpp
+SERVERSRC=	../src/Network/Server.cpp \
+			../src/Game/ServerPlayer.cpp
 SERVERHEADERS=	../src/Network/Server.h \
 		../src/Game/ServerPlayer.h
 SERVEROBJECTS=$(SERVERSRC:.cpp=.o)
@@ -24,7 +26,6 @@ SERVEROBJECTS=$(SERVERSRC:.cpp=.o)
 LIBSRC=	$(wildcard ../src/Concurrency/*.cpp) \
 	../src/Network/Network.cpp \
 	../src/Network/Packet.cpp \
-	../src/Game/Player.cpp \
 	$(wildcard ../src/Util/*.cpp)
 LIBHEADERS=../src/Concurrency/*.h \
 	../src/Network/Network.h \

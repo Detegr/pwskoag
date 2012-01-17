@@ -49,7 +49,7 @@ namespace pwskoag
 		C_Mutex				m_ClientLock;
 		t_Clients			m_Clients;
 		C_Mutex				m_PlayerLock;
-		std::vector<C_Player *> m_Players;
+		t_Entities 			m_Players;
 		PWSKOAG_API void	ServerLoop();
 		void				M_ParseClient(TcpSocket* client);
 		void				M_DeleteDisconnected();
@@ -61,7 +61,7 @@ namespace pwskoag
 		const t_Clients&			GetClients() const {return m_Clients;}
 		void						M_ClientLock(bool t) {t?m_ClientLock.M_Lock():m_ClientLock.M_Unlock();}
 		void						M_PlayerLock(bool t) {t?m_PlayerLock.M_Lock():m_PlayerLock.M_Unlock();}
-		std::vector<C_Player *>&	M_Players() {return m_Players;}
+		t_Entities&					M_Players() {return m_Players;}
 	};
 	
 	/*

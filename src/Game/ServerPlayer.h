@@ -4,12 +4,12 @@
 
 namespace pwskoag
 {	
-	class C_ServerPlayer : public C_Player
+	class C_ServerPlayer : public C_PlayerBase, public C_NetEntity, public C_Entity
 	{
 		public:
 			C_ServerPlayer(TcpSocket* s, C_Packet* p);
 			~C_ServerPlayer();
-			void M_SetId(ushort id);
+			void M_Id(ushort id);
 			ushort M_Id() const;
 			void M_AddStr(std::string& str);
 			void M_SetStr(std::string& str);

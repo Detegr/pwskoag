@@ -56,7 +56,7 @@ namespace pwskoag
 		C_Packet p;
 		C_ThreadData* data=(C_ThreadData*)args;
 		UdpSocket* client=(UdpSocket*)data->socket;
-		std::vector<C_Player *>* plrs=data->m_Players;
+		t_Entities* plrs=data->m_Players;
 		bool* stopNow=data->stopNow;
 		
 		while(!*stopNow)
@@ -87,9 +87,9 @@ namespace pwskoag
 							ushort id; uint64 time;
 							p>>id; p>>time;
 							C_Lock(*data->m_PlayerLock);
-							for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+							for(t_Entities::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 							{
-								C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer *>((*it));
+								C_ClientPlayer* plr=static_cast<C_ClientPlayer *>((*it));
 								if(plr->M_Id()==id)
 								{
 									plr->M_Time((uint)time);
@@ -111,20 +111,20 @@ namespace pwskoag
 		}
 	}
 	
-	static void M_CheckNewPlayers(ushort id, std::vector<C_Player *>& plrs, C_Mutex& playerlock)
+	static void M_CheckNewPlayers(ushort id, t_Entities& plrs, C_Mutex& playerlock)
 	{
 		C_Lock l(playerlock);
 		bool newplr=true;
-		for(std::vector<C_Player *>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
+		for(t_Entities::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 		{
-			C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+			C_ClientPlayer* plr=static_cast<C_ClientPlayer*>(*it);
 			if(plr->M_Id()==id) {newplr=false; break;}
 		}
 		if(newplr)
 		{
 			std::cout << "New player: " << id << std::endl;
 			plrs.push_back(new C_ClientPlayer);
-			plrs.back()->M_SetId(id);
+			plrs.back()->M_Id(id);
 		}
 	}
 	
@@ -155,7 +155,7 @@ namespace pwskoag
 					C_ClientPlayer* n = new C_ClientPlayer(&tcpSocket, &packet);
 					m_OwnPlayer=n;
 					m_Players.push_back(m_OwnPlayer);
-					m_Players.back()->M_SetId(id);
+					m_Players.back()->M_Id(id);
 					while(p.M_Size())
 					{
 						p>>c;
@@ -165,9 +165,9 @@ namespace pwskoag
 							M_CheckNewPlayers(id, m_Players, m_PlayerLock);
 							std::string str; p>>str;
 							std::cout << str << " for " << id << std::endl;
-							for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+							for(t_Entities::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
 							{
-								C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+								C_ClientPlayer* plr=static_cast<C_ClientPlayer*>(*it);
 								if(plr->M_Id()==id) plr->M_SetStr(str);
 							}
 						}
@@ -188,7 +188,7 @@ namespace pwskoag
 		Stop();
 		//Lock lock(Client::selfMutex);
 		tcpSocket.Disconnect();
-		for(std::vector<C_Player *>::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
+		for(t_Entities::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
 		{
 			delete *it;
 		}
@@ -198,7 +198,7 @@ namespace pwskoag
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
 		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
-		std::vector<C_Player *>* plrs=data->m_Players;
+		t_Entities* plrs=data->m_Players;
 		bool* stopNow=data->stopNow;
 		C_Mutex* playerlock=data->m_PlayerLock;
 		Selector s;
@@ -228,9 +228,9 @@ namespace pwskoag
 								p>>str;
 								std::cout << str << " for " << id << std::endl;
 								playerlock->M_Lock();
-								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								for(t_Entities::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
-									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+									C_ClientPlayer* plr=static_cast<C_ClientPlayer*>(*it);
 									if(plr->M_Id()==id) plr->M_SetStr(str);
 								}
 								playerlock->M_Unlock();
@@ -243,9 +243,9 @@ namespace pwskoag
 								p>>id;
 								std::cout << "Client " << id << " disconnected." << std::endl;
 								playerlock->M_Lock();
-								for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+								for(t_Entities::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
-									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
+									C_ClientPlayer* plr=static_cast<C_ClientPlayer*>(*it);
 									if(plr->M_Id()==id)
 									{
 										delete *it;

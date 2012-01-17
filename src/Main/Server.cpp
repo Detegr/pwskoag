@@ -28,8 +28,8 @@ int main()
 	while(!stopNow)
 	{
 		s.M_PlayerLock(true);
-		std::vector<C_Player*>& plrs=s.M_Players();
-		for(std::vector<C_Player*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
+		t_Entities& plrs=s.M_Players();
+		for(t_Entities::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 		{
 		}
 		s.M_PlayerLock(false);

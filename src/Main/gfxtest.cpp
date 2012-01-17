@@ -15,11 +15,11 @@ int main()
 	pwskoag::C_ClientPlayer fallbackp;
 	try
 	{
-		if(c.M_Connect("80.221.48.241", 55555))
+		if(c.M_Connect("localhost", 55555))
 		{
 			p=c.M_OwnPlayer();
 			u.M_Initialize(&c);
-			u.M_Connect("80.221.48.241", 55556);
+			u.M_Connect("localhost", 55556);
 		}
 		else throw std::runtime_error("fuu");
 	}
@@ -36,10 +36,10 @@ int main()
 		while(r.M_Running())
 		{
 			c.M_PlayerLock(true);
-			std::vector<pwskoag::C_Player*> plrs=c.M_Players();
-			for(std::vector<pwskoag::C_Player*>::iterator it=plrs.begin(); it!=plrs.end(); ++it)
+			pwskoag::t_Entities& plrs=c.M_Players();
+			for(pwskoag::t_Entities::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 			{
-				pwskoag::C_ClientPlayer* plr=dynamic_cast<pwskoag::C_ClientPlayer*>(*it);
+				pwskoag::C_ClientPlayer* plr=static_cast<pwskoag::C_ClientPlayer*>(*it);
 				r.M_AddObjectCheckExisting(*plr, c.M_Players(), c.M_GetPlayerLock());
 			}
 			c.M_PlayerLock(false);
@@ -49,20 +49,23 @@ int main()
 			else if(r.M_GetEvent().Type==sf::Event::TextEntered)
 			{
 				char c=pwskoag::Keyboard::M_GetChar(r.M_GetEvent().Text.Unicode);
-				if(!(prev==c && chatclock.M_Get()<200))
+				if(!(prev==c))
 				{
-					std::string str;
-					str+=c;
-					p->M_AddStr(str);
-					prev=c;
-					chatclock.M_Reset();
+					if(chatclock.M_Get()<200)
+					{
+						if(c==pwskoag::Keyboard::RETURN) {p->M_Send();}
+						else if(c==pwskoag::Keyboard::BACKSPACE) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
+						else
+						{
+							std::string str;
+							str+=c;
+							p->M_AddStr(str);
+						}
+						chatclock.M_Reset();
+						prev=c;
+					}
+					else chatclock.M_Reset();
 				}
-			}
-			else if(r.M_GetEvent().Type==sf::Event::KeyPressed)
-			{
-				char c=pwskoag::Keyboard::M_GetChar(r.M_GetEvent().Key.Code);
-				if(c==pwskoag::Keyboard::RETURN) {p->M_Send();}
-				else if(c==pwskoag::Keyboard::BACKSPACE) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
 			}
 			pwskoag::msSleep(1);
 		}

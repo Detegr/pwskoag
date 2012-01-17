@@ -10,34 +10,30 @@ namespace pwskoag
 	class C_Entity
 	{
 		protected:
-			ushort			m_Id;
 			C_Vec2			m_Position;
-			C_Mutex			m_Lock;
 		public:
-			virtual void	M_SetId(ushort id)=0;
-			virtual ushort	M_Id() const=0;
 			virtual void	M_Position(C_Vec2& v)=0;
 	};
-	
-	struct C_SendableEntity : public C_Entity, public C_Sendable
-	{
-		C_SendableEntity() : C_Sendable() {}
-		C_SendableEntity(TcpSocket* s, C_Packet* p) : C_Sendable(s,p) {}	
-	};
-	
-	class C_Player : public C_SendableEntity
+
+	class C_NetEntity : public C_Sendable
 	{
 		protected:
-			std::string	m_Str;
+			C_Mutex			m_Lock;
+			ushort			m_Id;
+		public:
+			C_NetEntity() : C_Sendable() {}
+			C_NetEntity(TcpSocket* s, C_Packet* p) : C_Sendable(s,p) {}
+			void	M_Id(ushort id) {m_Id=id;};
+			ushort	M_Id() const {return m_Id;}
+	};
+
+	class C_PlayerBase
+	{
+		protected:
+			std::string m_Str;
 		public:
 			C_Timer		m_Time;
-			C_Player() : C_SendableEntity() {}
-			C_Player(TcpSocket* s, C_Packet* p) : C_SendableEntity(s,p) {}
 			virtual void M_AddStr(std::string& str)=0;
 			virtual void M_SetStr(std::string& str)=0;
-			virtual std::string& M_GetStr()=0;
-			virtual void M_Send()=0;
-			virtual void M_SendUdp(UdpSocket& s)=0;
-			virtual void M_Position(C_Vec2& v)=0;
-		};
-	}
+	};
+}

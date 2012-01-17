@@ -47,12 +47,12 @@ namespace pwskoag
 		public:
 			C_Renderer(uint w, uint h);
 			~C_Renderer();
-			void M_AddObject(const C_EntityGfx& p)
+			void M_AddObject(const C_GfxNetEntity& p)
 			{
 				std::cout << "Adding object to renderer..." << std::endl;
 				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW()));
 			}
-			void M_AddObjectCheckExisting(const C_EntityGfx& p, const std::vector<C_Player *>& plrs, C_Mutex& playerlock)
+			void M_AddObjectCheckExisting(const C_GfxNetEntity& p, const t_Entities& plrs, C_Mutex& playerlock)
 			{
 				impl->m_Lock.M_Lock();
 				for(t_Drawable::iterator it=impl->m_Objects.begin(); it!=impl->m_Objects.end(); ++it)
@@ -76,7 +76,7 @@ namespace pwskoag
 		bool* stopnow=data->stopNow;
 		C_CondVar* wait=data->m_PlayersModified;
 		C_Mutex* pl=data->m_PlayerLock;
-		std::vector<C_Player *>* plrs=data->m_Players;
+		t_Entities* plrs=data->m_Players;
 		t_Drawable* objects=reinterpret_cast<t_Drawable *>(data->m_Void1);
 		C_Mutex* lock=reinterpret_cast<C_Mutex *>(data->m_Void2);
 		while(!*stopnow)
@@ -88,7 +88,7 @@ namespace pwskoag
 			{
 				pl->M_Lock();
 				bool found=false;
-				for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+				for(t_Entities::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 				{
 					if((*it)->M_Id()==dt->first) {std::cout << "Player found" << std::endl; found=true; break;}
 				}

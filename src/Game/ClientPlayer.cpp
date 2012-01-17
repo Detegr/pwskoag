@@ -1,8 +1,8 @@
 #include "ClientPlayer.h"
 namespace pwskoag
 {
-	C_ClientPlayer::C_ClientPlayer() : C_Player() {}
-	C_ClientPlayer::C_ClientPlayer(TcpSocket *s, C_Packet* p) : C_Player(s,p) {}
+	C_ClientPlayer::C_ClientPlayer() : C_GfxNetEntity() {}
+	C_ClientPlayer::C_ClientPlayer(TcpSocket *s, C_Packet* p) : C_GfxNetEntity(s,p) {}
 	const C_PlayerGfx& C_ClientPlayer::M_GetDRAW() const {return m_Draw;}
 	void C_ClientPlayer::M_SetId(ushort id)
 	{

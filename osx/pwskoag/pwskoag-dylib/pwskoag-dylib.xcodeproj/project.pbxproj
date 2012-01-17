@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		F392A86414B765E0000A98C2 /* Concurrency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A83E14B765DF000A98C2 /* Concurrency.cpp */; };
 		F392A86514B765E0000A98C2 /* Concurrency.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A83F14B765DF000A98C2 /* Concurrency.h */; };
-		F392A86714B765E0000A98C2 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A84314B765DF000A98C2 /* Player.cpp */; };
 		F392A86814B765E0000A98C2 /* Player.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A84414B765DF000A98C2 /* Player.h */; };
 		F392A87214B765E0000A98C2 /* Network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A85214B765DF000A98C2 /* Network.cpp */; };
 		F392A87314B765E0000A98C2 /* Network.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A85314B765DF000A98C2 /* Network.h */; };
@@ -21,13 +20,13 @@
 		F392A87D14B765E0000A98C2 /* Timer.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A86214B765E0000A98C2 /* Timer.h */; };
 		F392A87E14B765E0000A98C2 /* Version.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A86314B765E0000A98C2 /* Version.h */; };
 		F3A218D614BBAD410057477F /* Keyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A218D514BBAD410057477F /* Keyboard.h */; };
+		F3D7117714C402A400950758 /* Vec2.h in Headers */ = {isa = PBXBuildFile; fileRef = F3D7117614C402A400950758 /* Vec2.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		F392A83014B765B2000A98C2 /* libpwskoag-dylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpwskoag-dylib.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F392A83E14B765DF000A98C2 /* Concurrency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Concurrency.cpp; sourceTree = "<group>"; };
 		F392A83F14B765DF000A98C2 /* Concurrency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Concurrency.h; sourceTree = "<group>"; };
-		F392A84314B765DF000A98C2 /* Player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Player.cpp; sourceTree = "<group>"; };
 		F392A84414B765DF000A98C2 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
 		F392A85214B765DF000A98C2 /* Network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Network.cpp; sourceTree = "<group>"; };
 		F392A85314B765DF000A98C2 /* Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Network.h; sourceTree = "<group>"; };
@@ -39,6 +38,7 @@
 		F392A86214B765E0000A98C2 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		F392A86314B765E0000A98C2 /* Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Version.h; sourceTree = "<group>"; };
 		F3A218D514BBAD410057477F /* Keyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Keyboard.h; sourceTree = "<group>"; };
+		F3D7117614C402A400950758 /* Vec2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vec2.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,7 +84,6 @@
 		F392A84014B765DF000A98C2 /* Game */ = {
 			isa = PBXGroup;
 			children = (
-				F392A84314B765DF000A98C2 /* Player.cpp */,
 				F392A84414B765DF000A98C2 /* Player.h */,
 				F3A218D514BBAD410057477F /* Keyboard.h */,
 			);
@@ -112,6 +111,7 @@
 				F392A86114B765E0000A98C2 /* Timer.cpp */,
 				F392A86214B765E0000A98C2 /* Timer.h */,
 				F392A86314B765E0000A98C2 /* Version.h */,
+				F3D7117614C402A400950758 /* Vec2.h */,
 			);
 			name = Util;
 			path = ../../../src/Util;
@@ -133,6 +133,7 @@
 				F392A87D14B765E0000A98C2 /* Timer.h in Headers */,
 				F392A87E14B765E0000A98C2 /* Version.h in Headers */,
 				F3A218D614BBAD410057477F /* Keyboard.h in Headers */,
+				F3D7117714C402A400950758 /* Vec2.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -187,7 +188,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F392A86414B765E0000A98C2 /* Concurrency.cpp in Sources */,
-				F392A86714B765E0000A98C2 /* Player.cpp in Sources */,
 				F392A87214B765E0000A98C2 /* Network.cpp in Sources */,
 				F392A87414B765E0000A98C2 /* Packet.cpp in Sources */,
 				F392A87C14B765E0000A98C2 /* Timer.cpp in Sources */,

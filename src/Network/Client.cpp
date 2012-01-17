@@ -57,7 +57,6 @@ namespace pwskoag
 		C_ThreadData* data=(C_ThreadData*)args;
 		UdpSocket* client=(UdpSocket*)data->socket;
 		std::vector<C_Player *>* plrs=data->m_Players;
-		C_Mutex* plrlock=data->m_PlayerLock;
 		bool* stopNow=data->stopNow;
 		
 		while(!*stopNow)
@@ -87,13 +86,13 @@ namespace pwskoag
 						{
 							ushort id; uint64 time;
 							p>>id; p>>time;
-							C_Lock(*plrlock);
+							C_Lock(*data->m_PlayerLock);
 							for(std::vector<C_Player *>::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 							{
 								C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer *>((*it));
 								if(plr->M_Id()==id)
 								{
-									plr->M_Time(time);
+									plr->M_Time((uint)time);
 									break;
 								}
 							}

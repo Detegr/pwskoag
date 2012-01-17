@@ -7,36 +7,15 @@ namespace pwskoag
 	class C_ServerPlayer : public C_Player
 	{
 		public:
-			C_ServerPlayer(TcpSocket* s, C_Packet* p) : C_Player(s,p) {}
-			~C_ServerPlayer() {}
-			void M_SetId(ushort id)
-			{
-				m_Id=id;
-			}
-			ushort M_Id() const
-			{
-				return m_Id;
-			}
-			void M_AddStr(std::string& str)
-			{
-				C_Lock l(m_Lock);
-				this->m_Str+=str;
-			}
-			void M_SetStr(std::string& str)
-			{
-				C_Lock l(m_Lock);
-				this->m_Str=str;
-			}
-			std::string& M_GetStr() { C_Lock l(m_Lock); return m_Str; }
-			void M_Send()
-			{
-				C_Lock l(m_Lock);
-				this->m_Tcp->Send(*m_Packet);
-			}
-			void M_SendUdp(UdpSocket& s)
-			{
-				C_Lock l(m_Lock);
-				s.Send(*m_Packet, m_Tcp->GetIp(), m_Tcp->M_UdpPort());
-			}
+			C_ServerPlayer(TcpSocket* s, C_Packet* p);
+			~C_ServerPlayer();
+			void M_SetId(ushort id);
+			ushort M_Id() const;
+			void M_AddStr(std::string& str);
+			void M_SetStr(std::string& str);
+			std::string& M_GetStr();
+			void M_Send();
+			void M_SendUdp(UdpSocket& s);
+			void M_Position(C_Vec2& v);
 	};
 }

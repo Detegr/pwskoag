@@ -1,10 +1,9 @@
 #pragma once
 #include <Util/Base.h>
 #include <Util/Timer.h>
+#include <Util/Vec2.h>
 #include <Concurrency/Concurrency.h>
 #include <Network/Network.h>
-
-/* Test player class. */
 
 namespace pwskoag
 {
@@ -12,10 +11,12 @@ namespace pwskoag
 	{
 		protected:
 			ushort			m_Id;
+			C_Vec2			m_Position;
 			C_Mutex			m_Lock;
 		public:
 			virtual void	M_SetId(ushort id)=0;
 			virtual ushort	M_Id() const=0;
+			virtual void	M_Position(C_Vec2& v)=0;
 	};
 	
 	struct C_SendableEntity : public C_Entity, public C_Sendable
@@ -37,5 +38,6 @@ namespace pwskoag
 			virtual std::string& M_GetStr()=0;
 			virtual void M_Send()=0;
 			virtual void M_SendUdp(UdpSocket& s)=0;
+			virtual void M_Position(C_Vec2& v)=0;
 		};
-}
+	}

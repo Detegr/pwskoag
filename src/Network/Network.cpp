@@ -159,7 +159,7 @@ namespace pwskoag
 		}
 		else
 		{
-			msSleep(timeoutms);
+			g_Sleep(timeoutms);
 			return 0;
 		}
 	};
@@ -177,7 +177,7 @@ namespace pwskoag
 		}
 		else
 		{
-			msSleep(timeoutms);
+			g_Sleep(timeoutms);
 			return 0;
 		}
 	};
@@ -195,7 +195,7 @@ namespace pwskoag
 		}
 		else
 		{
-			msSleep(timeoutms);
+			g_Sleep(timeoutms);
 			return 0;
 		}
 	};

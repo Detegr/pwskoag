@@ -33,6 +33,7 @@ int main()
 		{
 		}
 		s.M_PlayerLock(false);
+		g_Sleep(10);
 	}
 	u.Stop();
 	s.Stop();

@@ -107,7 +107,7 @@ namespace pwskoag
 				}
 				
 			}
-			msSleep(TICK_WAITTIME_UDP);
+			g_Sleep(TICK_WAITTIME_UDP);
 		}
 	}
 	
@@ -284,7 +284,7 @@ namespace pwskoag
 		C_Thread t(TCPReceive, &data);
 		while(!stopNow)
 		{
-			msSleep(TICK_WAITTIME_TCP);
+			g_Sleep(TICK_WAITTIME_TCP);
 			if(timer.M_Get()>2000)
 			{
 				Append(Heartbeat);
@@ -345,7 +345,7 @@ namespace pwskoag
 		{
 			//packet<<MessageTimer<<m_Master->M_OwnPlayer()->M_Id();
 			//Send(m_Master->serverAddress, m_Port);
-			msSleep(100);
+			g_Sleep(100);
 		}
 	}
 }

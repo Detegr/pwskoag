@@ -47,22 +47,8 @@ namespace pwskoag
 		public:
 			C_Renderer(uint w, uint h);
 			~C_Renderer();
-			void M_AddObject(const C_GfxEntity& p)
-			{
-				std::cout << "Adding object to renderer..." << std::endl;
-				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW()));
-			}
-			void M_AddObjectCheckExisting(const C_GfxEntity& p, const t_Entities& plrs, C_Mutex& playerlock)
-			{
-				impl->m_Lock.M_Lock();
-				for(t_Drawable::iterator it=impl->m_Objects.begin(); it!=impl->m_Objects.end(); ++it)
-				{
-					if(it->second==&p.M_GetDRAW()) {impl->m_Lock.M_Unlock(); return;}
-				}
-				impl->m_Lock.M_Unlock();
-				std::cout << "Adding object to renderer..." << std::endl;
-				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW()));
-			}
+			void M_AddObject(const C_GfxEntity& p);
+			void M_AddObjectCheckExisting(const C_GfxEntity& p, const t_Entities& plrs, C_Mutex& playerlock);
 			void M_Draw() {impl->M_Draw();}
 			bool M_Running() const {return impl->window.IsOpen();}
 			void M_Stop() {C_Lock l(impl->m_Lock); impl->window.Close();}

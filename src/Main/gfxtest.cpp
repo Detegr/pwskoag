@@ -67,7 +67,7 @@ int main()
 					else chatclock.M_Reset();
 				}
 			}
-			pwskoag::msSleep(1);
+			pwskoag::g_Sleep(1);
 		}
 	}
 	u.M_Disconnect();

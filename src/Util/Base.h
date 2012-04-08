@@ -27,7 +27,7 @@ namespace pwskoag
 		typedef unsigned long long	uint64;
 	#endif
 
-	PWSKOAG_API inline void msSleep(uint ms)
+	PWSKOAG_API inline void g_Sleep(uint ms)
 	{
 		#ifdef _WIN32
 			Sleep(ms);

@@ -23,6 +23,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		E4E7D5071531D5F500DA0AF7 /* PlayerCollection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E4E7D5061531D5F500DA0AF7 /* PlayerCollection.cpp */; };
 		F392A88514B76AAE000A98C2 /* libpwskoag-dylib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F392A83C14B765B3000A98C2 /* libpwskoag-dylib.dylib */; };
 		F392A8AA14B76DB0000A98C2 /* Client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A88714B76CD6000A98C2 /* Client.cpp */; };
 		F392A8AB14B76DB0000A98C2 /* gfxtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A89214B76D14000A98C2 /* gfxtest.cpp */; };
@@ -106,6 +107,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E4E7D5061531D5F500DA0AF7 /* PlayerCollection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlayerCollection.cpp; path = ../../src/Data/PlayerCollection.cpp; sourceTree = "<group>"; };
+		E4E7D5081531D60500DA0AF7 /* PlayerCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlayerCollection.h; path = ../../src/Data/PlayerCollection.h; sourceTree = "<group>"; };
 		F373B54F14B858E2009DF15B /* ServerPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServerPlayer.h; sourceTree = "<group>"; };
 		F392A83714B765B2000A98C2 /* pwskoag-dylib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "pwskoag-dylib.xcodeproj"; path = "pwskoag-dylib/pwskoag-dylib.xcodeproj"; sourceTree = "<group>"; };
 		F392A88714B76CD6000A98C2 /* Client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Client.cpp; path = ../../src/Network/Client.cpp; sourceTree = "<group>"; };
@@ -156,6 +159,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E4E7D5051531D5A300DA0AF7 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				E4E7D5061531D5F500DA0AF7 /* PlayerCollection.cpp */,
+				E4E7D5081531D60500DA0AF7 /* PlayerCollection.h */,
+			);
+			name = Data;
+			sourceTree = "<group>";
+		};
 		F392A83814B765B2000A98C2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -209,6 +221,7 @@
 		F392A8CE14B790F2000A98C2 /* server */ = {
 			isa = PBXGroup;
 			children = (
+				E4E7D5051531D5A300DA0AF7 /* Data */,
 				F392A8CF14B7911B000A98C2 /* Game */,
 				F392A8D514B7911B000A98C2 /* Main */,
 				F392A8D914B7911B000A98C2 /* Network */,
@@ -379,6 +392,7 @@
 				F392A8E614B7911B000A98C2 /* Server.cpp in Sources */,
 				F392A8EA14B7911B000A98C2 /* Server.cpp in Sources */,
 				F3D7117C14C4052B00950758 /* ServerPlayer.cpp in Sources */,
+				E4E7D5071531D5F500DA0AF7 /* PlayerCollection.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

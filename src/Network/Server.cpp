@@ -465,7 +465,7 @@ namespace pwskoag
 		while(!stopNow)
 		{
 			M_UpdateGamestate(p);
-			msSleep(TICK_WAITTIME_UDP);
+			g_Sleep(TICK_WAITTIME_UDP);
 		}
 	}
 }

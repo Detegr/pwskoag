@@ -10,26 +10,17 @@
 
 namespace pwskoag
 {
-	struct C_GfxBase
+	struct C_GfxEntity : public C_Entity
 	{
-		virtual const C_Drawable& M_GetDRAW() const=0;
-	};
-
-	struct C_GfxEntity : public C_GfxBase, public C_Entity
-	{
-	};
-
-	struct C_GfxNetEntity : public C_GfxEntity, public C_NetEntity
-	{
-		C_GfxNetEntity() : C_NetEntity() {}
-		C_GfxNetEntity(TcpSocket* s, C_Packet* p) : C_NetEntity(s,p) {}
-		virtual const C_Drawable&	M_GetDRAW() const=0;
+		C_GfxEntity() : C_Entity() {}
+		C_GfxEntity(TcpSocket* s, C_Packet* p) : C_Entity(s,p) {}
 		virtual void				M_SetId(ushort id)=0;
 		virtual ushort				M_Id() const=0;
 		virtual void				M_Position(C_Vec2& v)=0;
+		virtual const C_Drawable&	M_GetDRAW() const=0;
 	};
 
-	class C_ClientPlayer : public C_PlayerBase, public C_GfxNetEntity
+	class C_ClientPlayer : public C_PlayerBase, public C_GfxEntity
 	{
 		private:
 			C_PlayerGfx		m_Draw;

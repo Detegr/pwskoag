@@ -1,4 +1,5 @@
 #include <Util/Version.h>
+#include <Util/DataUtils.h>
 #include "Server.h"
 
 namespace pwskoag
@@ -82,15 +83,12 @@ namespace pwskoag
 			std::cout << "ID: " << i << ": " << str << std::endl;
 			lock->M_Lock();
 			plrlock->M_Lock();
-			for(t_Entities::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+			C_Entity* e = g_EntityById(*plrs, i);
+			if(e)
 			{
-				C_ServerPlayer* plr=static_cast<C_ServerPlayer *>(*it);
-				if(plr->M_Id()==i)
-				{
-					plr->M_SetStr(str);
-					plr->m_Time.M_Reset();
-					break;
-				}
+				C_ServerPlayer* plr = static_cast<C_ServerPlayer*>(e);
+				plr->M_SetStr(str);
+				plr->m_Time.M_Reset();
 			}
 			plrlock->M_Unlock();
 			M_UpdatePlayers(*plrs, *plrlock);
@@ -164,7 +162,7 @@ namespace pwskoag
 		delete data;
 	}
 	
-	void TcpServer::M_NewPlayer(TcpSocket* client)
+	void TcpServer::M_GenerateId(TcpSocket* client)
 	{
 		bool ok=false;
 		do
@@ -180,25 +178,45 @@ namespace pwskoag
 			client->M_Id(id);
 		} while(!ok);
 		std::cout << "Generated id: " << client->M_Id() << std::endl;
+	}
+	
+	void TcpServer::M_NewPlayer(TcpSocket* client)
+	{
+		M_GenerateId(client);
+		
 		std::cout << "Client connected" << std::endl;
 		C_ServerPlayer* newplayer=new C_ServerPlayer(client, new C_Packet);
+		
 		newplayer->M_Id(client->M_Id());
-		*newplayer->m_Packet<<HandShake<<client->M_Id();
+		*newplayer->m_Packet << HandShake << client->M_Id();
 		
 		m_PlayerLock.M_Lock();
 		m_Players.push_back(newplayer);
 		m_PlayerLock.M_Unlock();
 		
 		std::cout << "Players: " << m_Players.size() << std::endl;
-		std::pair<C_Thread*, LocalThreadData> localdata(std::make_pair((C_Thread *)NULL, LocalThreadData(client)));
-		C_ThreadData* data=new C_ThreadData(&localdata.second.lock,client,localdata.second.timer, &m_Players, &m_PlayerLock, NULL, &stopNow);
+		
+		C_LocalThreadData localdata(client);
+		C_ThreadData* data=new C_ThreadData(
+											&localdata.lock,
+											client,
+											localdata.timer,
+											&m_Players,
+											&m_PlayerLock,
+											NULL,
+											&stopNow
+											);
 		C_Thread* run=new C_Thread(TCPReceive, (void*)data);
-		localdata.second.lock.M_Lock();
+		M_NewClient(localdata, run);
+	}
+	
+	void TcpServer::M_NewClient(C_LocalThreadData& localdata, C_Thread* thread)
+	{
+		localdata.lock.M_Lock();
 		m_ClientLock.M_Lock();
-		m_Clients.push_back(localdata);
+		m_Clients.push_back(std::make_pair(thread, localdata));
 		m_ClientLock.M_Unlock();
-		localdata.second.lock.M_Unlock();
-		localdata.first=run;
+		localdata.lock.M_Unlock();
 	}
 	
 	void TcpServer::M_ParseClient(TcpSocket* client)
@@ -398,7 +416,7 @@ namespace pwskoag
 					if(s->Receive(p, &ip, &port))
 					{
 						master->M_ClientLock(true);
-						const t_Clients& c=master->GetClients();
+						const t_Clients& c=master->M_GetClients();
 						for(t_Clients::const_iterator it=c.begin(); it!=c.end(); ++it)
 						{
 							TcpSocket* tcps=static_cast<TcpSocket*>(it->second.socket);

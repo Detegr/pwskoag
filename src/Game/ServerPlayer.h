@@ -4,7 +4,7 @@
 
 namespace pwskoag
 {	
-	class C_ServerPlayer : public C_PlayerBase, public C_NetEntity, public C_Entity
+	class C_ServerPlayer : public C_Entity, public C_PlayerBase
 	{
 		public:
 			C_ServerPlayer(TcpSocket* s, C_Packet* p);

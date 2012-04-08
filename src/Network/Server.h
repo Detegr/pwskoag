@@ -7,7 +7,7 @@
 
 namespace pwskoag
 {
-	typedef std::list<std::pair<C_Thread*, LocalThreadData> > t_Clients;
+	typedef std::list<std::pair<C_Thread*, C_LocalThreadData> > t_Clients;
 	
 	/*
 	 * Server class
@@ -54,11 +54,13 @@ namespace pwskoag
 		void				M_ParseClient(TcpSocket* client);
 		void				M_DeleteDisconnected();
 		void				M_ClearPlayers();
+		void				M_GenerateId(TcpSocket* client);
 		void				M_NewPlayer(TcpSocket* client);
+		void				M_NewClient(C_LocalThreadData& localdata, C_Thread* thread);
 	public:
 		PWSKOAG_API TcpServer(ushort port) : Server(port), m_TcpListener(TcpSocket(port)) {}
 		PWSKOAG_API ~TcpServer();
-		const t_Clients&			GetClients() const {return m_Clients;}
+		const t_Clients&			M_GetClients() const {return m_Clients;}
 		void						M_ClientLock(bool t) {t?m_ClientLock.M_Lock():m_ClientLock.M_Unlock();}
 		void						M_PlayerLock(bool t) {t?m_PlayerLock.M_Lock():m_PlayerLock.M_Unlock();}
 		t_Entities&					M_Players() {return m_Players;}

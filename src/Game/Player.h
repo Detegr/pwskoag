@@ -7,22 +7,17 @@
 
 namespace pwskoag
 {
-	class C_Entity
+	class C_Entity : public C_Sendable
 	{
 		protected:
 			C_Vec2			m_Position;
-		public:
-			virtual void	M_Position(C_Vec2& v)=0;
-	};
-
-	class C_NetEntity : public C_Sendable
-	{
-		protected:
 			C_Mutex			m_Lock;
 			ushort			m_Id;
 		public:
-			C_NetEntity() : C_Sendable() {}
-			C_NetEntity(TcpSocket* s, C_Packet* p) : C_Sendable(s,p) {}
+			virtual void	M_Position(C_Vec2& v)=0;
+			
+			C_Entity() : C_Sendable() {}
+			C_Entity(TcpSocket* s, C_Packet* p) : C_Sendable(s,p) {}
 			void	M_Id(ushort id) {m_Id=id;};
 			ushort	M_Id() const {return m_Id;}
 	};

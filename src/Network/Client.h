@@ -6,7 +6,7 @@
 
 namespace pwskoag
 {
-	typedef std::vector<C_NetEntity *> t_Entities;
+	typedef std::vector<C_Entity *> t_Entities;
 	/*
 	 * Client class
 	 * Meant to be inherited. Includes routines for starting and

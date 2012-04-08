@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E43EBDC7153181D200396E57 /* DataUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = E43EBDC6153181D200396E57 /* DataUtils.h */; };
 		F392A86414B765E0000A98C2 /* Concurrency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A83E14B765DF000A98C2 /* Concurrency.cpp */; };
 		F392A86514B765E0000A98C2 /* Concurrency.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A83F14B765DF000A98C2 /* Concurrency.h */; };
 		F392A86814B765E0000A98C2 /* Player.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A84414B765DF000A98C2 /* Player.h */; };
@@ -24,6 +25,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E43EBDC6153181D200396E57 /* DataUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataUtils.h; sourceTree = "<group>"; };
 		F392A83014B765B2000A98C2 /* libpwskoag-dylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpwskoag-dylib.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F392A83E14B765DF000A98C2 /* Concurrency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Concurrency.cpp; sourceTree = "<group>"; };
 		F392A83F14B765DF000A98C2 /* Concurrency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Concurrency.h; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 				F392A86214B765E0000A98C2 /* Timer.h */,
 				F392A86314B765E0000A98C2 /* Version.h */,
 				F3D7117614C402A400950758 /* Vec2.h */,
+				E43EBDC6153181D200396E57 /* DataUtils.h */,
 			);
 			name = Util;
 			path = ../../../src/Util;
@@ -134,6 +137,7 @@
 				F392A87E14B765E0000A98C2 /* Version.h in Headers */,
 				F3A218D614BBAD410057477F /* Keyboard.h in Headers */,
 				F3D7117714C402A400950758 /* Vec2.h in Headers */,
+				E43EBDC7153181D200396E57 /* DataUtils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

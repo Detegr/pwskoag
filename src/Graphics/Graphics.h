@@ -47,12 +47,12 @@ namespace pwskoag
 		public:
 			C_Renderer(uint w, uint h);
 			~C_Renderer();
-			void M_AddObject(const C_GfxNetEntity& p)
+			void M_AddObject(const C_GfxEntity& p)
 			{
 				std::cout << "Adding object to renderer..." << std::endl;
 				impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW()));
 			}
-			void M_AddObjectCheckExisting(const C_GfxNetEntity& p, const t_Entities& plrs, C_Mutex& playerlock)
+			void M_AddObjectCheckExisting(const C_GfxEntity& p, const t_Entities& plrs, C_Mutex& playerlock)
 			{
 				impl->m_Lock.M_Lock();
 				for(t_Drawable::iterator it=impl->m_Objects.begin(); it!=impl->m_Objects.end(); ++it)
@@ -111,14 +111,15 @@ namespace pwskoag
 			C_Renderer* m_Renderer;
 			TcpClient * m_Client;
 			C_CondVar * m_Wait;
+			bool		m_StopNow;
 			C_ThreadData m_Data;
 			C_Thread	m_Thread;
-			bool		m_StopNow;
 		public:
 			C_RendererSyncer(C_Renderer& r, TcpClient& c) :
 				m_Renderer(&r),
 				m_Client(&c),
 				m_Wait(&m_Client->M_GetPlayersModified()),
+				m_StopNow(false),
 				m_Data(C_ThreadData(NULL, NULL, NULL, &m_Client->M_Players(), &m_Client->M_GetPlayerLock(), m_Wait, &m_StopNow, &m_Renderer->impl->m_Objects, &m_Renderer->impl->m_Lock)),
 				m_Thread()
 				{

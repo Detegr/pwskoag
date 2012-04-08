@@ -5,7 +5,7 @@
 
 namespace pwskoag
 {
-	typedef std::vector<C_NetEntity *> t_Entities;
+	typedef std::vector<C_Entity *> t_Entities;
 	class C_Player;
 	class C_ServerPlayer;
 	class C_ClientPlayer;
@@ -24,11 +24,11 @@ namespace pwskoag
 			lock(l), socket(sock), timer(t), m_Players(p), m_PlayerLock(pl), m_PlayersModified(plm), stopNow(stop), m_Void1(void1), m_Void2(void2) {}
 	};
 
-	struct LocalThreadData
+	struct C_LocalThreadData
 	{
 		Socket*				socket;
 		C_Timer*			timer;
 		C_Mutex				lock;
-		LocalThreadData(Socket* s) : socket(s), timer(new C_Timer) {}
+		C_LocalThreadData(Socket* s) : socket(s), timer(new C_Timer) {}
 	};
 }

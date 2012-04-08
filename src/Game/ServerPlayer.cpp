@@ -2,7 +2,7 @@
 
 namespace pwskoag
 {
-	C_ServerPlayer::C_ServerPlayer(TcpSocket* s, C_Packet* p) : C_NetEntity(s,p) {}
+	C_ServerPlayer::C_ServerPlayer(TcpSocket* s, C_Packet* p) : C_Entity(s,p) {}
 	C_ServerPlayer::~C_ServerPlayer() {}
 	void C_ServerPlayer::M_Id(ushort id)
 	{

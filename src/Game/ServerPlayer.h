@@ -11,11 +11,9 @@ namespace pwskoag
 			~C_ServerPlayer();
 			void M_Id(ushort id);
 			ushort M_Id() const;
-			void M_AddStr(std::string& str);
-			void M_SetStr(std::string& str);
-			std::string& M_GetStr();
 			void M_Send();
 			void M_SendUdp(UdpSocket& s);
-			void M_Position(C_Vec2& v);
+			void M_Position(const C_Vec2& v);
+			const C_Vec2& M_Position() const;
 	};
 }

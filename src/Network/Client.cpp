@@ -1,6 +1,7 @@
 #include <Util/Version.h>
 #include "Client.h"
 #include <Network/ThreadData.h>
+#include <Util/DataUtils.h>
 
 namespace pwskoag
 {
@@ -84,17 +85,15 @@ namespace pwskoag
 						}
 						case PlayerUpdate:
 						{
-							ushort id; uint64 time;
-							p>>id; p>>time;
+							ushort id;
+							C_Vec2 pos;
+							p>>id; p>>pos;
 							C_Lock(*data->m_PlayerLock);
-							for(t_Entities::iterator it=plrs->begin(); it!=plrs->end(); ++it)
+							C_Entity* e = g_EntityById(*plrs, id);
+							if(e)
 							{
-								C_ClientPlayer* plr=static_cast<C_ClientPlayer *>((*it));
-								if(plr->M_Id()==id)
-								{
-									plr->M_Time((uint)time);
-									break;
-								}
+								C_ClientPlayer* plr=static_cast<C_ClientPlayer *>(e);
+								plr->M_Position(pos);
 							}
 							break;
 						}
@@ -161,6 +160,7 @@ namespace pwskoag
 						p>>c;
 						if(c==Message)
 						{
+							/*
 							ushort id; p>>id;
 							M_CheckNewPlayers(id, m_Players, m_PlayerLock);
 							std::string str; p>>str;
@@ -170,6 +170,7 @@ namespace pwskoag
 								C_ClientPlayer* plr=static_cast<C_ClientPlayer*>(*it);
 								if(plr->M_Id()==id) plr->M_SetStr(str);
 							}
+							*/
 						}
 					}
 					Start();
@@ -221,6 +222,7 @@ namespace pwskoag
 						{
 							case Message:
 							{
+								/*
 								ushort id;
 								std::string str;
 								p>>id;
@@ -235,6 +237,7 @@ namespace pwskoag
 								}
 								playerlock->M_Unlock();
 								std::cout << "GOT: " << id << ", " << str << ", size: " << p.M_Size() << std::endl;
+								*/
 								break;
 							}
 							case ClientDisconnected:

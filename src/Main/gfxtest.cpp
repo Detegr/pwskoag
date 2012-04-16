@@ -46,27 +46,6 @@ int main()
 			r.M_Draw();
 			r.M_UpdateEvent();
 			if(r.M_GetEvent().Type==sf::Event::Closed) break;
-			else if(r.M_GetEvent().Type==sf::Event::TextEntered)
-			{
-				char c=pwskoag::Keyboard::M_GetChar(r.M_GetEvent().Text.Unicode);
-				if(!(prev==c))
-				{
-					if(chatclock.M_Get()<200)
-					{
-						if(c==pwskoag::Keyboard::RETURN) {p->M_Send();}
-						else if(c==pwskoag::Keyboard::BACKSPACE) {std::string str=p->M_GetStr(); if(str.size()) str.resize(str.size()-1); p->M_SetStr(str);}
-						else
-						{
-							std::string str;
-							str+=c;
-							p->M_AddStr(str);
-						}
-						chatclock.M_Reset();
-						prev=c;
-					}
-					else chatclock.M_Reset();
-				}
-			}
 			pwskoag::g_Sleep(1);
 		}
 	}

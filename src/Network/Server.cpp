@@ -45,6 +45,7 @@ namespace pwskoag
 	static void M_UpdatePlayers(const t_Entities& plrs, C_Mutex& lock)
 	{
 		C_Lock l(lock);
+		/*
 		for(t_Entities::const_iterator it=plrs.begin(); it!=plrs.end(); ++it)
 		{
 			C_ServerPlayer* plr=static_cast<C_ServerPlayer*>(*it);
@@ -54,11 +55,12 @@ namespace pwskoag
 				*(plr->m_Packet)
 				<<(uchar)Message
 				<<plr2->M_Id()
-				<<plr2->M_GetStr();
+				<<plr2->M_Position();
 			}
 			plr->M_Send();
 			plr->m_Packet->M_Clear();			
 		}
+		*/
 	}
 	
 	static bool M_ParsePacket(C_Packet& p, e_Command header, C_ThreadData* data)
@@ -78,6 +80,7 @@ namespace pwskoag
 			 * Message:
 			 * [int|std::string]
 			 */
+			/*
 			int i; p>>i;
 			std::string str; p>>str;
 			std::cout << "ID: " << i << ": " << str << std::endl;
@@ -92,7 +95,8 @@ namespace pwskoag
 			}
 			plrlock->M_Unlock();
 			M_UpdatePlayers(*plrs, *plrlock);
-			lock->M_Unlock();		
+			lock->M_Unlock();
+			*/
 		}
 		else if(header==Heartbeat)
 		{
@@ -450,7 +454,7 @@ namespace pwskoag
 			for(t_Entities::iterator pt=plrs.begin(); pt!=plrs.end(); ++pt)
 			{
 				C_ServerPlayer* plr=static_cast<C_ServerPlayer *>(*pt);
-				(*plr->m_Packet)<<PlayerUpdate<<plr->M_Id()<<plr->m_Time.M_Get();
+				(*plr->m_Packet)<<PlayerUpdate<<plr->M_Id()<<plr->M_Position();
 			}
 			(*it)->M_SendUdp(udpSocket);
 		}

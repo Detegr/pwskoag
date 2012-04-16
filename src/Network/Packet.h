@@ -10,6 +10,7 @@ namespace pwskoag
 	 * UDPConnect 	[uchar(UDPConnect), ushort]
 	 * String		[uchar(String), std::string]
 	 * Message		[uchar(Message), int(Id), std::string]
+	 * PlayerUpdate [uchar(PlayerUpdate), C_Vec2]
 	 * EOP			[uchar(EOP)]
 	 */
 	enum e_Command

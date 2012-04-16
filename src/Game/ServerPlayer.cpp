@@ -12,17 +12,6 @@ namespace pwskoag
 	{
 		return m_Id;
 	}
-	void C_ServerPlayer::M_AddStr(std::string& str)
-	{
-		C_Lock l(m_Lock);
-		this->m_Str+=str;
-	}
-	void C_ServerPlayer::M_SetStr(std::string& str)
-	{
-		C_Lock l(m_Lock);
-		this->m_Str=str;
-	}
-	std::string& C_ServerPlayer::M_GetStr() { C_Lock l(m_Lock); return m_Str; }
 	void C_ServerPlayer::M_Send()
 	{
 		C_Lock l(m_Lock);
@@ -33,7 +22,11 @@ namespace pwskoag
 		C_Lock l(m_Lock);
 		s.Send(*m_Packet, m_Tcp->GetIp(), m_Tcp->M_UdpPort());
 	}
-	void C_ServerPlayer::M_Position(C_Vec2& v)
+	const C_Vec2& C_ServerPlayer::M_Position() const
+	{
+		return m_Position;
+	}
+	void C_ServerPlayer::M_Position(const C_Vec2& v)
 	{
 		this->m_Position=v;
 	}

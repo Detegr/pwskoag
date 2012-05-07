@@ -16,20 +16,19 @@ namespace pwskoag
 		friend class C_RendererSyncer;
 		private:
 			sf::RenderWindow	window;
-			t_Drawable			m_Objects;
+			t_Entities&			m_Objects;
 			C_Mutex				m_Lock;
 			void M_Draw()
 			{
 				window.Clear();
-				m_Lock.M_Lock();
-				for(t_Drawable::const_iterator it=m_Objects.begin(); it!=m_Objects.end(); ++it)
+				for(t_Entities::const_iterator it=m_Objects.begin(); it!=m_Objects.end(); ++it)
 				{
-					it->second->M_Draw(window);
+					C_ClientPlayer* e = dynamic_cast<C_ClientPlayer*>(*it);
+					e->M_GetDRAW().M_Draw(window);
 				}
-				m_Lock.M_Unlock();
 				window.Display();
 			}
-			C_RendererImpl(uint w, uint h) : window(sf::VideoMode(w,h,32), "pwskoag-client") {}
+			C_RendererImpl(uint w, uint h, t_Entities& objects) : window(sf::VideoMode(w,h,32), "pwskoag-client"), m_Objects(objects) {}
 	};
 
 	class C_Pollable
@@ -45,17 +44,15 @@ namespace pwskoag
 			static uint				references;
 			sf::Event				m_Event;
 		public:
-			C_Renderer(uint w, uint h);
+			C_Renderer(uint w, uint h, t_Entities& objects);
 			~C_Renderer();
-			void M_AddObject(const C_GfxEntity& p);
-			void M_AddObjectCheckExisting(const C_GfxEntity& p, const t_Entities& plrs, C_Mutex& playerlock);
 			void M_Draw() {impl->M_Draw();}
 			bool M_Running() const {return impl->window.IsOpen();}
 			void M_Stop() {C_Lock l(impl->m_Lock); impl->window.Close();}
 			void M_UpdateEvent() {impl->window.PollEvent(m_Event);}
 			virtual sf::Event& M_GetEvent() {return m_Event;}
 	};
-	
+	/*
 	static void M_SyncRenderer(void* args)
 	{
 		C_ThreadData* data=static_cast<C_ThreadData*>(args);
@@ -122,4 +119,5 @@ namespace pwskoag
 				m_Thread.M_Join();
 			}
 	};
+	*/
 }

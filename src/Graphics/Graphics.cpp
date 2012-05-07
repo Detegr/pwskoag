@@ -5,9 +5,9 @@ namespace pwskoag
 	C_RendererImpl* 	C_Renderer::impl;
 	uint				C_Renderer::references;
 
-	C_Renderer::C_Renderer(uint w, uint h)
+	C_Renderer::C_Renderer(uint w, uint h, t_Entities& objects)
 	{
-		if(!references){impl=new C_RendererImpl(w,h); ++references;}
+		if(!references){impl=new C_RendererImpl(w,h,objects); ++references;}
 		else {++references;}
 	}
 	C_Renderer::~C_Renderer()
@@ -15,6 +15,7 @@ namespace pwskoag
 		--references;
 		if(!references) delete impl;
 	}
+	/*
 	void C_Renderer::M_AddObject(const C_GfxEntity& p)
 	{
 		std::cout << "Adding object to renderer..." << std::endl;
@@ -30,5 +31,5 @@ namespace pwskoag
 		impl->m_Lock.M_Unlock();
 		std::cout << "Adding object to renderer..." << std::endl;
 		impl->m_Objects.push_back(std::make_pair(p.M_Id(), &p.M_GetDRAW()));
-	}
+	}*/
 }

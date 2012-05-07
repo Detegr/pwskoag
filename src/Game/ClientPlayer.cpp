@@ -23,7 +23,7 @@ namespace pwskoag
 	void C_ClientPlayer::M_SendUdp(UdpSocket& s)
 	{
 		C_Lock l(this->m_Lock);
-		if(m_Packet) 
+		//if(m_Packet) 
 	}
 	void C_ClientPlayer::M_Time(uint time) {m_Draw.M_SetTime(time);}
 	void C_ClientPlayer::M_Position(const C_Vec2& v) {m_Position=v;}

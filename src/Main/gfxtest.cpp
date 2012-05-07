@@ -8,7 +8,6 @@
 
 int main()
 {
-	pwskoag::C_Renderer r(640,480);
 	pwskoag::TcpClient c;
 	pwskoag::UdpClient u;
 	pwskoag::C_ClientPlayer* p;
@@ -28,22 +27,13 @@ int main()
 		p=&fallbackp;
 		std::cout << "Failed to connect..." << std::endl;
 	}
-	r.M_AddObject(*p);
-	char prev;
-	pwskoag::C_Timer chatclock;
+	pwskoag::C_Renderer r(640,480, c.M_Players());
 	{
-		pwskoag::C_RendererSyncer rs(r,c);
 		while(r.M_Running())
 		{
 			c.M_PlayerLock(true);
-			pwskoag::t_Entities& plrs=c.M_Players();
-			for(pwskoag::t_Entities::iterator it=plrs.begin(); it!=plrs.end(); ++it)
-			{
-				pwskoag::C_ClientPlayer* plr=static_cast<pwskoag::C_ClientPlayer*>(*it);
-				r.M_AddObjectCheckExisting(*plr, c.M_Players(), c.M_GetPlayerLock());
-			}
-			c.M_PlayerLock(false);
 			r.M_Draw();
+			c.M_PlayerLock(false);
 			r.M_UpdateEvent();
 			if(r.M_GetEvent().Type==sf::Event::Closed) break;
 			pwskoag::g_Sleep(1);

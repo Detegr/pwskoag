@@ -28,6 +28,8 @@ namespace pwskoag
 				m_Time.SetFont(m_Font);
 				m_Time.SetCharacterSize(20);
 				m_Time.SetPosition(560,y);
+				m_Text.SetString("PLAYER");
+				m_Time.SetString(y);
 				
 				y+=20;
 			}

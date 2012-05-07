@@ -160,11 +160,9 @@ namespace pwskoag
 						p>>c;
 						if(c==Message)
 						{
-							/*
 							ushort id; p>>id;
 							M_CheckNewPlayers(id, m_Players, m_PlayerLock);
-							std::string str; p>>str;
-							std::cout << str << " for " << id << std::endl;
+							/*
 							for(t_Entities::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
 							{
 								C_ClientPlayer* plr=static_cast<C_ClientPlayer*>(*it);
@@ -222,13 +220,12 @@ namespace pwskoag
 						{
 							case Message:
 							{
-								/*
 								ushort id;
 								std::string str;
 								p>>id;
 								M_CheckNewPlayers(id, *plrs, *playerlock);
-								p>>str;
-								std::cout << str << " for " << id << std::endl;
+								std::cout << "new player: " << id << std::endl;
+								/*
 								playerlock->M_Lock();
 								for(t_Entities::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
@@ -272,7 +269,10 @@ namespace pwskoag
 								//end=true;
 								break;
 							default:
-								std::cout << "Invalid packet. Terminating." << std::endl; break;
+								std::cout << "Invalid packet. Terminating." << std::endl;
+								std::cout << "Packet size: " << p.M_Size() << std::endl;
+								std::cout << "Header: " << header << std::endl;
+								break;
 						}
 					}
 				}

@@ -7,14 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E40CBFD415598129002A77D5 /* Concurrency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E40CBFCD15598129002A77D5 /* Concurrency.cpp */; };
+		E40CBFD515598129002A77D5 /* Concurrency.h in Headers */ = {isa = PBXBuildFile; fileRef = E40CBFCE15598129002A77D5 /* Concurrency.h */; };
+		E40CBFD615598129002A77D5 /* Network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E40CBFCF15598129002A77D5 /* Network.cpp */; };
+		E40CBFD715598129002A77D5 /* Network.h in Headers */ = {isa = PBXBuildFile; fileRef = E40CBFD015598129002A77D5 /* Network.h */; };
+		E40CBFD815598129002A77D5 /* Packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E40CBFD115598129002A77D5 /* Packet.cpp */; };
+		E40CBFD915598129002A77D5 /* Packet.h in Headers */ = {isa = PBXBuildFile; fileRef = E40CBFD215598129002A77D5 /* Packet.h */; };
+		E40CBFDB155982B0002A77D5 /* Base.h in Headers */ = {isa = PBXBuildFile; fileRef = E40CBFDA155982B0002A77D5 /* Base.h */; };
+		E40CBFDD155988E2002A77D5 /* Sendable.h in Headers */ = {isa = PBXBuildFile; fileRef = E40CBFDC155988E2002A77D5 /* Sendable.h */; };
+		E40CBFDF1559B8E8002A77D5 /* Netcommand.h in Headers */ = {isa = PBXBuildFile; fileRef = E40CBFDE1559B8E8002A77D5 /* Netcommand.h */; };
 		E43EBDC7153181D200396E57 /* DataUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = E43EBDC6153181D200396E57 /* DataUtils.h */; };
-		F392A86414B765E0000A98C2 /* Concurrency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A83E14B765DF000A98C2 /* Concurrency.cpp */; };
-		F392A86514B765E0000A98C2 /* Concurrency.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A83F14B765DF000A98C2 /* Concurrency.h */; };
 		F392A86814B765E0000A98C2 /* Player.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A84414B765DF000A98C2 /* Player.h */; };
-		F392A87214B765E0000A98C2 /* Network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A85214B765DF000A98C2 /* Network.cpp */; };
-		F392A87314B765E0000A98C2 /* Network.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A85314B765DF000A98C2 /* Network.h */; };
-		F392A87414B765E0000A98C2 /* Packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A85414B765DF000A98C2 /* Packet.cpp */; };
-		F392A87514B765E0000A98C2 /* Packet.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A85514B765DF000A98C2 /* Packet.h */; };
 		F392A87814B765E0000A98C2 /* ThreadData.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A85814B765DF000A98C2 /* ThreadData.h */; };
 		F392A87B14B765E0000A98C2 /* Base.h in Headers */ = {isa = PBXBuildFile; fileRef = F392A86014B765E0000A98C2 /* Base.h */; };
 		F392A87C14B765E0000A98C2 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F392A86114B765E0000A98C2 /* Timer.cpp */; };
@@ -25,15 +28,18 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E40CBFCD15598129002A77D5 /* Concurrency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Concurrency.cpp; path = ../../../dtglib/Concurrency.cpp; sourceTree = "<group>"; };
+		E40CBFCE15598129002A77D5 /* Concurrency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Concurrency.h; path = ../../../dtglib/Concurrency.h; sourceTree = "<group>"; };
+		E40CBFCF15598129002A77D5 /* Network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Network.cpp; path = ../../../dtglib/Network.cpp; sourceTree = "<group>"; };
+		E40CBFD015598129002A77D5 /* Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Network.h; path = ../../../dtglib/Network.h; sourceTree = "<group>"; };
+		E40CBFD115598129002A77D5 /* Packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Packet.cpp; path = ../../../dtglib/Packet.cpp; sourceTree = "<group>"; };
+		E40CBFD215598129002A77D5 /* Packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Packet.h; path = ../../../dtglib/Packet.h; sourceTree = "<group>"; };
+		E40CBFDA155982B0002A77D5 /* Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Base.h; path = ../../../dtglib/Base.h; sourceTree = "<group>"; };
+		E40CBFDC155988E2002A77D5 /* Sendable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sendable.h; sourceTree = "<group>"; };
+		E40CBFDE1559B8E8002A77D5 /* Netcommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Netcommand.h; sourceTree = "<group>"; };
 		E43EBDC6153181D200396E57 /* DataUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataUtils.h; sourceTree = "<group>"; };
 		F392A83014B765B2000A98C2 /* libpwskoag-dylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpwskoag-dylib.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F392A83E14B765DF000A98C2 /* Concurrency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Concurrency.cpp; sourceTree = "<group>"; };
-		F392A83F14B765DF000A98C2 /* Concurrency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Concurrency.h; sourceTree = "<group>"; };
 		F392A84414B765DF000A98C2 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
-		F392A85214B765DF000A98C2 /* Network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Network.cpp; sourceTree = "<group>"; };
-		F392A85314B765DF000A98C2 /* Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Network.h; sourceTree = "<group>"; };
-		F392A85414B765DF000A98C2 /* Packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Packet.cpp; sourceTree = "<group>"; };
-		F392A85514B765DF000A98C2 /* Packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Packet.h; sourceTree = "<group>"; };
 		F392A85814B765DF000A98C2 /* ThreadData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadData.h; sourceTree = "<group>"; };
 		F392A86014B765E0000A98C2 /* Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base.h; sourceTree = "<group>"; };
 		F392A86114B765E0000A98C2 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
@@ -57,7 +63,6 @@
 		F392A82514B765B2000A98C2 = {
 			isa = PBXGroup;
 			children = (
-				F392A83D14B765DF000A98C2 /* Concurrency */,
 				F392A84014B765DF000A98C2 /* Game */,
 				F392A84F14B765DF000A98C2 /* Network */,
 				F392A85F14B765E0000A98C2 /* Util */,
@@ -73,16 +78,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		F392A83D14B765DF000A98C2 /* Concurrency */ = {
-			isa = PBXGroup;
-			children = (
-				F392A83E14B765DF000A98C2 /* Concurrency.cpp */,
-				F392A83F14B765DF000A98C2 /* Concurrency.h */,
-			);
-			name = Concurrency;
-			path = ../../../src/Concurrency;
-			sourceTree = "<group>";
-		};
 		F392A84014B765DF000A98C2 /* Game */ = {
 			isa = PBXGroup;
 			children = (
@@ -96,11 +91,14 @@
 		F392A84F14B765DF000A98C2 /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				F392A85214B765DF000A98C2 /* Network.cpp */,
-				F392A85314B765DF000A98C2 /* Network.h */,
-				F392A85414B765DF000A98C2 /* Packet.cpp */,
-				F392A85514B765DF000A98C2 /* Packet.h */,
+				E40CBFDC155988E2002A77D5 /* Sendable.h */,
+				E40CBFDA155982B0002A77D5 /* Base.h */,
+				E40CBFCF15598129002A77D5 /* Network.cpp */,
+				E40CBFD015598129002A77D5 /* Network.h */,
+				E40CBFD115598129002A77D5 /* Packet.cpp */,
+				E40CBFD215598129002A77D5 /* Packet.h */,
 				F392A85814B765DF000A98C2 /* ThreadData.h */,
+				E40CBFDE1559B8E8002A77D5 /* Netcommand.h */,
 			);
 			name = Network;
 			path = ../../../src/Network;
@@ -109,6 +107,8 @@
 		F392A85F14B765E0000A98C2 /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				E40CBFCD15598129002A77D5 /* Concurrency.cpp */,
+				E40CBFCE15598129002A77D5 /* Concurrency.h */,
 				F392A86014B765E0000A98C2 /* Base.h */,
 				F392A86114B765E0000A98C2 /* Timer.cpp */,
 				F392A86214B765E0000A98C2 /* Timer.h */,
@@ -127,10 +127,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F392A86514B765E0000A98C2 /* Concurrency.h in Headers */,
 				F392A86814B765E0000A98C2 /* Player.h in Headers */,
-				F392A87314B765E0000A98C2 /* Network.h in Headers */,
-				F392A87514B765E0000A98C2 /* Packet.h in Headers */,
 				F392A87814B765E0000A98C2 /* ThreadData.h in Headers */,
 				F392A87B14B765E0000A98C2 /* Base.h in Headers */,
 				F392A87D14B765E0000A98C2 /* Timer.h in Headers */,
@@ -138,6 +135,12 @@
 				F3A218D614BBAD410057477F /* Keyboard.h in Headers */,
 				F3D7117714C402A400950758 /* Vec2.h in Headers */,
 				E43EBDC7153181D200396E57 /* DataUtils.h in Headers */,
+				E40CBFD515598129002A77D5 /* Concurrency.h in Headers */,
+				E40CBFD715598129002A77D5 /* Network.h in Headers */,
+				E40CBFD915598129002A77D5 /* Packet.h in Headers */,
+				E40CBFDB155982B0002A77D5 /* Base.h in Headers */,
+				E40CBFDD155988E2002A77D5 /* Sendable.h in Headers */,
+				E40CBFDF1559B8E8002A77D5 /* Netcommand.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,10 +194,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F392A86414B765E0000A98C2 /* Concurrency.cpp in Sources */,
-				F392A87214B765E0000A98C2 /* Network.cpp in Sources */,
-				F392A87414B765E0000A98C2 /* Packet.cpp in Sources */,
 				F392A87C14B765E0000A98C2 /* Timer.cpp in Sources */,
+				E40CBFD415598129002A77D5 /* Concurrency.cpp in Sources */,
+				E40CBFD615598129002A77D5 /* Network.cpp in Sources */,
+				E40CBFD815598129002A77D5 /* Packet.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

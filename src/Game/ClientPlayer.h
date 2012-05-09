@@ -1,7 +1,7 @@
 #pragma once
 #include <Util/Base.h>
-#include <Network/Network.h>
-#include <Concurrency/Concurrency.h>
+#include <dtglib/Network.h>
+#include <dtglib/Concurrency.h>
 #include <Game/Player.h>
 #include <Graphics/PlayerGfx.h>
 #include <SFML/Graphics.hpp>

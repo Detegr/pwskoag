@@ -1,69 +1,70 @@
 #include <Util/Version.h>
 #include "Client.h"
 #include <Network/ThreadData.h>
+#include <Network/Netcommand.h>
 #include <Util/DataUtils.h>
 
 namespace pwskoag
 {
-	PWSKOAG_API void Client::Start()
+	PWSKOAG_API void C_Client::M_Start()
 	{
-		C_Lock lock(selfMutex);
-		if(!selfThread)
+		C_Lock lock(m_SelfMutex);
+		if(!m_SelfThread)
 		{
-			selfThread = new C_Thread(Client::ClientInitializer, this);
+			m_SelfThread = new C_Thread(C_Client::ClientInitializer, this);
 		}
 		else std::cerr << "Client already running!" << std::endl;
 	}
-	PWSKOAG_API void Client::Stop()
+	PWSKOAG_API void C_Client::M_Stop()
 	{
-		C_Lock lock(selfMutex);
-		stopNow=true;
-		if(selfThread) {std::cout << "Disconnecting...";std::cout.flush(); delete selfThread; selfThread=NULL;std::cout<<"DONE!"<<std::endl;}
+		C_Lock lock(m_SelfMutex);
+		m_StopNow=true;
+		if(m_SelfThread) {std::cout << "Disconnecting...";std::cout.flush(); delete m_SelfThread; m_SelfThread=NULL;std::cout<<"DONE!"<<std::endl;}
 		else std::cerr << "Client already stopped!" << std::endl;
 	}
-	PWSKOAG_API void Client::ForceStop()
+	PWSKOAG_API void C_Client::M_ForceStop()
 	{
-		//Lock lock(selfMutex);
-		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
+		//Lock lock(m_SelfMutex);
+		//if(m_SelfThread) {m_SelfThread->Terminate(); delete m_SelfThread; m_SelfThread=NULL;}
 	}
-	void Client::ClientInitializer(void* args)
+	void C_Client::ClientInitializer(void* args)
 	{
-		Client* s = (Client*)args;
+		C_Client* s = (C_Client*)args;
 		s->ClientLoop();
 	}
-	PWSKOAG_API Client::~Client()
+	PWSKOAG_API C_Client::~C_Client()
 	{
-		if(selfThread) std::cerr << "!! Client not stopped and still shutting down !!" << std::endl;
+		if(m_SelfThread) std::cerr << "!! Client not stopped and still shutting down !!" << std::endl;
 	}
 	
-	void TcpClient::Send()
+	void C_TcpClient::M_Send()
 	{
-		Append(EOP);
+		m_Packet << (uchar)C_Netcommand::EOP;
 		C_Lock l(m_Lock);
-		tcpSocket.Send(packet);
-		packet.M_Clear();
+		m_TcpSocket.M_Send(m_Packet);
+		m_Packet.M_Clear();
 	}
 
-	void UdpClient::Send(IpAddress& ip, ushort port)
+	void C_UdpClient::M_Send(const C_IpAddress& ip, ushort port)
 	{
-		Append(EOP);
+		m_Packet << (uchar)C_Netcommand::EOP;
 		C_Lock l(m_Lock);
-		udpSocket.Send(packet, ip, port);
-		packet.M_Clear();
+		m_UdpSocket.M_Send(m_Packet, ip, port);
+		m_Packet.M_Clear();
 	}
 
 	static void UDPReceive(void *args)
 	{
 		C_Packet p;
 		C_ThreadData* data=(C_ThreadData*)args;
-		UdpSocket* client=(UdpSocket*)data->socket;
+		C_UdpSocket* client=(C_UdpSocket*)data->m_Socket;
 		t_Entities* plrs=data->m_Players;
-		bool* stopNow=data->stopNow;
+		bool* m_StopNow=data->m_StopNow;
 		
-		while(!*stopNow)
+		while(!*m_StopNow)
 		{
 			p.M_Clear();
-			if(client->Receive(p))
+			if(client->M_Receive(p))
 			{
 				uchar header=0;
 				bool eop=false;
@@ -72,18 +73,7 @@ namespace pwskoag
 					p>>header;
 					switch (header)
 					{
-						case String:
-						{
-							std::string str;
-							p>>str;
-							std::cout << "UDP from server: " << str << std::endl;
-							break;
-						}
-						case MessageTimer:
-						{
-							break;
-						}
-						case PlayerUpdate:
+						case C_Netcommand::Update:
 						{
 							ushort id;
 							C_Vec2 pos;
@@ -92,12 +82,12 @@ namespace pwskoag
 							C_Entity* e = g_EntityById(*plrs, id);
 							if(e)
 							{
-								C_ClientPlayer* plr=static_cast<C_ClientPlayer *>(e);
+								C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer *>(e);
 								plr->M_Position(pos);
 							}
 							break;
 						}
-						case EOP:
+						case C_Netcommand::EOP:
 						{
 							eop=true;
 							break;
@@ -116,7 +106,7 @@ namespace pwskoag
 		bool newplr=true;
 		for(t_Entities::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 		{
-			C_ClientPlayer* plr=static_cast<C_ClientPlayer*>(*it);
+			C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
 			if(plr->M_Id()==id) {newplr=false; break;}
 		}
 		if(newplr)
@@ -127,38 +117,38 @@ namespace pwskoag
 		}
 	}
 	
-	PWSKOAG_API bool TcpClient::M_Connect(const char* addr, ushort port)
+	PWSKOAG_API bool C_TcpClient::M_Connect(const char* addr, ushort port)
 	{
-		C_Lock lock(Client::selfMutex);
-		serverAddress=addr;
-		serverPort=port;
-		tcpSocket=TcpSocket(IpAddress(addr), port);
-		tcpSocket.Connect();
-		packet << TCPConnect << C_Version::M_Get();
-		Send();
+		C_Lock lock(C_Client::m_SelfMutex);
+		m_ServerAddress=addr;
+		m_ServerPort=port;
+		m_TcpSocket=C_TcpSocket(C_IpAddress(addr), port);
+		m_TcpSocket.M_Connect();
+		m_Packet << C_Netcommand::Connect << C_Version::M_Get();
+		M_Send();
 		C_Packet p;
-		Selector s;
-		s.Add(tcpSocket);
-		s.Wait(CONNECTTIME);
-		if(s.IsReady(tcpSocket))
+		C_Selector s;
+		s.M_Add(m_TcpSocket);
+		s.M_Wait(CONNECTTIME);
+		if(s.M_IsReady(m_TcpSocket))
 		{
-			if(tcpSocket.Receive(p))
+			if(m_TcpSocket.M_Receive(p))
 			{
 				uchar c; p>>c;
-				if(c==HandShake)
+				if(c==C_Netcommand::Connect)
 				{
 					ushort id;
 					p >> id;
-					tcpSocket.M_Id(id);
-					std::cout << "Got handshake with id: " << tcpSocket.M_Id() << std::endl;
-					C_ClientPlayer* n = new C_ClientPlayer(&tcpSocket, &packet);
+					m_TcpSocket.M_Id(id);
+					std::cout << "Got handshake with id: " << m_TcpSocket.M_Id() << std::endl;
+					C_ClientPlayer* n = new C_ClientPlayer(&m_TcpSocket, &m_Packet);
 					m_OwnPlayer=n;
-					m_Players.push_back(m_OwnPlayer);
+					m_Players.push_back(dynamic_cast<C_Entity*>(m_OwnPlayer));
 					m_Players.back()->M_Id(id);
 					while(p.M_Size())
 					{
 						p>>c;
-						if(c==Message)
+						if(c==C_Netcommand::ConnectedPlayers)
 						{
 							ushort id; p>>id;
 							M_CheckNewPlayers(id, m_Players, m_PlayerLock);
@@ -171,7 +161,7 @@ namespace pwskoag
 							*/
 						}
 					}
-					Start();
+					M_Start();
 					return true;
 				}
 			}
@@ -181,12 +171,13 @@ namespace pwskoag
 		return false;
 	}
 	
-	PWSKOAG_API void TcpClient::M_Disconnect()
+	PWSKOAG_API void C_TcpClient::M_Disconnect()
 	{
-		Send(Disconnect);
-		Stop();
-		//Lock lock(Client::selfMutex);
-		tcpSocket.Disconnect();
+		m_Packet<<(uchar)C_Netcommand::Disconnect;
+		M_Send();
+		M_Stop();
+		//Lock lock(Client::m_SelfMutex);
+		m_TcpSocket.M_Disconnect();
 		for(t_Entities::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
 		{
 			delete *it;
@@ -196,29 +187,29 @@ namespace pwskoag
 	static void TCPReceive(void *args)
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
-		TcpSocket* tcpSocket=(TcpSocket*)data->socket;
+		C_TcpSocket* tcpSocket=(C_TcpSocket*)data->m_Socket;
 		t_Entities* plrs=data->m_Players;
-		bool* stopNow=data->stopNow;
+		bool* m_StopNow=data->m_StopNow;
 		C_Mutex* playerlock=data->m_PlayerLock;
-		Selector s;
-		while(!*stopNow)
+		C_Selector s;
+		while(!*m_StopNow)
 		{
 			C_Packet p;
 			uchar header=0;
 			bool end=false;
-			s.Clear();
-			s.Add(*tcpSocket);
-			s.Wait(1000);
-			if(s.IsReady(*tcpSocket))
+			s.M_Clear();
+			s.M_Add(*tcpSocket);
+			s.M_Wait(1000);
+			if(s.M_IsReady(*tcpSocket))
 			{
-				if(tcpSocket->Receive(p))
+				if(tcpSocket->M_Receive(p))
 				{
 					while(p.M_Size() && !end)
 					{
 						p>>header;
 						switch (header)
 						{
-							case Message:
+							case C_Netcommand::HeartBeat: // Change this
 							{
 								ushort id;
 								std::string str;
@@ -237,7 +228,7 @@ namespace pwskoag
 								*/
 								break;
 							}
-							case ClientDisconnected:
+							case C_Netcommand::Disconnect:
 							{
 								ushort id;
 								p>>id;
@@ -245,7 +236,7 @@ namespace pwskoag
 								playerlock->M_Lock();
 								for(t_Entities::iterator it=plrs->begin(); it!=plrs->end(); ++it)
 								{
-									C_ClientPlayer* plr=static_cast<C_ClientPlayer*>(*it);
+									C_ClientPlayer* plr=dynamic_cast<C_ClientPlayer*>(*it);
 									if(plr->M_Id()==id)
 									{
 										delete *it;
@@ -257,14 +248,7 @@ namespace pwskoag
 								data->m_PlayersModified->M_Signal();							
 								break;
 							}
-							case String:
-							{
-								std::string str;
-								p >> str;
-								std::cout << "GOT: " << str << std::endl;
-								break;
-							}
-							case EOP:
+							case C_Netcommand::EOP:
 								std::cout << "EOP" << std::endl;
 								//end=true;
 								break;
@@ -280,53 +264,53 @@ namespace pwskoag
 		}
 	}
 	
-	PWSKOAG_API void TcpClient::ClientLoop()
+	PWSKOAG_API void C_TcpClient::ClientLoop()
 	{
 		C_Timer timer;
-		C_ThreadData data(C_ThreadData(NULL, &tcpSocket, NULL, &m_Players, &m_PlayerLock, &m_PlayersModified, &(Client::stopNow)));
+		C_ThreadData data(C_ThreadData(NULL, &m_TcpSocket, NULL, &m_Players, &m_PlayerLock, &(C_Client::m_StopNow)));
 		C_Thread t(TCPReceive, &data);
-		while(!stopNow)
+		while(!m_StopNow)
 		{
 			g_Sleep(TICK_WAITTIME_TCP);
 			if(timer.M_Get()>2000)
 			{
-				Append(Heartbeat);
+				m_Packet<<(uchar)C_Netcommand::HeartBeat;
 				timer.M_Reset();
 			}
-			if(packet.M_Size()) Send();
+			if(m_Packet.M_Size()) M_Send();
 		}
 	}
-	PWSKOAG_API bool UdpClient::M_Connect(const char* addr, ushort port)
+	PWSKOAG_API bool C_UdpClient::M_Connect(const char* addr, ushort port)
 	{
 		if(m_Initialized)
 		{
-			m_Address=IpAddress(addr);
+			C_IpAddress m_Address(addr);
 			m_Port=port;
-			udpSocket=UdpSocket(m_Address, m_Port);
+			m_UdpSocket=C_UdpSocket(m_Address, m_Port);
 			
-			Selector s;
-			s.Add(udpSocket);
-			if(s.WaitWrite(CONNECTTIME))
+			C_Selector s;
+			s.M_Add(m_UdpSocket);
+			if(s.M_WaitWrite(CONNECTTIME))
 			{
-				if(s.IsReady(udpSocket))
+				if(s.M_IsReady(m_UdpSocket))
 				{
 					std::cout << "Connecting to UDP server..." << std::endl;
-					packet << UDPConnect << m_Master->M_Id();
-					udpSocket.Send(packet, m_Address, m_Port);
+					m_Packet << (uchar)C_Netcommand::Connect << m_Master->M_Id();
+					m_UdpSocket.Send(m_Packet, m_Address, m_Port);
 				}
 			}
 			C_Packet p;
-			if(s.Wait(CONNECTTIME))
+			if(s.M_Wait(CONNECTTIME))
 			{
-				if(s.IsReady(udpSocket))
+				if(s.M_IsReady(udpSocket))
 				{
-					if(udpSocket.Receive(p))
+					if(C_UdpSocket.M_Receive(p))
 					{
 						uchar c; p>>c;
-						if(c==HandShake)
+						if(c==C_Netcommand::Connect)
 						{
 							std::cout << "Got UDP confirmation." << std::endl;
-							Start();
+							M_Start();
 							return true;
 						}
 					}
@@ -340,11 +324,11 @@ namespace pwskoag
 		else {std::cout << "Socket not initialized." << std::endl; return false;}
 	}
 
-	PWSKOAG_API void UdpClient::ClientLoop()
+	PWSKOAG_API void C_UdpClient::ClientLoop()
 	{
-		C_ThreadData data(NULL, &udpSocket, NULL, &m_Master->M_Players(), &m_Master->m_PlayerLock, NULL, &(Client::stopNow));
+		C_ThreadData data(NULL, &m_UdpSocket, NULL, &m_Master->M_Players(), &m_Master->m_PlayerLock, NULL, &(Client::m_StopNow));
 		C_Thread t(UDPReceive, &data);
-		while(!stopNow)
+		while(!m_StopNow)
 		{
 			//packet<<MessageTimer<<m_Master->M_OwnPlayer()->M_Id();
 			//Send(m_Master->serverAddress, m_Port);

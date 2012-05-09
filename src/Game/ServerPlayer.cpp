@@ -2,7 +2,7 @@
 
 namespace pwskoag
 {
-	C_ServerPlayer::C_ServerPlayer(TcpSocket* s, C_Packet* p) : C_Entity(s,p) {}
+	C_ServerPlayer::C_ServerPlayer(C_TcpSocket* s, C_Packet* p) : C_Entity(s,p) {}
 	C_ServerPlayer::~C_ServerPlayer() {}
 	void C_ServerPlayer::M_Id(ushort id)
 	{
@@ -14,13 +14,15 @@ namespace pwskoag
 	}
 	void C_ServerPlayer::M_Send()
 	{
+		/*
 		C_Lock l(m_Lock);
 		this->m_Tcp->Send(*m_Packet);
+		*/
 	}
-	void C_ServerPlayer::M_SendUdp(UdpSocket& s)
+	void C_ServerPlayer::M_SendUdp(C_UdpSocket& s)
 	{
 		C_Lock l(m_Lock);
-		s.Send(*m_Packet, m_Tcp->GetIp(), m_Tcp->M_UdpPort());
+		s.M_Send(*m_Packet, m_Tcp->M_GetIp(), m_Tcp->M_UdpPort());
 	}
 	const C_Vec2& C_ServerPlayer::M_Position() const
 	{

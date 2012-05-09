@@ -1,13 +1,12 @@
 #pragma once
-#include <Concurrency/Concurrency.h>
+#include <dtglib/Concurrency.h>
 #include <Game/ServerPlayer.h>
-#include "Network.h"
+#include <dtglib/Network.h>
 #include "ThreadData.h"
-#include <list>
 
 namespace pwskoag
 {
-	typedef std::list<std::pair<C_Thread*, C_LocalThreadData> > t_Clients;
+	typedef std::vector<std::pair<C_Thread*, C_LocalThreadData> > t_Clients;
 	
 	/*
 	 * Server class
@@ -17,23 +16,23 @@ namespace pwskoag
 	 * Instantable server class must override ServerLoop(void*).
 	 */
 	
-	class Server
+	class C_Server
 	{
 		protected:
-			bool 						stopNow;
-			uint			 			serverPort;
-			C_Mutex	 					selfMutex;
-			C_Thread*			 		selfThread;
+			bool 						m_StopNow;
+			uint						m_ServerPort;
+			C_Mutex	 					m_SelfMutex;
+			C_Thread*			 		m_SelfThread;
 			static void					ServerInitializer(void* args);
 			virtual void				ServerLoop()=0;
 			
-			PWSKOAG_API Server(ushort port) : stopNow(false), serverPort(port), selfThread(NULL) {};
-			PWSKOAG_API	virtual	~Server();
+			PWSKOAG_API C_Server(ushort port) : m_StopNow(false), m_ServerPort(port), m_SelfThread(NULL) {};
+			PWSKOAG_API	virtual	~C_Server();
 		public:
-			PWSKOAG_API virtual void 	Start();
-			PWSKOAG_API virtual void 	Stop();
-			PWSKOAG_API virtual void 	ForceStop();
-			PWSKOAG_API bool IsRunning() const { return selfThread!=NULL; }
+			PWSKOAG_API virtual void 	M_Start();
+			PWSKOAG_API virtual void 	M_Stop();
+			PWSKOAG_API virtual void 	M_ForceStop();
+			PWSKOAG_API bool			M_IsRunning() const { return m_SelfThread!=NULL; }
 	};
 	
 	/*
@@ -41,25 +40,25 @@ namespace pwskoag
 	 *
 	 * Listens Tcp-connections.
 	 */
-	class TcpServer : public Server
+	class C_TcpServer : public C_Server
 	{
 		friend class UdpServer;
 	private:
-		TcpSocket 			m_TcpListener;
+		C_TcpSocket 		m_TcpListener;
 		C_Mutex				m_ClientLock;
 		t_Clients			m_Clients;
 		C_Mutex				m_PlayerLock;
 		t_Entities 			m_Players;
 		PWSKOAG_API void	ServerLoop();
-		void				M_ParseClient(TcpSocket* client);
+		void				M_ParseClient(C_TcpSocket* client);
 		void				M_DeleteDisconnected();
 		void				M_ClearPlayers();
-		void				M_GenerateId(TcpSocket* client);
-		void				M_NewPlayer(TcpSocket* client);
+		void				M_GenerateId(C_TcpSocket* client);
+		void				M_NewPlayer(C_TcpSocket* client);
 		void				M_NewClient(C_LocalThreadData& localdata, C_Thread* thread);
 	public:
-		PWSKOAG_API TcpServer(ushort port) : Server(port), m_TcpListener(TcpSocket(port)) {}
-		PWSKOAG_API ~TcpServer();
+		PWSKOAG_API C_TcpServer(ushort port) : C_Server(port), m_TcpListener(C_TcpSocket(port)) {}
+		PWSKOAG_API ~C_TcpServer();
 		const t_Clients&			M_GetClients() const {return m_Clients;}
 		void						M_ClientLock(bool t) {t?m_ClientLock.M_Lock():m_ClientLock.M_Unlock();}
 		void						M_PlayerLock(bool t) {t?m_PlayerLock.M_Lock():m_PlayerLock.M_Unlock();}
@@ -71,14 +70,14 @@ namespace pwskoag
 	 *
 	 * Listens Udp-connections.
 	 */
-	class UdpServer : public Server
+	class C_UdpServer : public C_Server
 	{
 	private:
-		TcpServer*			master;
-		UdpSocket			udpSocket;
+		C_TcpServer*		m_Master;
+		C_UdpSocket			m_UdpSocket;
 		PWSKOAG_API void	ServerLoop();
 		void				M_UpdateGamestate(C_Packet& p);
 	public:
-		UdpServer(TcpServer* tcp, ushort port) : Server(port), master(tcp), udpSocket(UdpSocket(port)) {udpSocket.Bind();}
+		C_UdpServer(C_TcpServer* tcp, ushort port) : C_Server(port), m_Master(tcp), m_UdpSocket(C_UdpSocket(port)) {m_UdpSocket.M_Bind();}
 	};
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <Util/Base.h>
 #include <Util/Timer.h>
-#include <Concurrency/Concurrency.h>
+#include <dtglib/Concurrency.h>
 
 namespace pwskoag
 {
@@ -11,24 +11,24 @@ namespace pwskoag
 	class C_ClientPlayer;
 	struct C_ThreadData
 	{
-		C_Mutex*	lock;
-		Socket*		socket;
-		C_Timer*	timer;
+		C_Mutex*	m_Lock;
+		C_Socket*	m_Socket;
+		C_Timer*	m_Timer;
 		t_Entities* m_Players;
 		C_Mutex*	m_PlayerLock;
 		C_CondVar*	m_PlayersModified;
-		bool*		stopNow;
+		bool*		m_StopNow;
 		void*		m_Void1;
 		void*		m_Void2;
-		C_ThreadData(C_Mutex* l, Socket* sock, C_Timer* t, t_Entities* p, C_Mutex* pl, C_CondVar* plm, bool* stop, void* void1=NULL, void* void2=NULL) :
-			lock(l), socket(sock), timer(t), m_Players(p), m_PlayerLock(pl), m_PlayersModified(plm), stopNow(stop), m_Void1(void1), m_Void2(void2) {}
+		C_ThreadData(C_Mutex* l, C_Socket* sock, C_Timer* t, t_Entities* p, C_Mutex* pl, bool* stop, void* void1=NULL, void* void2=NULL) :
+			m_Lock(l), m_Socket(sock), m_Timer(t), m_Players(p), m_PlayerLock(pl), m_StopNow(stop), m_Void1(void1), m_Void2(void2) {}
 	};
 
 	struct C_LocalThreadData
 	{
-		Socket*				socket;
-		C_Timer*			timer;
-		C_Mutex				lock;
-		C_LocalThreadData(Socket* s) : socket(s), timer(new C_Timer) {}
+		C_Socket*			m_Socket;
+		C_Timer*			m_Timer;
+		C_Mutex				m_Lock;
+		C_LocalThreadData(C_Socket* s) : m_Socket(s), m_Timer(new C_Timer) {}
 	};
 }

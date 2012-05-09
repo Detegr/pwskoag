@@ -2,8 +2,11 @@
 #include <Util/Base.h>
 #include <Util/Timer.h>
 #include <Util/Vec2.h>
-#include <Concurrency/Concurrency.h>
-#include <Network/Network.h>
+#include <dtglib/Concurrency.h>
+#include <dtglib/Network.h>
+#include <Network/Sendable.h>
+
+using namespace dtglib;
 
 namespace pwskoag
 {
@@ -15,7 +18,7 @@ namespace pwskoag
 			ushort			m_Id;
 		public:
 			C_Entity() : C_Sendable() {}
-			C_Entity(TcpSocket* s, C_Packet* p) : C_Sendable(s,p) {}
+			C_Entity(C_TcpSocket* s, C_Packet* p) : C_Sendable(s,p) {}
 			void	M_Id(ushort id) {m_Id=id;};
 			ushort	M_Id() const {return m_Id;}
 			virtual void M_Position(const C_Vec2& p)=0;

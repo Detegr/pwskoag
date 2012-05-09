@@ -1,44 +1,47 @@
 #include <Util/Version.h>
 #include <Util/DataUtils.h>
+#include "Netcommand.h"
 #include "Server.h"
+
+using namespace dtglib;
 
 namespace pwskoag
 {
-	PWSKOAG_API void Server::Start()
+	PWSKOAG_API void C_Server::M_Start()
 	{
-		C_Lock lock(selfMutex);
-		if(!selfThread)
+		C_Lock lock(m_SelfMutex);
+		if(!m_SelfThread)
 		{
-			stopNow=false;
-			selfThread = new C_Thread(Server::ServerInitializer, this);
+			m_StopNow=false;
+			m_SelfThread = new C_Thread(C_Server::ServerInitializer, this);
 		}
 		else std::cerr << "Server already running!" << std::endl;
 	}
-	PWSKOAG_API void Server::Stop()
+	PWSKOAG_API void C_Server::M_Stop()
 	{
-		C_Lock lock(selfMutex);
-		stopNow=true;
-		if(selfThread) {selfThread->M_Join(); delete selfThread; selfThread=NULL;}
+		C_Lock lock(m_SelfMutex);
+		m_StopNow=true;
+		if(m_SelfThread) {m_SelfThread->M_Join(); delete m_SelfThread; m_SelfThread=NULL;}
 		else std::cerr << "Server already stopped!" << std::endl;
 	}
-	PWSKOAG_API void Server::ForceStop()
+	PWSKOAG_API void C_Server::M_ForceStop()
 	{
 		//Lock lock(selfMutex);
 		//if(selfThread) {selfThread->Terminate(); delete selfThread; selfThread=NULL;}
 	}
-	void Server::ServerInitializer(void* args)
+	void C_Server::ServerInitializer(void* args)
 	{
-		Server* s = (Server*)args;
+		C_Server* s = (C_Server*)args;
 		s->ServerLoop();
 	}
-	PWSKOAG_API Server::~Server()
+	PWSKOAG_API C_Server::~C_Server()
 	{
-		if(selfThread) std::cerr << "!! Server not stopped and still shutting down !!" << std::endl;
+		if(m_SelfThread) std::cerr << "!! Server not stopped and still shutting down !!" << std::endl;
 	}
 	
-	TcpServer::~TcpServer()
+	C_TcpServer::~C_TcpServer()
 	{
-		C_Lock lock(selfMutex);
+		C_Lock lock(m_SelfMutex);
 		for(t_Clients::iterator it=m_Clients.begin(); it!=m_Clients.end(); ++it) delete it->first;
 	}
 	
@@ -53,7 +56,7 @@ namespace pwskoag
 			{
 				C_ServerPlayer* plr2=static_cast<C_ServerPlayer*>(*it2);
 				*(plr->m_Packet)
-				<<(uchar)Message
+				<<(uchar)C_Netcommand::Connect
 				<<plr2->M_Id();
 				//<<plr2->M_Position();
 			}
@@ -68,12 +71,9 @@ namespace pwskoag
 		C_Mutex* plrlock=data->m_PlayerLock;
 		C_Timer* timer=data->timer;
 		t_Entities* plrs=data->m_Players;
-		TcpSocket* client=(TcpSocket*)data->socket;
+		C_TcpSocket* client=(C_TcpSocket*)data->socket;
 		
-		if(header==String)
-		{
-		}
-		else if(header==Message)
+		if(header==C_Netcommand::Update)
 		{
 			/*
 			 * Message:
@@ -97,24 +97,24 @@ namespace pwskoag
 			lock->M_Unlock();
 			*/
 		}
-		else if(header==Heartbeat)
+		else if(header==C_Netcommand::HeartBeat)
 		{
 			lock->M_Lock();
 			std::cout << "Time from last beat: " << timer->M_Get() << std::endl;
 			timer->M_Reset();
 			std::cout << "Time now: " << timer->M_Get() << std::endl;
 			lock->M_Unlock();
-			std::cout << "Beat from " << client->GetIp() << ":" << client->GetPort() << std::endl;
+			std::cout << "Beat from " << client->M_Ip() << ":" << client->M_Port() << std::endl;
 		}
-		else if(header==Disconnect)
+		else if(header==C_Netcommand::Connect)
 		{
 			lock->M_Lock();
-			client->Clear();
+			client->M_Clear();
 			lock->M_Unlock();
 			std::cout << "Client disconnected." << std::endl;
 			return false;
 		}
-		else if(header==EOP) return true;
+		else if(header==C_Netcommand::EOP) return true;
 		else throw std::runtime_error("Invalid packet header.");
 		return true;
 	}
@@ -123,31 +123,31 @@ namespace pwskoag
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
 		C_Mutex* lock=data->lock;
-		TcpSocket* client=(TcpSocket*)data->socket;
+		C_TcpSocket* client=(C_TcpSocket*)data->socket;
 		bool* stopNow=data->stopNow;
 		
-		Selector s;
+		C_Selector s;
 		C_Packet p;
 		while(!*stopNow)
 		{
-			s.Clear();
-			s.Add(*client);
-			s.Wait(4000);
-			if(s.IsReady(*client))
+			s.M_Clear();
+			s.M_Add(*client);
+			s.M_Wait(4000);
+			if(s.M_IsReady(*client))
 			{
-				if(client->Receive(p))
+				if(client->M_Receive(p))
 				{
 					uchar header=0;
 					while(p.M_Size())
 					{
 						p>>header;
-						if(!M_ParsePacket(p, (e_Command)header, data)) {delete data; return;}
+						if(!M_ParsePacket(p, (C_Netcommand::e_Command)header, data)) {delete data; return;}
 					}
 				}
 				else
 				{
 					lock->M_Lock();
-					client->Clear();
+					client->M_Clear();
 					lock->M_Unlock();
 					std::cout << "Client disconnected?" << std::endl;
 					break;
@@ -156,7 +156,7 @@ namespace pwskoag
 			else
 			{
 				lock->M_Lock();
-				client->Clear();
+				client->M_Clear();
 				lock->M_Unlock();
 				std::cout << "Client timed out" << std::endl;
 				break;
@@ -165,7 +165,7 @@ namespace pwskoag
 		delete data;
 	}
 	
-	void TcpServer::M_GenerateId(TcpSocket* client)
+	void C_TcpServer::M_GenerateId(C_TcpSocket* client)
 	{
 		bool ok=false;
 		do
@@ -175,7 +175,7 @@ namespace pwskoag
 			m_ClientLock.M_Lock();
 			for(t_Clients::iterator it=m_Clients.begin(); it!=m_Clients.end(); ++it)
 			{
-				if(it->second.socket->M_Id()==id) {ok=false; break;}
+				if(it->second.m_Socket->M_Id()==id) {ok=false; break;}
 			}
 			m_ClientLock.M_Unlock();
 			client->M_Id(id);
@@ -183,7 +183,7 @@ namespace pwskoag
 		std::cout << "Generated id: " << client->M_Id() << std::endl;
 	}
 	
-	void TcpServer::M_NewPlayer(TcpSocket* client)
+	void C_TcpServer::M_NewPlayer(C_TcpSocket* client)
 	{
 		M_GenerateId(client);
 		
@@ -191,7 +191,7 @@ namespace pwskoag
 		C_ServerPlayer* newplayer=new C_ServerPlayer(client, new C_Packet);
 		
 		newplayer->M_Id(client->M_Id());
-		*newplayer->m_Packet << HandShake << client->M_Id();
+		*newplayer->m_Packet << C_Netcommand::Connect << client->M_Id();
 		
 		m_PlayerLock.M_Lock();
 		m_Players.push_back(newplayer);
@@ -201,34 +201,34 @@ namespace pwskoag
 		
 		C_LocalThreadData localdata(client);
 		C_ThreadData* data=new C_ThreadData(
-											&localdata.lock,
+											&localdata.m_Lock,
 											client,
-											localdata.timer,
+											localdata.m_Timer,
 											&m_Players,
 											&m_PlayerLock,
 											NULL,
-											&stopNow
+											&m_StopNow
 											);
 		C_Thread* run=new C_Thread(TCPReceive, (void*)data);
 		M_NewClient(localdata, run);
 	}
 	
-	void TcpServer::M_NewClient(C_LocalThreadData& localdata, C_Thread* thread)
+	void C_TcpServer::M_NewClient(C_LocalThreadData& localdata, C_Thread* thread)
 	{
-		localdata.lock.M_Lock();
+		localdata.m_Lock.M_Lock();
 		m_ClientLock.M_Lock();
 		m_Clients.push_back(std::make_pair(thread, localdata));
 		m_ClientLock.M_Unlock();
-		localdata.lock.M_Unlock();
+		localdata.m_Lock.M_Unlock();
 	}
 	
-	void TcpServer::M_ParseClient(TcpSocket* client)
+	void C_TcpServer::M_ParseClient(C_TcpSocket* client)
 	{
 		C_Packet p;
-		if(client->Receive(p))
+		if(client->M_Receive(p))
 		{
 			uchar header; p>>header;
-			if(header==TCPConnect)
+			if(header==C_Netcommand::Connect)
 			{
 				uint version; p>>version;
 				std::cout << "Version: " << version << std::endl;
@@ -246,27 +246,28 @@ namespace pwskoag
 		}
 	}
 	
-	void TcpServer::M_DeleteDisconnected()
+	void C_TcpServer::M_DeleteDisconnected()
 	{
+		// This method is _ugly_ :G
 		m_ClientLock.M_Lock();
 		t_Clients::iterator it=m_Clients.begin();
 		std::vector<ushort> discoids;
 		while(it!=m_Clients.end())
 		{
-			it->second.lock.M_Lock();
-			bool closed=it->second.socket->M_Closed();
-			uint64 lastbeat=it->second.timer->M_Get();
-			it->second.lock.M_Unlock();
+			it->second.m_Lock.M_Lock();
+			bool closed=it->second.m_Socket->M_Closed();
+			uint64 lastbeat=it->second.m_Timer->M_Get();
+			it->second.m_Lock.M_Unlock();
 			if(closed || lastbeat>TIMEOUTMS)
 			{
-				it->second.lock.M_Lock();
+				it->second.m_Lock.M_Lock();
 				if(it->first) it->first->M_Join();
 				std::cout << "Removed disconnected client from clients." << std::endl;
 				t_Entities::iterator pt=m_Players.begin();
 				while(pt!=m_Players.end())
 				{
 					C_ServerPlayer* plr=static_cast<C_ServerPlayer*>(*pt);
-					if(plr->m_Tcp->M_Id()==it->second.socket->M_Id())
+					if(plr->m_Tcp->M_Id()==it->second.m_Socket->M_Id())
 					{
 						ushort id=plr->m_Tcp->M_Id();
 						std::cout << "Deleting player " << id << std::endl;
@@ -281,11 +282,11 @@ namespace pwskoag
 					}
 					else ++pt;
 				}
-				discoids.push_back(it->second.socket->M_Id());
+				discoids.push_back(it->second.m_Socket->M_Id());
 				delete it->first;
-				delete it->second.timer;
-				delete it->second.socket;
-				it->second.lock.M_Unlock();
+				delete it->second.m_Timer;
+				delete it->second.m_Socket;
+				it->second.m_Lock.M_Unlock();
 				t_Clients::iterator prev=it;
 				++it;
 				m_Clients.erase(prev);
@@ -297,14 +298,14 @@ namespace pwskoag
 		{
 			for(t_Entities::iterator rp=m_Players.begin(); rp!=m_Players.end(); ++rp)
 			{
-				*(*rp)->m_Packet << ClientDisconnected << *di;
+				*(*rp)->m_Packet << C_Netcommand::Disconnect << *di;
 				(*rp)->M_Send();
 			}
 		}
 		m_ClientLock.M_Unlock();
 	}
 	
-	void TcpServer::M_ClearPlayers()
+	void C_TcpServer::M_ClearPlayers()
 	{
 		C_Lock l(m_PlayerLock);
 		for(t_Entities::iterator it=m_Players.begin(); it!=m_Players.end(); ++it)
@@ -315,30 +316,30 @@ namespace pwskoag
 		}
 	}
 	
-	PWSKOAG_API void TcpServer::ServerLoop()
+	PWSKOAG_API void C_TcpServer::ServerLoop()
 	{
-		m_TcpListener.Bind();
-		m_TcpListener.Listen();
-		Selector selector;
-		selector.Add(m_TcpListener);
-		while(!stopNow)
+		m_TcpListener.M_Bind();
+		m_TcpListener.M_Listen();
+		C_Selector selector;
+		selector.M_Add(m_TcpListener);
+		while(!m_StopNow)
 		{
-			selector.Wait(TICK_WAITTIME_TCP);
-			if(selector.IsReady(m_TcpListener))
+			selector.M_Wait(TICK_WAITTIME_TCP);
+			if(selector.M_IsReady(m_TcpListener))
 			{
-				TcpSocket* client = m_TcpListener.Accept();
+				C_TcpSocket* client = m_TcpListener.M_Accept();
 				if(client) M_ParseClient(client);
 			}
 			M_DeleteDisconnected();
 		}
-		m_TcpListener.Close();
+		m_TcpListener.M_Close();
 		
 		if(m_Clients.size()>0) std::cout << "There were " << m_Clients.size() << " clients connected." << std::endl;
 		M_ClearPlayers();
 		std::cout << "Shut down successful." << std::endl;
 	}
 	
-	static void M_NewPlayer(Selector& sel, C_Packet& p, const IpAddress& ip, ushort port, TcpSocket* s, UdpSocket* us)
+	static void M_NewPlayer(C_Selector& sel, C_Packet& p, const C_IpAddress& ip, ushort port, C_TcpSocket* s, C_UdpSocket* us)
 	{
 		for(;;)
 		{
@@ -373,7 +374,7 @@ namespace pwskoag
 		}
 	}
 	
-	static void M_ParsePacket(const IpAddress& ip, ushort port, C_Packet& p)
+	static void M_ParsePacket(const C_IpAddress& ip, ushort port, C_Packet& p)
 	{
 		uchar header=0;
 		while(p.M_Size())
@@ -400,29 +401,29 @@ namespace pwskoag
 	static void UDPReceive(void* args)
 	{
 		C_ThreadData* data=static_cast<C_ThreadData*>(args);
-		TcpServer* master=static_cast<TcpServer *>(data->m_Void1);
-		UdpSocket* s=static_cast<UdpSocket *>(data->socket);
+		C_TcpServer* m_Master=static_cast<C_TcpServer *>(data->m_Void1);
+		C_UdpSocket* s=static_cast<C_UdpSocket *>(data->socket);
 		bool* stopNow=data->stopNow;
 		C_Packet p;
-		Selector sel;
+		C_Selector sel;
 		while(!*stopNow)
 		{
-			sel.Clear();
-			sel.Add(*s);
-			if(sel.Wait(TICK_WAITTIME_UDP))
+			sel.M_Clear();
+			sel.M_Add(*s);
+			if(sel.M_Wait(TICK_WAITTIME_UDP))
 			{
-				if(sel.IsReady(*s))
+				if(sel.M_IsReady(*s))
 				{
 					p.M_Clear();
-					IpAddress ip;
+					C_IpAddress ip;
 					ushort port;
-					if(s->Receive(p, &ip, &port))
+					if(s->M_Receive(p, &ip, &port))
 					{
-						master->M_ClientLock(true);
-						const t_Clients& c=master->M_GetClients();
+						m_Master->M_ClientLock(true);
+						const t_Clients& c=m_Master->M_GetClients();
 						for(t_Clients::const_iterator it=c.begin(); it!=c.end(); ++it)
 						{
-							TcpSocket* tcps=static_cast<TcpSocket*>(it->second.socket);
+							C_TcpSocket* tcps=static_cast<C_TcpSocket*>(it->second.socket);
 							if(ip==tcps->GetIp())
 							{
 								if(!tcps->M_UdpPort())
@@ -437,32 +438,32 @@ namespace pwskoag
 								}
 							}
 						}
-						master->M_ClientLock(false);
+						m_Master->M_ClientLock(false);
 					}
 					else std::cerr << "Data wasn't ready." << std::endl;
 				}
 			}
 		}
 	}
-	void UdpServer::M_UpdateGamestate(C_Packet& p)
+	C_void UdpServer::M_UpdateGamestate(C_Packet& p)
 	{
-		master->M_PlayerLock(true);
-		t_Entities& plrs=master->M_Players();
+		m_Master->M_PlayerLock(true);
+		t_Entities& plrs=m_Master->M_Players();
 		for(t_Entities::iterator it=plrs.begin(); it!=plrs.end(); ++it)
 		{
 			for(t_Entities::iterator pt=plrs.begin(); pt!=plrs.end(); ++pt)
 			{
 				C_ServerPlayer* plr=static_cast<C_ServerPlayer *>(*pt);
-				(*plr->m_Packet)<<PlayerUpdate<<plr->M_Id()<<plr->M_Position();
+				(*plr->m_Packet)<<C_Netcommand::Update<<plr->M_Id()<<plr->M_Position();
 			}
 			(*it)->M_SendUdp(udpSocket);
 		}
-		master->M_PlayerLock(false);
+		m_Master->M_PlayerLock(false);
 	}
 	
-	PWSKOAG_API void UdpServer::ServerLoop()
+	PWSKOAG_API void C_UdpServer::ServerLoop()
 	{
-		C_ThreadData data(NULL, &udpSocket, NULL, NULL, NULL, NULL, &stopNow, master);
+		C_ThreadData data(NULL, &m_UdpSocket, NULL, NULL, NULL, NULL, &m_StopNow, m_Master);
 		C_Thread t(UDPReceive, &data);
 		C_Packet p;
 		while(!stopNow)

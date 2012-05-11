@@ -9,7 +9,7 @@ CLIENTHEADERS=	../src/Network/Client.h \
 		../src/Game/ClientPlayer.h \
 		../src/Graphics/PlayerGfx.h \
 		../src/Graphics/Drawable.h \
-		../src/Graphics/Graphics.h
+		../src/Graphics/Graphics.h \
 CLIENTOBJECTS=$(CLIENTSRC:.cpp=.o)
 
 #********************************************
@@ -18,19 +18,13 @@ SERVERBIN=	../src/Main/Server.cpp
 SERVERSRC=	../src/Network/Server.cpp \
 			../src/Game/ServerPlayer.cpp
 SERVERHEADERS=	../src/Network/Server.h \
-		../src/Game/ServerPlayer.h
+				../src/Game/ServerPlayer.h
 SERVEROBJECTS=$(SERVERSRC:.cpp=.o)
 		
 #********************************************
 # LIBPWSKOAG
-LIBSRC=	$(wildcard ../src/Concurrency/*.cpp) \
-	../src/Network/Network.cpp \
-	../src/Network/Packet.cpp \
-	$(wildcard ../src/Util/*.cpp)
-LIBHEADERS=../src/Concurrency/*.h \
-	../src/Network/Network.h \
-	../src/Network/Packet.h \
-	../src/Network/ThreadData.h \
+LIBSRC= $(wildcard ../src/Util/*.cpp)
+LIBHEADERS= ../src/Network/ThreadData.h \
 	../src/Game/Player.h \
 	../src/Game/Keyboard.h \
 	$(wildcard ../src/Util/*.h)

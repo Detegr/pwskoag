@@ -1,5 +1,6 @@
 #include <dtglib/Network.h>
 #include <Network/Server.h>
+#include <Network/Netcommand.h>
 #include <iostream>
 #include <signal.h>
 

@@ -65,13 +65,13 @@ namespace pwskoag
 		}
 	}
 	
-	static bool M_ParsePacket(C_Packet& p, e_Command header, C_ThreadData* data)
+	static bool M_ParsePacket(C_Packet& p, C_Netcommand::e_Command header, C_ThreadData* data)
 	{
-		C_Mutex* lock=data->lock;
+		C_Mutex* lock=data->m_Lock;
 		C_Mutex* plrlock=data->m_PlayerLock;
-		C_Timer* timer=data->timer;
+		C_Timer* timer=data->m_Timer;
 		t_Entities* plrs=data->m_Players;
-		C_TcpSocket* client=(C_TcpSocket*)data->socket;
+		C_TcpSocket* client=(C_TcpSocket*)data->m_Socket;
 		
 		if(header==C_Netcommand::Update)
 		{
@@ -122,9 +122,9 @@ namespace pwskoag
 	static void TCPReceive(void* args)
 	{
 		C_ThreadData* data=(C_ThreadData*)args;
-		C_Mutex* lock=data->lock;
-		C_TcpSocket* client=(C_TcpSocket*)data->socket;
-		bool* stopNow=data->stopNow;
+		C_Mutex* lock=data->m_Lock;
+		C_TcpSocket* client=(C_TcpSocket*)data->m_Socket;
+		bool* stopNow=data->m_StopNow;
 		
 		C_Selector s;
 		C_Packet p;
@@ -341,11 +341,12 @@ namespace pwskoag
 	
 	static void M_NewPlayer(C_Selector& sel, C_Packet& p, const C_IpAddress& ip, ushort port, C_TcpSocket* s, C_UdpSocket* us)
 	{
+		/*
 		for(;;)
 		{
 			uchar header=0;
 			p >> header;
-			if(header==UDPConnect)
+			if(header==C_Netcommand::Connect)
 			{
 				ushort id;
 				p>>id;
@@ -372,10 +373,12 @@ namespace pwskoag
 			}
 			break;
 		}
+		*/
 	}
 	
 	static void M_ParsePacket(const C_IpAddress& ip, ushort port, C_Packet& p)
 	{
+		/*
 		uchar header=0;
 		while(p.M_Size())
 		{
@@ -396,10 +399,12 @@ namespace pwskoag
 				throw std::runtime_error("Invalid UDP packet header.");
 			}
 		}
+		*/
 	}
 	
 	static void UDPReceive(void* args)
 	{
+		/*
 		C_ThreadData* data=static_cast<C_ThreadData*>(args);
 		C_TcpServer* m_Master=static_cast<C_TcpServer *>(data->m_Void1);
 		C_UdpSocket* s=static_cast<C_UdpSocket *>(data->socket);
@@ -444,9 +449,11 @@ namespace pwskoag
 				}
 			}
 		}
+		*/
 	}
-	C_void UdpServer::M_UpdateGamestate(C_Packet& p)
+	void C_UdpServer::M_UpdateGamestate(C_Packet& p)
 	{
+		/*
 		m_Master->M_PlayerLock(true);
 		t_Entities& plrs=m_Master->M_Players();
 		for(t_Entities::iterator it=plrs.begin(); it!=plrs.end(); ++it)
@@ -459,10 +466,12 @@ namespace pwskoag
 			(*it)->M_SendUdp(udpSocket);
 		}
 		m_Master->M_PlayerLock(false);
+		*/
 	}
 	
 	PWSKOAG_API void C_UdpServer::ServerLoop()
 	{
+		/*
 		C_ThreadData data(NULL, &m_UdpSocket, NULL, NULL, NULL, NULL, &m_StopNow, m_Master);
 		C_Thread t(UDPReceive, &data);
 		C_Packet p;
@@ -471,5 +480,6 @@ namespace pwskoag
 			M_UpdateGamestate(p);
 			g_Sleep(TICK_WAITTIME_UDP);
 		}
+		*/
 	}
 }

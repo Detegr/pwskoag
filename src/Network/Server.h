@@ -29,6 +29,9 @@ namespace pwskoag
 			PWSKOAG_API C_Server(ushort port) : m_StopNow(false), m_ServerPort(port), m_SelfThread(NULL) {};
 			PWSKOAG_API	virtual	~C_Server();
 		public:
+			static const unsigned int TIMEOUTMS=4000;
+			static const unsigned int TICK_WAITTIME_TCP=250;
+			static const unsigned int TICK_WAITTIME_UDP=33;
 			PWSKOAG_API virtual void 	M_Start();
 			PWSKOAG_API virtual void 	M_Stop();
 			PWSKOAG_API virtual void 	M_ForceStop();

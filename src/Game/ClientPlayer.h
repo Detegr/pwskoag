@@ -13,7 +13,7 @@ namespace pwskoag
 	struct C_GfxEntity : public C_Entity
 	{
 		C_GfxEntity() : C_Entity() {}
-		C_GfxEntity(TcpSocket* s, C_Packet* p) : C_Entity(s,p) {}
+		C_GfxEntity(C_TcpSocket* s, C_Packet* p) : C_Entity(s,p) {}
 		virtual const C_Drawable& M_GetDRAW() const=0;
 	};
 
@@ -23,11 +23,11 @@ namespace pwskoag
 			C_PlayerGfx		m_Draw;
 		public:
 			C_ClientPlayer();
-			C_ClientPlayer(TcpSocket *s, C_Packet* p);
+			C_ClientPlayer(C_TcpSocket *s, C_Packet* p);
 			void M_SetId(ushort id);
 			ushort M_Id() const;
 			void M_Send();
-			void M_SendUdp(UdpSocket& s);
+			void M_SendUdp(C_UdpSocket& s);
 			void M_Time(uint time);
 			void M_Position(const C_Vec2& v);
 			const C_Vec2& M_Position() const;

@@ -7,8 +7,9 @@
 
 int main()
 {
-	pwskoag::TcpClient c;
-	pwskoag::UdpClient u;
+	/*
+	pwskoag::C_TcpClient c;
+	pwskoag::C_UdpClient u;
 	pwskoag::C_ClientPlayer* p;
 	pwskoag::C_ClientPlayer fallbackp;
 	try
@@ -40,4 +41,5 @@ int main()
 	}
 	u.M_Disconnect();
 	c.M_Disconnect();
+	*/
 }

@@ -3,6 +3,7 @@
 #include <dtglib/Concurrency.h>
 #include <dtglib/Network.h>
 #include <Game/ClientPlayer.h>
+#include <Network/Netcommand.h>
 
 using namespace dtglib;
 

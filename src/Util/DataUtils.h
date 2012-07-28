@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base.h"
-#include <Player.h>
+#include <Game/Player.h>
 
 namespace pwskoag
 {

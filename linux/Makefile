@@ -32,23 +32,22 @@ LIBOBJECTS=$(LIBSRC:.cpp=.shared.o)
 
 #********************************************
 
-INCLUDE=../src
+INCLUDE=-I../src -I../
 CLIBS=-L. -lpthread -lpwskoag
-SFML=-lsfml-system -lsfml-window -lsfml-graphics
 FPIC=-fPIC
 ALL=client server libpwskoag.so
 
 all: $(ALL)
 client: $(CLIENTBIN) $(CLIENTOBJECTS) libpwskoag.so
-	$(CC) $(CLIENTBIN) -Wl,-rpath,.,-rpath,/usr/local/lib -o $@ $(CLIENTOBJECTS) -I $(INCLUDE) $(CLIBS) $(SFML)
+	$(CC) $(CLIENTBIN) -Wl,-rpath,.,-rpath,/usr/local/lib -o $@ $(CLIENTOBJECTS) $(INCLUDE) $(CLIBS) $(SFML)
 server:	$(SERVERBIN) $(SERVEROBJECTS) libpwskoag.so
-	$(CC) $(SERVERBIN) -Wl,-rpath,. -o $@ $(SERVEROBJECTS) -I $(INCLUDE) $(CLIBS)
+	$(CC) $(SERVERBIN) -Wl,-rpath,. -o $@ $(SERVEROBJECTS) $(INCLUDE) $(CLIBS)
 libpwskoag.so: $(LIBOBJECTS)
 	$(CC) -fPIC -shared -Wl,-soname,$@ -o $@ $(LIBOBJECTS)
 %.o : %.cpp
-	$(CC) -c -MMD $< -o $@ -I $(INCLUDE) $(CLIBS)
+	$(CC) -c -MMD $< -o $@ $(INCLUDE) $(CLIBS)
 %.shared.o : %.cpp
-	$(CC) -c -fPIC -MMD $< -o $@ -I $(INCLUDE) $(CLIBS)
+	$(CC) -c -fPIC -MMD $< -o $@ $(INCLUDE) $(CLIBS)
 $(LIBOBJECTS) : $(LIBSRC) $(LIBHEADERS)
 $(SERVEROBJECTS): $(SERVERSRC) $(SERVERHEADERS)
 $(CLIENTOBJECTS): $(CLIENTSRC) $(CLIENTHEADERS)

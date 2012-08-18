@@ -1,5 +1,9 @@
 #include "singleton.h"
 #include "entity.h"
+#include "dtglib/Network.h"
+#include "networkenum.h"
+
+using namespace dtglib;
 
 inline void g_Sleep(unsigned int ms)
 {
@@ -17,8 +21,30 @@ inline void g_Sleep(unsigned int ms)
 	#endif
 }
 
+bool M_DoConnection(C_UdpSocket& sock)
+{
+	C_Packet p;
+	p << NET::Connect;
+	sock.M_Send(p);
+	p.M_Clear();
+	C_IpAddress ip;
+	ushort port;
+	if(sock.M_Receive(p, 2000, &ip, &port))
+	{
+		return (sock.M_Ip() == ip) && (sock.M_Port() == port);
+	}
+	return false;
+}
+
 int main()
 {
+	C_UdpSocket sock("localhost", 51119);
+	if(!M_DoConnection(sock))
+	{
+		std::cerr << "Failed to connect!" << std::endl;
+		C_Singleton::M_DestroySingletons();
+		return 1;
+	}
 	C_Renderer* r = C_Singleton::M_Renderer();
 	C_ShaderManager* s = C_Singleton::M_ShaderManager();
 	C_ModelManager* m = C_Singleton::M_ModelManager();
@@ -30,7 +56,7 @@ int main()
 	s->M_Load("minimal");
 	r->M_Use(s->M_Get("minimal"));
 
-	C_GfxEntity* e=C_GfxEntity::M_Create(*m->M_Get("triangle"), 0.1f);
+	C_GfxEntity::M_Create(*m->M_Get("triangle"), 0.1f);
 	C_GfxEntity* g=C_GfxEntity::M_Create(*m->M_Get("ground"));
 
 	g->M_SetPosition(0.0f, -1.0f);

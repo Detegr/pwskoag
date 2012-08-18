@@ -34,8 +34,8 @@ void C_GfxEntity::M_Translate(float amount, unsigned char axis)
 
 void C_GfxEntity::M_SetPosition(float x, float y)
 {
-	m_TranslationMatrix = glm::translate(glm::mat4(1.0), glm::vec3(x,y,0.0f));
-	m_Pos.x=x; m_Pos.y=y;
+	m_TranslationMatrix = glm::translate(glm::mat4(1.0), glm::vec3(x/m_Scale,y/m_Scale,0.0f));
+	m_Pos.x=x*m_Scale; m_Pos.y=y*m_Scale;
 }
 
 void C_GfxEntity::M_Scale(float amount)
@@ -55,7 +55,7 @@ void C_GfxEntity::M_Rotate(float amount)
 
 void C_GfxEntity::M_SetRotation(float amount)
 {
-	m_RotationMatrix = glm::rotate(glm::mat4(1.0), amount, glm::vec3(0.0f, 0.0f, 1.0f));
+	m_RotationMatrix = glm::rotate(glm::mat4(1.0), (const float)(amount*(180/3.14)), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 const glm::mat4& C_GfxEntity::M_ModelMatrix()
 {

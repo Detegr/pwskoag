@@ -56,10 +56,13 @@ int main()
 	s->M_Load("minimal");
 	r->M_Use(s->M_Get("minimal"));
 
-	C_GfxEntity* e=C_GfxEntity::M_Create(*m->M_Get("triangle"), 0.1f);
+	C_GfxEntity* e=C_GfxEntity::M_Create(*m->M_Get("triangle"), 0.15f);
 	C_GfxEntity* g=C_GfxEntity::M_Create(*m->M_Get("ground"));
+	C_GfxEntity* b=C_GfxEntity::M_Create(*m->M_Get("box"), 0.05f);
 
-	g->M_SetPosition(0.0f, -0.4f);
+	e->M_SetPosition(0.0f, 0.0f);
+	g->M_SetPosition(0.0f, -0.8f);
+	b->M_SetPosition(0.13f, 1.0f);
 
 	bool running=true;
 	while(running)
@@ -68,10 +71,20 @@ int main()
 		sock.M_Receive(p);
 		float x=0.0f;
 		float y=0.0f;
+		float a=0.0f;
+		float boxx=0.0f;
+		float boxy=0.0f;
+		float boxa=0.0f;
 		p >> x;
 		p >> y;
-		std::cout << x << " " << y << std::endl;
-		e->M_SetPosition(x,y);
+		p >> a;
+		p >> boxx;
+		p >> boxy;
+		p >> boxa;
+		e->M_SetPosition((x/10.0f),(y/10.0f));
+		e->M_SetRotation(a);
+		b->M_SetPosition(boxx/10.0f,boxy/10.0f);
+		b->M_SetRotation(boxa);
 
 		g_Sleep(1);
 		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));

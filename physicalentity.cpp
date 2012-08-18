@@ -10,8 +10,8 @@ C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic) :
 	m_Body=w.CreateBody(&bodydef);
 
 	b2PolygonShape hitshape;
-	std::cout << m_Model.M_Width() << "   " << m_Model.M_Height() << std::endl;;
 	hitshape.SetAsBox((m_Model.M_Width()/2)*s*TOWORLD, (m_Model.M_Height()/2)*s*TOWORLD);
+	std::cout << (m_Model.M_Width()/2)*s*TOWORLD << " " << (m_Model.M_Height()/2)*s*TOWORLD << std::endl;
 
 	b2FixtureDef fix;
 	fix.shape=&hitshape;
@@ -19,11 +19,11 @@ C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic) :
 	fix.friction=0.3f;
 	fix.restitution=0.5f;
 
-	dynamic? m_Body->CreateFixture(&fix) : m_Body->CreateFixture(&hitshape, 0.0f);
+	dynamic ? m_Body->CreateFixture(&fix) : m_Body->CreateFixture(&hitshape, 0.0f);
 }
 void C_Entity::M_SetPosition(float x, float y)
 {
-	m_Body->SetTransform(b2Vec2(x*m_Scale*TOWORLD, y*m_Scale*TOWORLD), 0.0f);
+	m_Body->SetTransform(b2Vec2(x*TOWORLD, y*TOWORLD), 0.0f);
 }
 /*
 void C_PhysicalEntity::M_Sync()

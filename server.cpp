@@ -37,10 +37,12 @@ int main()
 	if(!m->M_Load("ground", "ground.2dmodel")) exit(1);
 	if(!m->M_Load("box", "box.2dmodel")) exit(1);
 
-	C_Entity* e=p->M_CreateDynamicEntity(*m->M_Get("triangle"), 0.1f);
+	C_Entity* e=p->M_CreateDynamicEntity(*m->M_Get("triangle"), 0.15f);
 	C_Entity* g=p->M_CreateStaticEntity(*m->M_Get("ground"));
+	C_Entity* b=p->M_CreateDynamicEntity(*m->M_Get("box"), 0.05f);
 	e->M_SetPosition(0,0);
-	g->M_SetPosition(0,-0.4f);
+	g->M_SetPosition(0,-0.8f);
+	b->M_SetPosition(0.13, 1.0f);
 
 	C_IpAddress ip; unsigned short port;
 	C_Packet packet;
@@ -58,8 +60,8 @@ int main()
 		C_Packet packet;
 		g_Sleep(10);
 		p->M_Simulate();
-		std::cout << (float)e->M_Body()->GetPosition().x << (float)e->M_Body()->GetPosition().y << std::endl;;
-		packet << (float)e->M_Body()->GetPosition().x << (float)e->M_Body()->GetPosition().y;
+		//std::cout << (float)e->M_Body()->GetPosition().x << " " << (float)e->M_Body()->GetPosition().y << " box: " << (float)b->M_Body()->GetPosition().x << " " << (float)b->M_Body()->GetPosition().y << std::endl;
+		packet << (float)e->M_Body()->GetPosition().x << (float)e->M_Body()->GetPosition().y << (float)e->M_Body()->GetAngle() << (float)b->M_Body()->GetPosition().x << (float)b->M_Body()->GetPosition().y << b->M_Body()->GetAngle();
 		sock.M_Send(packet, pool.M_Head()->m_Ip, pool.M_Head()->m_Port);
 	}
 	C_Singleton::M_DestroySingletons();

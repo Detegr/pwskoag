@@ -56,14 +56,23 @@ int main()
 	s->M_Load("minimal");
 	r->M_Use(s->M_Get("minimal"));
 
-	C_GfxEntity::M_Create(*m->M_Get("triangle"), 0.1f);
+	C_GfxEntity* e=C_GfxEntity::M_Create(*m->M_Get("triangle"), 0.1f);
 	C_GfxEntity* g=C_GfxEntity::M_Create(*m->M_Get("ground"));
 
-	g->M_SetPosition(0.0f, -1.0f);
+	g->M_SetPosition(0.0f, -0.4f);
 
 	bool running=true;
 	while(running)
 	{
+		C_Packet p;
+		sock.M_Receive(p);
+		float x=0.0f;
+		float y=0.0f;
+		p >> x;
+		p >> y;
+		std::cout << x << " " << y << std::endl;
+		e->M_SetPosition(x,y);
+
 		g_Sleep(1);
 		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
 		r->M_Draw();

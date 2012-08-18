@@ -1,0 +1,7 @@
+struct NET
+{
+	enum
+	{
+		Connect
+	};
+};

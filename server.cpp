@@ -1,6 +1,9 @@
 #include <iostream>
 #include <stdexcept>
 #include "serversingleton.h"
+#include "ConnectionManager.h"
+
+using namespace dtglib;
 
 inline void g_Sleep(unsigned int ms)
 {
@@ -20,9 +23,12 @@ inline void g_Sleep(unsigned int ms)
 
 int main()
 {
+	C_UdpSocket sock(51119);
+	sock.M_Bind();
+
 	bool run=true;
-	//C_Renderer* r = C_Singleton::M_Renderer();
-	//C_ShaderManager* s = C_Singleton::M_ShaderManager();
+
+	C_ConnectionPool pool;
 	C_PhysicsManager* p = C_Singleton::M_PhysicsManager();
 	C_Timer* t = C_Singleton::M_Timer();
 
@@ -33,42 +39,28 @@ int main()
 
 	C_Entity* e=p->M_CreateDynamicEntity(*m->M_Get("triangle"), 0.1f);
 	C_Entity* g=p->M_CreateStaticEntity(*m->M_Get("ground"));
-	g->M_Body()->SetTransform(b2Vec2(0.0, -1.0f), 0);
+	e->M_SetPosition(0,0);
+	g->M_SetPosition(0,-0.4f);
 
-	/*
-	C_Entity* e = C_Entity::M_Create(m->M_Get("triangle"), 0.08f);
-	C_Entity* g = C_Entity::M_Create(m->M_Get("ground"), 1.0f);
-	C_Entity* g2 = C_Entity::M_Create(m->M_Get("ground"), 1.0f);
-	C_Entity* g3 = C_Entity::M_Create(m->M_Get("ground"), 0.585f);
-	C_Entity* box1 = C_Entity::M_Create(m->M_Get("box"), 0.08f);
-	C_Entity* box2 = C_Entity::M_Create(m->M_Get("box"), 0.04f);
-	C_Entity* box3 = C_Entity::M_Create(m->M_Get("box"), 0.02f);
-	C_Entity* box4 = C_Entity::M_Create(m->M_Get("box"), 0.10f);
+	C_IpAddress ip; unsigned short port;
+	C_Packet packet;
+	if(sock.M_Receive(packet, &ip, &port))
+	{
+		if(!pool.M_Exists(ip,port))
+		{
+			pool.M_Add(new C_Connection(ip,port));
+		}
+	}
 
-	box1->M_SetPosition(0.4f, -0.2f);
-	box2->M_SetPosition(0.2f, -0.4f);
-	box3->M_SetPosition(0.0f, -0.6f);
-	box4->M_SetPosition(-0.2f, -0.8f);
-	e->M_SetPosition(0.0f,0.3f);
-	g->M_SetPosition(0.0f,1.0f);
-	g2->M_SetPosition(0.0f,-1.0f);
-	g3->M_SetPosition(0.0f,0.123f);
-	p->M_CreateStaticEntity(g);
-	p->M_CreateStaticEntity(g2);
-	p->M_CreateStaticEntity(g3);
-	p->M_CreateDynamicEntity(box1);
-	p->M_CreateDynamicEntity(box2);
-	p->M_CreateDynamicEntity(box3);
-	p->M_CreateDynamicEntity(box4);
-*/
 	while(run)
 	{
 		t->M_Reset();
-		g_Sleep(1);
+		C_Packet packet;
+		g_Sleep(10);
 		p->M_Simulate();
-		std::cout << e->M_Body()->GetPosition().x << " " << e->M_Body()->GetPosition().y << std::endl;
-		//r->M_Draw();
-		//run=!(C_Singleton::M_InputHandler()->M_Get(ESC));
+		std::cout << (float)e->M_Body()->GetPosition().x << (float)e->M_Body()->GetPosition().y << std::endl;;
+		packet << (float)e->M_Body()->GetPosition().x << (float)e->M_Body()->GetPosition().y;
+		sock.M_Send(packet, pool.M_Head()->m_Ip, pool.M_Head()->m_Port);
 	}
 	C_Singleton::M_DestroySingletons();
 }

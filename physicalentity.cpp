@@ -1,15 +1,17 @@
 #include "physicalentity.h"
+#define TOWORLD 10.0f
 
 C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic) : 
 	m_Pos(), m_Model(m), m_Scale(s), m_Dynamic(dynamic), m_Body(NULL)
 {
 	b2BodyDef bodydef;
-	bodydef.position.Set(m_Pos.x*s, m_Pos.y*s);
+	//bodydef.position.Set(m_Pos.x*s, m_Pos.y*s);
 	if(dynamic) bodydef.type=b2_dynamicBody;
 	m_Body=w.CreateBody(&bodydef);
 
 	b2PolygonShape hitshape;
-	hitshape.SetAsBox((m_Model.M_Width()/2)*s, (m_Model.M_Height()/2)*s);
+	std::cout << m_Model.M_Width() << "   " << m_Model.M_Height() << std::endl;;
+	hitshape.SetAsBox((m_Model.M_Width()/2)*s*TOWORLD, (m_Model.M_Height()/2)*s*TOWORLD);
 
 	b2FixtureDef fix;
 	fix.shape=&hitshape;
@@ -18,6 +20,10 @@ C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic) :
 	fix.restitution=0.5f;
 
 	dynamic? m_Body->CreateFixture(&fix) : m_Body->CreateFixture(&hitshape, 0.0f);
+}
+void C_Entity::M_SetPosition(float x, float y)
+{
+	m_Body->SetTransform(b2Vec2(x*m_Scale*TOWORLD, y*m_Scale*TOWORLD), 0.0f);
 }
 /*
 void C_PhysicalEntity::M_Sync()

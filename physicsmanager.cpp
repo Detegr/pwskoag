@@ -3,7 +3,7 @@
 #include <typeinfo>
 
 C_PhysicsManager::C_PhysicsManager() :
-	m_World(b2Vec2(0.0f, -1.0f))
+	m_World(b2Vec2(0.0f, -5.0f))
 {
 	m_World.SetAllowSleeping(true);
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include <dtglib/Network.h>
+#include "dtglib/Network.h"
 
 using namespace dtglib;
 class C_Connection
@@ -8,12 +8,12 @@ class C_Connection
 	private:
 		C_Connection* m_Next;
 		C_Connection* m_Prev;
-		C_IpAddress m_Ip;
-		ushort		m_Port;
 		C_Packet	m_Packet;
 	public:
+		C_IpAddress m_Ip;
+		ushort		m_Port;
 		C_Connection(const C_IpAddress& ip, ushort port) :
-			m_Next(0), m_Prev(0), m_Ip(ip), m_Port(port), m_Packet() {}
+			m_Next(0), m_Prev(0), m_Packet(), m_Ip(ip), m_Port(port) {}
 };
 
 class C_ConnectionPool
@@ -26,4 +26,5 @@ class C_ConnectionPool
 		void M_Add(C_Connection* c);
 		void M_Remove(C_Connection* c);
 		bool M_Exists(const C_IpAddress& ip, ushort port) const;
+		C_Connection* M_Head() const { return m_Head; }
 };

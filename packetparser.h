@@ -10,13 +10,29 @@
 using namespace dtglib;
 
 template <class T>
-struct C_PacketParser
+class C_PacketParser
 {
-	static T M_Parse(C_Packet& p);
+	private:
+		static T M_SpecificParse(C_Packet& p);
+	public:
+		static T M_Parse(C_Packet& p);
 };
 
+template <class T>
+T C_PacketParser<T>::M_Parse(C_Packet& p)
+{
+	int header;
+	p >> header;
+	switch(header)
+	{
+		case NET::ModelBegin: return C_PacketParser<C_Model>::M_SpecificParse(p);
+	}
+	T dummy;
+	return dummy;
+}
+
 template <class C_Model>
-C_Model C_PacketParser<C_Model>::M_Parse(C_Packet& p)
+C_Model C_PacketParser<C_Model>::M_SpecificParse(C_Packet& p)
 {
 	int header;
 

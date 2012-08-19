@@ -34,13 +34,7 @@ bool M_DoConnection(C_UdpSocket& sock)
 	{
 		if((sock.M_Ip() == ip) && (sock.M_Port() == port))
 		{
-			int header;
-			p >> header;
-			while(header == NET::ModelBegin && p.M_Size())
-			{
-				C_PacketParser<C_Model>::M_Parse(p);
-				if(p.M_Size()) p >> header;
-			}
+			while(p.M_Size()) C_PacketParser<C_Model>::M_Parse(p);
 			return true;
 		}
 	}

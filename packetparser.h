@@ -1,3 +1,5 @@
+#pragma once
+
 #include "singleton.h"
 #include "model.h"
 #include "networkenum.h"

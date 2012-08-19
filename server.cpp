@@ -77,10 +77,9 @@ int main()
 		t->M_Reset();
 		g_Sleep(10);
 		p->M_Simulate();
-		//std::cout << (float)e->M_Body()->GetPosition().x << " " << (float)e->M_Body()->GetPosition().y << " box: " << (float)b->M_Body()->GetPosition().x << " " << (float)b->M_Body()->GetPosition().y << std::endl;
 		*e >> packet;
 		*b >> packet;
-		if(pool.M_Head()) sock.M_Send(packet, pool.M_Head()->m_Ip, pool.M_Head()->m_Port);
+		pool.M_SendToAll(sock, packet);
 		packet.M_Clear();
 	}
 	C_Singleton::M_DestroySingletons();

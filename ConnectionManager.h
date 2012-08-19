@@ -27,4 +27,5 @@ class C_ConnectionPool
 		void M_Remove(C_Connection* c);
 		C_Connection* M_Exists(const C_IpAddress& ip, ushort port) const;
 		C_Connection* M_Head() const { return m_Head; }
+		void M_SendToAll(C_UdpSocket& sock, C_Packet& p) const;
 };

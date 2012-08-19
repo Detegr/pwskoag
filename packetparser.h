@@ -40,7 +40,6 @@ void* C_PacketParser<C_GfxEntity>::M_SpecificParse(C_Packet& p)
 	unsigned int id;
 	float angle;
 	p >> id >> name >> scale >> x >> y >> angle;
-	std::cout << "ID: " << id << std::endl;
 
 	C_Renderer* r=C_Singleton::M_Renderer();
 	C_GfxEntity* e=r->M_GetEntity(id);

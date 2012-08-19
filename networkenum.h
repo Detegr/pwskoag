@@ -5,6 +5,7 @@ struct NET
 	enum
 	{
 		Connect,
+		Disconnect,
 		ModelBegin,
 		ModelIndex,
 		ModelDimensions,

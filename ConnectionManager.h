@@ -13,7 +13,7 @@ class C_Connection
 		C_IpAddress m_Ip;
 		ushort		m_Port;
 		C_Connection(const C_IpAddress& ip, ushort port) :
-			m_Next(0), m_Prev(0), m_Packet(), m_Ip(ip), m_Port(port) {}
+			m_Next(NULL), m_Prev(NULL), m_Packet(), m_Ip(ip), m_Port(port) {}
 };
 
 class C_ConnectionPool
@@ -25,6 +25,6 @@ class C_ConnectionPool
 		C_ConnectionPool() : m_Head(0), m_Tail(0) {}
 		void M_Add(C_Connection* c);
 		void M_Remove(C_Connection* c);
-		bool M_Exists(const C_IpAddress& ip, ushort port) const;
+		C_Connection* M_Exists(const C_IpAddress& ip, ushort port) const;
 		C_Connection* M_Head() const { return m_Head; }
 };

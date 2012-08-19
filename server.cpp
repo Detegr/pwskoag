@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "serversingleton.h"
 #include "ConnectionManager.h"
+#include "networkenum.h"
 
 using namespace dtglib;
 
@@ -25,6 +26,7 @@ int main()
 {
 	C_UdpSocket sock(51119);
 	sock.M_Bind();
+	//C_Thread connectionhandler(&handleconnections, &sock);
 
 	bool run=true;
 
@@ -46,24 +48,31 @@ int main()
 
 	C_IpAddress ip; unsigned short port;
 	C_Packet packet;
-	if(sock.M_Receive(packet, &ip, &port))
-	{
-		packet.M_Clear();
-		if(!pool.M_Exists(ip,port))
-		{
-			pool.M_Add(new C_Connection(ip,port));
-			m->M_Get("triangle") >> packet;
-			m->M_Get("ground") >> packet;
-			m->M_Get("box") >> packet;
-			*e >> packet;
-			*g >> packet;
-			*b >> packet;
-			sock.M_Send(packet, ip, port);
-		}
-	}
 
 	while(run)
 	{
+		if(sock.M_Receive(packet, 0, &ip, &port))
+		{
+			C_Connection* c = pool.M_Exists(ip,port);
+			if(c)
+			{
+				int header;
+				packet >> header;
+				if(header == NET::Disconnect) pool.M_Remove(c);
+			}
+			else
+			{
+				packet.M_Clear();
+				pool.M_Add(new C_Connection(ip,port));
+				m->M_Get("triangle") >> packet;
+				m->M_Get("ground") >> packet;
+				m->M_Get("box") >> packet;
+				*e >> packet;
+				*g >> packet;
+				*b >> packet;
+				sock.M_Send(packet, ip, port);
+			}
+		}
 		packet.M_Clear();
 		t->M_Reset();
 		g_Sleep(10);
@@ -71,7 +80,8 @@ int main()
 		//std::cout << (float)e->M_Body()->GetPosition().x << " " << (float)e->M_Body()->GetPosition().y << " box: " << (float)b->M_Body()->GetPosition().x << " " << (float)b->M_Body()->GetPosition().y << std::endl;
 		*e >> packet;
 		*b >> packet;
-		sock.M_Send(packet, pool.M_Head()->m_Ip, pool.M_Head()->m_Port);
+		if(pool.M_Head()) sock.M_Send(packet, pool.M_Head()->m_Ip, pool.M_Head()->m_Port);
+		packet.M_Clear();
 	}
 	C_Singleton::M_DestroySingletons();
 }

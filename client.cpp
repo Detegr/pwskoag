@@ -68,6 +68,10 @@ int main()
 		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
 		r->M_Draw();
 	}
+	p.M_Clear();
+	p << NET::Disconnect;
+	sock.M_Send(p);
+
 	C_Singleton::M_DestroySingletons();
 
 	return 0;

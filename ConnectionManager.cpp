@@ -1,4 +1,5 @@
 #include "ConnectionManager.h"
+#include <iostream>
 
 void C_ConnectionPool::M_Add(C_Connection* c)
 {
@@ -6,6 +7,7 @@ void C_ConnectionPool::M_Add(C_Connection* c)
 	{
 		m_Head=c;
 		m_Tail=c;
+		return;
 	}
 	if(m_Tail)
 	{
@@ -18,17 +20,20 @@ void C_ConnectionPool::M_Add(C_Connection* c)
 void C_ConnectionPool::M_Remove(C_Connection* c)
 {
 	if(c==m_Head) m_Head=c->m_Next;
-	if(c==m_Tail) m_Tail=c->m_Prev;
-	c->m_Prev->m_Next=c->m_Next;
-	c->m_Next->m_Prev=c->m_Prev;
+	else if(c==m_Tail) m_Tail=c->m_Prev;
+	else
+	{
+		c->m_Prev->m_Next=c->m_Next;
+		c->m_Next->m_Prev=c->m_Prev;
+	}
 	delete c;
 }
 
-bool C_ConnectionPool::M_Exists(const C_IpAddress& ip, ushort port) const
+C_Connection* C_ConnectionPool::M_Exists(const C_IpAddress& ip, ushort port) const
 {
-	for(C_Connection* c=m_Head; m_Head!=m_Tail; c=c->m_Next)
+	for(C_Connection* c=m_Head; c; c=c->m_Next)
 	{
-		if(c->m_Ip == ip && c->m_Port == port) return true;
+		if(c->m_Ip == ip && c->m_Port == port) return c;
 	}
-	return false;
+	return NULL;
 }

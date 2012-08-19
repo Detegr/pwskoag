@@ -10,8 +10,8 @@ class C_Entity
 	private:
 		C_Entity() {}
 		C_Entity(const C_Entity&) {}
-	protected:
-		C_Vec2 m_Pos;
+
+		unsigned int m_Id;
 		C_Model m_Model;
 		float m_Scale;
 		bool m_Dynamic;
@@ -21,4 +21,5 @@ class C_Entity
 	public:
 		b2Body* M_Body() { return m_Body; }
 		void M_SetPosition(float x, float y);
+		void operator>>(dtglib::C_Packet& p);
 };

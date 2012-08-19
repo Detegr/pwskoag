@@ -50,11 +50,11 @@ bool C_ModelManager::M_Load(const std::string& name, const std::string& path)
 	return true;
 }
 
-const C_Model& C_ModelManager::M_Create(const std::string& name, const std::vector<float>& verts, float width, float height)
+const C_Model* C_ModelManager::M_Create(const std::string& name, const std::vector<float>& verts, float width, float height)
 {
 	C_Model* newmodel=new C_Model(name,verts,width,height);
 	m_Models.push_back(newmodel);
-	return *newmodel;
+	return newmodel;
 }
 
 const C_Model& C_ModelManager::M_Get(const std::string& name) const

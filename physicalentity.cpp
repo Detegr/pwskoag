@@ -1,11 +1,15 @@
 #include "physicalentity.h"
+#include "networkenum.h"
+
 #define TOWORLD 10.0f
 
 C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic) : 
-	m_Pos(), m_Model(m), m_Scale(s), m_Dynamic(dynamic), m_Body(NULL)
+	m_Id(0), m_Model(m), m_Scale(s), m_Dynamic(dynamic), m_Body(NULL)
 {
+	static unsigned int id=0;
+	id++;
+	m_Id=id;
 	b2BodyDef bodydef;
-	//bodydef.position.Set(m_Pos.x*s, m_Pos.y*s);
 	if(dynamic) bodydef.type=b2_dynamicBody;
 	m_Body=w.CreateBody(&bodydef);
 
@@ -25,6 +29,14 @@ void C_Entity::M_SetPosition(float x, float y)
 {
 	m_Body->SetTransform(b2Vec2(x*TOWORLD, y*TOWORLD), 0.0f);
 }
+
+void C_Entity::operator>>(dtglib::C_Packet& p)
+{
+	b2Vec2 pos=m_Body->GetPosition();
+	float angle=m_Body->GetAngle();
+	p << NET::EntityBegin << m_Id << m_Model.M_Name() << m_Scale << pos.x << pos.y << angle;
+}
+
 /*
 void C_PhysicalEntity::M_Sync()
 {

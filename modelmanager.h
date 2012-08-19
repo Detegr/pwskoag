@@ -19,5 +19,5 @@ class C_ModelManager
 	public:
 		bool M_Load(const std::string& name, const std::string& path);
 		const C_Model& M_Get(const std::string& model) const;
-		const C_Model& M_Create(const std::string& name, const std::vector<float>& verts, float width, float height);
+		const C_Model* M_Create(const std::string& name, const std::vector<float>& verts, float width, float height);
 };

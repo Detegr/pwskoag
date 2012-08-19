@@ -9,30 +9,58 @@
 
 using namespace dtglib;
 
+class C_DummyParse {};
+
 template <class T>
-class C_PacketParser
+struct C_PacketParser
 {
-	private:
-		static T M_SpecificParse(C_Packet& p);
-	public:
-		static T M_Parse(C_Packet& p);
+		static void* M_SpecificParse(C_Packet& p);
+		static T& M_Parse(C_Packet& p);
 };
 
 template <class T>
-T C_PacketParser<T>::M_Parse(C_Packet& p)
+T& C_PacketParser<T>::M_Parse(C_Packet& p)
 {
 	int header;
 	p >> header;
 	switch(header)
 	{
-		case NET::ModelBegin: return C_PacketParser<C_Model>::M_SpecificParse(p);
+		case NET::ModelBegin: return *(T*)C_PacketParser<C_Model>::M_SpecificParse(p); break;
+		case NET::EntityBegin: return *(T*)C_PacketParser<C_GfxEntity>::M_SpecificParse(p); break;
 	}
-	T dummy;
-	return dummy;
+	assert(false);
+	return *(T*)NULL;
 }
 
-template <class C_Model>
-C_Model C_PacketParser<C_Model>::M_SpecificParse(C_Packet& p)
+template <>
+void* C_PacketParser<C_GfxEntity>::M_SpecificParse(C_Packet& p)
+{
+	std::string name;
+	float scale,x,y;
+	unsigned int id;
+	float angle;
+	p >> id >> name >> scale >> x >> y >> angle;
+	std::cout << "ID: " << id << std::endl;
+
+	C_Renderer* r=C_Singleton::M_Renderer();
+	C_GfxEntity* e=r->M_GetEntity(id);
+	if(e)
+	{
+		e->M_SetPosition(x/10.0f, y/10.0f);
+		e->M_SetRotation(angle);
+	}
+	else
+	{
+		C_GfxEntity* e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), scale);
+		std::cout << x << " " << y << std::endl;
+		e->M_SetPosition(x/10.0f, y/10.0f);
+		e->M_SetRotation(angle);
+	}
+	return e;
+}
+
+template <>
+void* C_PacketParser<C_Model>::M_SpecificParse(C_Packet& p)
 {
 	int header;
 
@@ -53,6 +81,6 @@ C_Model C_PacketParser<C_Model>::M_SpecificParse(C_Packet& p)
 	p >> w;
 	p >> h;
 
-	const C_Model& m=C_Singleton::M_ModelManager()->M_Create(name, verts, w, h);
-	return m;
+	const C_Model* m=C_Singleton::M_ModelManager()->M_Create(name, verts, w, h);
+	return (void*)m;
 }

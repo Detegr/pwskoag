@@ -7,6 +7,7 @@ struct NET
 		Connect,
 		ModelBegin,
 		ModelIndex,
-		ModelDimensions
+		ModelDimensions,
+		EntityBegin
 	};
 };

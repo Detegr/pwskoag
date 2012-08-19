@@ -55,18 +55,22 @@ int main()
 			m->M_Get("triangle") >> packet;
 			m->M_Get("ground") >> packet;
 			m->M_Get("box") >> packet;
+			*e >> packet;
+			*g >> packet;
+			*b >> packet;
 			sock.M_Send(packet, ip, port);
 		}
 	}
 
 	while(run)
 	{
+		packet.M_Clear();
 		t->M_Reset();
-		C_Packet packet;
 		g_Sleep(10);
 		p->M_Simulate();
 		//std::cout << (float)e->M_Body()->GetPosition().x << " " << (float)e->M_Body()->GetPosition().y << " box: " << (float)b->M_Body()->GetPosition().x << " " << (float)b->M_Body()->GetPosition().y << std::endl;
-		packet << (float)e->M_Body()->GetPosition().x << (float)e->M_Body()->GetPosition().y << (float)e->M_Body()->GetAngle() << (float)b->M_Body()->GetPosition().x << (float)b->M_Body()->GetPosition().y << b->M_Body()->GetAngle();
+		*e >> packet;
+		*b >> packet;
 		sock.M_Send(packet, pool.M_Head()->m_Ip, pool.M_Head()->m_Port);
 	}
 	C_Singleton::M_DestroySingletons();

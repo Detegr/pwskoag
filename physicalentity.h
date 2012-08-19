@@ -22,4 +22,6 @@ class C_Entity
 		b2Body* M_Body() { return m_Body; }
 		void M_SetPosition(float x, float y);
 		void operator>>(dtglib::C_Packet& p);
+		float M_Scale() const {return m_Scale;}
+		std::string M_Name() const {return m_Model.M_Name();}
 };

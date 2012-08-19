@@ -37,7 +37,7 @@ void* C_PacketParser<C_GfxEntity>::M_SpecificParse(C_Packet& p)
 {
 	std::string name;
 	float scale,x,y;
-	unsigned int id;
+	unsigned int id=~0U;
 	float angle;
 	p >> id >> name >> scale >> x >> y >> angle;
 
@@ -51,7 +51,6 @@ void* C_PacketParser<C_GfxEntity>::M_SpecificParse(C_Packet& p)
 	else
 	{
 		C_GfxEntity* e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), scale);
-		std::cout << x << " " << y << std::endl;
 		e->M_SetPosition(x/10.0f, y/10.0f);
 		e->M_SetRotation(angle);
 	}

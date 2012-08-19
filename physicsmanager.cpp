@@ -2,9 +2,12 @@
 #include "serversingleton.h"
 #include <typeinfo>
 
+float32 C_PhysicsManager::m_TimeStep;
+
 C_PhysicsManager::C_PhysicsManager() :
-	m_World(b2Vec2(0.0f, -5.0f))
+	m_World(b2Vec2(0.0f, -6.0f))
 {
+	C_PhysicsManager::m_TimeStep = 1.0f/60.0f;
 	m_World.SetAllowSleeping(true);
 }
 C_PhysicsManager::~C_PhysicsManager()

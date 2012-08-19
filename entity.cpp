@@ -8,11 +8,6 @@ C_GfxEntity::C_GfxEntity(unsigned int id, const C_Model& m, float scale) : m_Id(
 	glGenBuffers(1, &m_Vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, m_Vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*m_Model.M_Vertices().size(), &m_Model.M_Vertices()[0], GL_STATIC_DRAW);
-	const std::vector<float>& verts=m_Model.M_Vertices();
-	for(std::vector<float>::const_iterator it=verts.begin(); it!=verts.end(); ++it)
-	{
-		std::cout << *it << std::endl;
-	}
 }
 
 C_GfxEntity* C_GfxEntity::M_Create(unsigned int id, const C_Model& m, float scale)

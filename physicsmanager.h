@@ -15,8 +15,7 @@ class C_PhysicsManager
 	private:
 		C_PhysicsManager();
 		~C_PhysicsManager();
-		static const float32 m_ScaleFactor = 10.0f;
-		static const float32 m_TimeStep = 1.0f/60.0f;
+		static float32 m_TimeStep;
 		static const int32 m_VelocityIterations = 6; // 8
 		static const int32 m_PositionIterations = 3; // 3
 		b2World m_World;

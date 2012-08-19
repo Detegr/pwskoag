@@ -41,16 +41,40 @@ int main()
 
 	C_Entity* e=p->M_CreateDynamicEntity(m->M_Get("triangle"), 0.15f);
 	C_Entity* g=p->M_CreateStaticEntity(m->M_Get("ground"));
-	C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
+	std::vector<C_Entity*> boxes;
+	float x=-1.0f;
+	for(int i=0; i<16; ++i)
+	{
+		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
+		b->M_SetPosition(x, 1.0f);
+		x+=0.15f;
+		boxes.push_back(b);
+	}
+	/*
+	for(int i=0; i<16; ++i)
+	{
+		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
+		b->M_SetPosition(x, 0.8f);
+		x+=0.15f;
+		boxes.push_back(b);
+	}
+	for(int i=0; i<16; ++i)
+	{
+		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
+		b->M_SetPosition(x, 0.6f);
+		x+=0.15f;
+		boxes.push_back(b);
+	}
+	*/
 	e->M_SetPosition(0,0);
 	g->M_SetPosition(0,-0.8f);
-	b->M_SetPosition(0.13, 1.0f);
 
 	C_IpAddress ip; unsigned short port;
 	C_Packet packet;
 
 	while(run)
 	{
+		t->M_Reset();
 		if(sock.M_Receive(packet, 0, &ip, &port))
 		{
 			C_Connection* c = pool.M_Exists(ip,port);
@@ -67,20 +91,28 @@ int main()
 				m->M_Get("triangle") >> packet;
 				m->M_Get("ground") >> packet;
 				m->M_Get("box") >> packet;
-				*e >> packet;
 				*g >> packet;
-				*b >> packet;
+				/*
+				for(std::vector<C_Entity*>::const_iterator it=boxes.begin(); it!=boxes.end(); ++it)
+				{
+					*(*it) >> packet;
+				}
+				*/
 				sock.M_Send(packet, ip, port);
 			}
 		}
 		packet.M_Clear();
-		t->M_Reset();
-		g_Sleep(10);
-		p->M_Simulate();
 		*e >> packet;
-		*b >> packet;
+		for(std::vector<C_Entity*>::const_iterator it=boxes.begin(); it!=boxes.end(); ++it)
+		{
+			*(*it) >> packet;
+			b2Vec2 pos=(*it)->M_Body()->GetPosition();
+			if(pos.y<-20.0f) (*it)->M_Body()->SetTransform(b2Vec2(0.0f, 1.0f), 0);
+		}
 		pool.M_SendToAll(sock, packet);
 		packet.M_Clear();
+		g_Sleep(33-((int)t->M_Get()*1000));
+		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();
 }

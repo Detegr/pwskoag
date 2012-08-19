@@ -37,9 +37,9 @@ int main()
 	if(!m->M_Load("ground", "ground.2dmodel")) exit(1);
 	if(!m->M_Load("box", "box.2dmodel")) exit(1);
 
-	C_Entity* e=p->M_CreateDynamicEntity(*m->M_Get("triangle"), 0.15f);
-	C_Entity* g=p->M_CreateStaticEntity(*m->M_Get("ground"));
-	C_Entity* b=p->M_CreateDynamicEntity(*m->M_Get("box"), 0.05f);
+	C_Entity* e=p->M_CreateDynamicEntity(m->M_Get("triangle"), 0.15f);
+	C_Entity* g=p->M_CreateStaticEntity(m->M_Get("ground"));
+	C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
 	e->M_SetPosition(0,0);
 	g->M_SetPosition(0,-0.8f);
 	b->M_SetPosition(0.13, 1.0f);
@@ -48,9 +48,14 @@ int main()
 	C_Packet packet;
 	if(sock.M_Receive(packet, &ip, &port))
 	{
+		packet.M_Clear();
 		if(!pool.M_Exists(ip,port))
 		{
 			pool.M_Add(new C_Connection(ip,port));
+			m->M_Get("triangle") >> packet;
+			m->M_Get("ground") >> packet;
+			m->M_Get("box") >> packet;
+			sock.M_Send(packet, ip, port);
 		}
 	}
 

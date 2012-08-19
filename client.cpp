@@ -2,6 +2,7 @@
 #include "entity.h"
 #include "dtglib/Network.h"
 #include "networkenum.h"
+#include "packetparser.h"
 
 using namespace dtglib;
 
@@ -31,7 +32,17 @@ bool M_DoConnection(C_UdpSocket& sock)
 	ushort port;
 	if(sock.M_Receive(p, 2000, &ip, &port))
 	{
-		return (sock.M_Ip() == ip) && (sock.M_Port() == port);
+		if((sock.M_Ip() == ip) && (sock.M_Port() == port))
+		{
+			int header;
+			p >> header;
+			while(header == NET::ModelBegin && p.M_Size())
+			{
+				C_PacketParser<C_Model>::M_Parse(p);
+				if(p.M_Size()) p >> header;
+			}
+			return true;
+		}
 	}
 	return false;
 }
@@ -49,16 +60,12 @@ int main()
 	C_ShaderManager* s = C_Singleton::M_ShaderManager();
 	C_ModelManager* m = C_Singleton::M_ModelManager();
 
-	if(!m->M_Load("triangle", "test.2dmodel")) exit(1);
-	if(!m->M_Load("ground", "ground.2dmodel")) exit(1);
-	if(!m->M_Load("box", "box.2dmodel")) exit(1);
-
 	s->M_Load("minimal");
 	r->M_Use(s->M_Get("minimal"));
 
-	C_GfxEntity* e=C_GfxEntity::M_Create(*m->M_Get("triangle"), 0.15f);
-	C_GfxEntity* g=C_GfxEntity::M_Create(*m->M_Get("ground"));
-	C_GfxEntity* b=C_GfxEntity::M_Create(*m->M_Get("box"), 0.05f);
+	C_GfxEntity* e=C_GfxEntity::M_Create(m->M_Get("triangle"), 0.15f);
+	C_GfxEntity* g=C_GfxEntity::M_Create(m->M_Get("ground"));
+	C_GfxEntity* b=C_GfxEntity::M_Create(m->M_Get("box"), 0.05f);
 
 	e->M_SetPosition(0.0f, 0.0f);
 	g->M_SetPosition(0.0f, -0.8f);

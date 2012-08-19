@@ -46,23 +46,22 @@ bool C_ModelManager::M_Load(const std::string& name, const std::string& path)
 		verts.push_back(val);
 	}
 
-	/*
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*verts.size(), &verts[0], GL_STATIC_DRAW);
-	*/
-
 	m_Models.push_back(new C_Model(name, verts, xmax-xmin, ymax-ymin));
-
 	return true;
 }
 
-C_Model* C_ModelManager::M_Get(const std::string& name) const
+const C_Model& C_ModelManager::M_Create(const std::string& name, const std::vector<float>& verts, float width, float height)
+{
+	C_Model* newmodel=new C_Model(name,verts,width,height);
+	m_Models.push_back(newmodel);
+	return *newmodel;
+}
+
+const C_Model& C_ModelManager::M_Get(const std::string& name) const
 {
 	for(std::vector<C_Model*>::const_iterator it=m_Models.begin(); it!=m_Models.end(); ++it)
 	{
-		if((*it)->M_Name() == name) return *it;
+		if((*it)->M_Name() == name) return **it;
 	}
 	throw std::runtime_error("Model " + name + " does not exist!");
 }

@@ -1,7 +1,12 @@
+#pragma once
+
 struct NET
 {
 	enum
 	{
-		Connect
+		Connect,
+		ModelBegin,
+		ModelIndex,
+		ModelDimensions
 	};
 };

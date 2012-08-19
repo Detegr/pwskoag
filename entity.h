@@ -23,15 +23,15 @@ class C_GfxEntity
 		C_GfxEntity(unsigned int id, const C_Model& m, float scale);
 	public:
 		static C_GfxEntity* M_Create(unsigned int id, const C_Model& m, float scale=1.0f);
-		virtual void M_Translate(float amount, unsigned char axis);
-		virtual void M_SetPosition(float x, float y);
+		void M_Translate(float amount, unsigned char axis);
+		void M_SetPosition(float x, float y);
 		void M_Scale(float amount);
 		float M_Scale() const { return m_Scale; }
 		void M_SetScale(float amount);
-		virtual void M_Rotate(float amount);
-		virtual void M_SetRotation(float amount);
+		void M_Rotate(float amount);
+		void M_SetRotation(float amount);
 		const std::string& M_ModelName() const;
-		virtual const glm::mat4& M_ModelMatrix();
+		const glm::mat4& M_ModelMatrix();
 		void M_Draw() const;
 		unsigned int M_Id() const { return m_Id; }
 };

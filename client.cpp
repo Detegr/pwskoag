@@ -43,7 +43,7 @@ bool M_DoConnection(C_UdpSocket& sock)
 
 int main()
 {
-	C_UdpSocket sock("localhost", 51119);
+	C_UdpSocket sock("192.168.1.3", 51119);
 	if(!M_DoConnection(sock))
 	{
 		std::cerr << "Failed to connect!" << std::endl;

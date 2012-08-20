@@ -9,6 +9,7 @@ struct NET
 		ModelBegin,
 		ModelIndex,
 		ModelDimensions,
-		EntityBegin
+		EntityBegin,
+		FullEntityBegin
 	};
 };

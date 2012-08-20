@@ -11,7 +11,7 @@ class C_Entity
 		C_Entity() {}
 		C_Entity(const C_Entity&) {}
 
-		unsigned int m_Id;
+		unsigned short m_Id;
 		C_Model m_Model;
 		float m_Scale;
 		bool m_Dynamic;
@@ -22,6 +22,7 @@ class C_Entity
 		b2Body* M_Body() { return m_Body; }
 		void M_SetPosition(float x, float y);
 		void operator>>(dtglib::C_Packet& p);
+		void M_DumpFullInstance(dtglib::C_Packet& p);
 		float M_Scale() const {return m_Scale;}
 		std::string M_Name() const {return m_Model.M_Name();}
 };

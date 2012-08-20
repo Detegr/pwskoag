@@ -77,7 +77,7 @@ void C_Renderer::M_AddEntity(C_GfxEntity* e)
 	m_Entities.push_back(e);
 }
 
-C_GfxEntity* C_Renderer::M_GetEntity(unsigned int id)
+C_GfxEntity* C_Renderer::M_GetEntity(unsigned short id)
 {
 	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
 	{

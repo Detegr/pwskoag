@@ -18,14 +18,14 @@ C_Model::C_Model(const C_Model& m)
 
 void C_Model::operator>>(dtglib::C_Packet& p) const
 {
-	p << NET::ModelBegin;
+	p << (unsigned char) NET::ModelBegin;
 	p << m_Name;
 	for(std::vector<float>::const_iterator it=m_Vertices.begin(); it!=m_Vertices.end(); ++it)
 	{
-		p << NET::ModelIndex;
+		p << (unsigned char) NET::ModelIndex;
 		p << *it;
 	}
-	p << NET::ModelDimensions;
+	p << (unsigned char) NET::ModelDimensions;
 	p << m_Width;
 	p << m_Height;
 }

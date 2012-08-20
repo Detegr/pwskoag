@@ -43,13 +43,15 @@ bool M_DoConnection(C_UdpSocket& sock)
 
 int main()
 {
-	C_UdpSocket sock("192.168.1.3", 51119);
+	C_UdpSocket sock("localhost", 51119);
 	if(!M_DoConnection(sock))
 	{
 		std::cerr << "Failed to connect!" << std::endl;
 		C_Singleton::M_DestroySingletons();
 		return 1;
 	}
+
+	C_Packet p;
 	C_Renderer* r = C_Singleton::M_Renderer();
 	C_ShaderManager* s = C_Singleton::M_ShaderManager();
 
@@ -57,14 +59,14 @@ int main()
 	r->M_Use(s->M_Get("minimal"));
 
 	bool running=true;
-	C_Packet p;
 	p.M_Clear();
 	while(running)
 	{
 		sock.M_Receive(p);
-		while(p.M_Size()) C_PacketParser<C_DummyParse>::M_Parse(p);
+		do {C_PacketParser<C_DummyParse>::M_Parse(p);} while (p.M_Size());
+		p.M_Clear();
 
-		g_Sleep(1);
+		g_Sleep(10);
 		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
 		r->M_Draw();
 	}

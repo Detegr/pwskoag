@@ -43,29 +43,27 @@ int main()
 	C_Entity* g=p->M_CreateStaticEntity(m->M_Get("ground"));
 	std::vector<C_Entity*> boxes;
 	float x=-1.0f;
-	for(int i=0; i<16; ++i)
+	for(int i=0; i<4; ++i)
 	{
 		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
 		b->M_SetPosition(x, 1.0f);
 		x+=0.15f;
 		boxes.push_back(b);
 	}
-	/*
-	for(int i=0; i<16; ++i)
+	for(int i=0; i<4; ++i)
 	{
-		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
-		b->M_SetPosition(x, 0.8f);
-		x+=0.15f;
-		boxes.push_back(b);
-	}
-	for(int i=0; i<16; ++i)
-	{
-		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
+		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.04f);
 		b->M_SetPosition(x, 0.6f);
 		x+=0.15f;
 		boxes.push_back(b);
 	}
-	*/
+	for(int i=0; i<4; ++i)
+	{
+		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.03f);
+		b->M_SetPosition(x, 0.4f);
+		x+=0.15f;
+		boxes.push_back(b);
+	}
 	e->M_SetPosition(0,0);
 	g->M_SetPosition(0,-0.8f);
 
@@ -91,13 +89,12 @@ int main()
 				m->M_Get("triangle") >> packet;
 				m->M_Get("ground") >> packet;
 				m->M_Get("box") >> packet;
-				*g >> packet;
-				/*
+				g->M_DumpFullInstance(packet);
+				e->M_DumpFullInstance(packet);
 				for(std::vector<C_Entity*>::const_iterator it=boxes.begin(); it!=boxes.end(); ++it)
 				{
-					*(*it) >> packet;
+					(*it)->M_DumpFullInstance(packet);
 				}
-				*/
 				sock.M_Send(packet, ip, port);
 			}
 		}
@@ -111,7 +108,7 @@ int main()
 		}
 		pool.M_SendToAll(sock, packet);
 		packet.M_Clear();
-		g_Sleep(33-((int)t->M_Get()*1000));
+		g_Sleep(20-((int)t->M_Get()*1000));
 		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();

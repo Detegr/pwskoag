@@ -8,7 +8,7 @@
 class C_GfxEntity
 {
 	private:
-		unsigned int m_Id;
+		unsigned short m_Id;
 		C_Vec2 m_Pos;
 		C_Model m_Model;
 		float m_Scale;
@@ -20,9 +20,9 @@ class C_GfxEntity
 		glm::mat4 m_ScaleMatrix;
 		glm::mat4 m_RotationMatrix;
 		C_GfxEntity();
-		C_GfxEntity(unsigned int id, const C_Model& m, float scale);
+		C_GfxEntity(unsigned short id, const C_Model& m, float scale);
 	public:
-		static C_GfxEntity* M_Create(unsigned int id, const C_Model& m, float scale=1.0f);
+		static C_GfxEntity* M_Create(unsigned short id, const C_Model& m, float scale=1.0f);
 		void M_Translate(float amount, unsigned char axis);
 		void M_SetPosition(float x, float y);
 		void M_Scale(float amount);

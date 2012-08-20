@@ -2,7 +2,7 @@
 #include "entity.h"
 
 C_GfxEntity::C_GfxEntity() : m_Id(0), m_Pos(), m_Model(), m_Scale(1.0f), m_ModelMatrix(glm::mat4(1.0f)) {}
-C_GfxEntity::C_GfxEntity(unsigned int id, const C_Model& m, float scale) : m_Id(id), m_Pos(), m_Model(m), m_Scale(scale), m_ModelMatrix(glm::mat4(1.0f))
+C_GfxEntity::C_GfxEntity(unsigned short id, const C_Model& m, float scale) : m_Id(id), m_Pos(), m_Model(m), m_Scale(scale), m_ModelMatrix(glm::mat4(1.0f))
 {
 	M_Scale(scale);
 	glGenBuffers(1, &m_Vbo);
@@ -10,7 +10,7 @@ C_GfxEntity::C_GfxEntity(unsigned int id, const C_Model& m, float scale) : m_Id(
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*m_Model.M_Vertices().size(), &m_Model.M_Vertices()[0], GL_STATIC_DRAW);
 }
 
-C_GfxEntity* C_GfxEntity::M_Create(unsigned int id, const C_Model& m, float scale)
+C_GfxEntity* C_GfxEntity::M_Create(unsigned short id, const C_Model& m, float scale)
 {
 	C_GfxEntity* e=new C_GfxEntity(id, m, scale);
 	C_Renderer* r = C_Singleton::M_Renderer();

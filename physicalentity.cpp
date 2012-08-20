@@ -20,7 +20,7 @@ C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic) :
 	fix.shape=&hitshape;
 	fix.density=1.0f;
 	fix.friction=0.3f;
-	fix.restitution=0.5f;
+	fix.restitution=0.8f;
 
 	dynamic ? m_Body->CreateFixture(&fix) : m_Body->CreateFixture(&hitshape, 0.0f);
 }
@@ -33,7 +33,14 @@ void C_Entity::operator>>(dtglib::C_Packet& p)
 {
 	b2Vec2 pos=m_Body->GetPosition();
 	float angle=m_Body->GetAngle();
-	p << NET::EntityBegin << m_Id << m_Model.M_Name() << m_Scale << pos.x << pos.y << angle;
+	p << (unsigned char)NET::EntityBegin << m_Id << pos.x << pos.y << angle;
+}
+
+void C_Entity::M_DumpFullInstance(dtglib::C_Packet& p)
+{
+	b2Vec2 pos=m_Body->GetPosition();
+	float angle=m_Body->GetAngle();
+	p << (unsigned char)NET::FullEntityBegin << m_Id << m_Model.M_Name() << m_Scale << pos.x << pos.y << angle;
 }
 
 /*

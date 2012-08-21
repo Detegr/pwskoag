@@ -42,25 +42,29 @@ int main()
 	C_Entity* g=p->M_CreateStaticEntity(m->M_Get("ground"));
 	std::vector<C_Entity*> boxes;
 	std::vector<C_Entity*> players;
+
 	float x=-1.0f;
+	float y=0.5f;
 	for(int i=0; i<16; ++i)
 	{
 		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
-		b->M_SetPosition(x, 1.0f);
+		b->M_SetPosition(x, y);
 		x+=0.15f;
 		boxes.push_back(b);
 	}
+	x=-1.0f;
 	for(int i=0; i<16; ++i)
 	{
 		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.04f);
-		b->M_SetPosition(x, 0.6f);
+		b->M_SetPosition(x, y-0.4f);
 		x+=0.15f;
 		boxes.push_back(b);
 	}
+	x=-1.0f;
 	for(int i=0; i<16; ++i)
 	{
 		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.03f);
-		b->M_SetPosition(x, 0.4f);
+		b->M_SetPosition(x, y-0.8f);
 		x+=0.15f;
 		boxes.push_back(b);
 	}
@@ -72,42 +76,27 @@ int main()
 	while(run)
 	{
 		t->M_Reset();
-		if(sock.M_Receive(packet, 0, &ip, &port))
+		while(sock.M_Receive(packet, 1, &ip, &port))
 		{
 			C_Connection* c = pool.M_Exists(ip,port);
 			if(c)
 			{
-				unsigned char header;
+				unsigned char header=0;
 				packet >> header;
 				if(header == NET::Disconnect) pool.M_Remove(c);
 				else if((header & 0xF0) == 0xF0)
 				{
-					if(header & 0x1)
-					{
-						c->M_GetEntity()->M_Body()->SetAngularVelocity(-3.0f);
-					}
-					else if(header & 0x2)
-					{
-						c->M_GetEntity()->M_Body()->SetAngularVelocity(3.0f);
-					}
-					else c->M_GetEntity()->M_Body()->SetAngularVelocity(0.0f);
-					if(header & 0x8)
-					{
-						float32 a = c->M_GetEntity()->M_Body()->GetAngle();
-						b2Vec2 force = b2Vec2(-sin(a), cos(a));
-						force *= 6.0f;
-						c->M_GetEntity()->M_Body()->ApplyForceToCenter(force);
-					}
+					c->M_SetKeys(header);
 				}
 			}
 			else
 			{
+				std::cout << "New connection." << std::endl;
 				packet.M_Clear();
 				c=pool.M_Add(new C_Connection(ip,port));
 				C_Entity* e=p->M_CreateDynamicEntity(m->M_Get("triangle"), 0.08f);
 				e->M_SetPosition(0,0);
 				c->M_SetEntity(e);
-				players.push_back(e);
 				m->M_Get("triangle") >> packet;
 				m->M_Get("ground") >> packet;
 				m->M_Get("box") >> packet;
@@ -121,19 +110,13 @@ int main()
 			}
 		}
 		packet.M_Clear();
-		for(std::vector<C_Entity*>::const_iterator it=players.begin(); it!=players.end(); ++it)
-		{
-			*(*it) >> packet;
-		}
 		for(std::vector<C_Entity*>::const_iterator it=boxes.begin(); it!=boxes.end(); ++it)
 		{
 			*(*it) >> packet;
-			b2Vec2 pos=(*it)->M_Body()->GetPosition();
-			if(pos.y<-20.0f) (*it)->M_Body()->SetTransform(b2Vec2(0.0f, 1.0f), 0);
 		}
 		pool.M_SendToAll(sock, packet);
 		packet.M_Clear();
-		g_Sleep(25-((int)t->M_Get()*1000));
+		g_Sleep(20-((int)t->M_Get()*1000));
 		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();

@@ -74,15 +74,12 @@ int main()
 	bool running=true;
 	p.M_Clear();
 
-	/*
 	unsigned char keyvec=0;
 	unsigned char prevkeyvec=0;
-	*/
 	while(running)
 	{
-		if(sock.M_Receive(p, 0, NULL, NULL))
+		if(sock.M_Receive(p, 1, NULL, NULL))
 		{
-			/*
 			C_Packet keys;
 			keyvec=getkeys();
 			if(prevkeyvec != 0xF0)
@@ -91,9 +88,10 @@ int main()
 				sock.M_Send(keys);
 			}
 			prevkeyvec=keyvec;
-			*/
+			std::cout << p.M_Size() << std::endl;
 			while(p.M_Size()) C_PacketParser<C_DummyParse>::M_Parse(p);
 		}
+		p.M_Clear();
 		r->M_Draw();
 
 		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));

@@ -57,6 +57,26 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 {
 	for(C_Connection* c=m_Head; c; c=c->m_Next)
 	{
+		C_Entity* e=c->M_GetEntity();
+		b2Body* b=e->M_Body();
+		unsigned char keyvec=c->M_GetKeys();
+		if(keyvec & 0x1)
+		{
+			b->SetAngularVelocity(-3.0f);
+		}
+		else if(keyvec & 0x2)
+		{
+			b->SetAngularVelocity(3.0f);
+		}
+		else b->SetAngularVelocity(0.0f);
+		if(keyvec & 0x8)
+		{
+			float32 a = c->M_GetEntity()->M_Body()->GetAngle();
+			b2Vec2 force = b2Vec2(-sin(a), cos(a));
+			force *= 6.0f;
+			b->ApplyForceToCenter(force);
+		}
+		*e >> p;
 		sock.M_Send(p, c->m_Ip, c->m_Port);
 	}
 }

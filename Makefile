@@ -1,4 +1,4 @@
-CC=clang++ -Os -Wall -Wextra -Werror -Wno-comment -std=c++0x
+CC=g++ -Os -Wall -Wextra -Werror -Wno-comment -std=c++0x
 CFLAGS=-I/usr/local/include/GL -I/usr/local/include -L /usr/local/lib -L dtglib/
 SERVERCFLAGS=-I/usr/local/include -L /usr/local/lib -Ldtglib/
 SERVERLIBS=-ldtglib -lBox2D -lpthread

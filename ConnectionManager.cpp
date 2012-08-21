@@ -3,13 +3,13 @@
 
 using namespace dtglib;
 
-void C_ConnectionPool::M_Add(C_Connection* c)
+C_Connection* C_ConnectionPool::M_Add(C_Connection* c)
 {
 	if(!m_Head)
 	{
 		m_Head=c;
 		m_Tail=c;
-		return;
+		return c;
 	}
 	if(m_Tail)
 	{
@@ -17,6 +17,7 @@ void C_ConnectionPool::M_Add(C_Connection* c)
 		c->m_Prev=m_Tail;
 		m_Tail=c;
 	}
+	return c;
 }
 
 void C_ConnectionPool::M_Remove(C_Connection* c)

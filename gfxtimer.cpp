@@ -22,5 +22,5 @@ void C_Timer::M_SetTime()
 		m_Frames=0;
 	}
 }
-double C_Timer::M_DT() const { return 100*m_Dt; }
+double C_Timer::M_DT() const { return m_Dt; }
 double C_Timer::M_MSPF() const { return m_MSPF; }

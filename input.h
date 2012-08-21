@@ -1,3 +1,5 @@
+#pragma once
+
 enum Key
 {
 	UP=0,

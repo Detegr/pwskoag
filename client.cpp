@@ -3,6 +3,7 @@
 #include "dtglib/Network.h"
 #include "networkenum.h"
 #include "packetparser.h"
+#include "input.h"
 
 using namespace dtglib;
 
@@ -41,6 +42,17 @@ bool M_DoConnection(C_UdpSocket& sock)
 	return false;
 }
 
+unsigned char getkeys()
+{
+	unsigned char keyvec=0xF0;
+	C_InputHandler* i = C_Singleton::M_InputHandler();
+	if(i->M_Get(Key::UP)) keyvec |= 0x8;
+	else if(i->M_Get(Key::DOWN)) keyvec |=0x4;
+	if(i->M_Get(Key::LEFT)) keyvec |= 0x2;
+	else if(i->M_Get(Key::RIGHT)) keyvec |= 0x1;
+	return keyvec;
+}
+
 int main()
 {
 	C_UdpSocket sock("localhost", 51119);
@@ -52,6 +64,7 @@ int main()
 	}
 
 	C_Packet p;
+	C_Singleton::M_InputHandler();
 	C_Renderer* r = C_Singleton::M_Renderer();
 	C_ShaderManager* s = C_Singleton::M_ShaderManager();
 
@@ -60,18 +73,33 @@ int main()
 
 	bool running=true;
 	p.M_Clear();
+
+	/*
+	unsigned char keyvec=0;
+	unsigned char prevkeyvec=0;
+	*/
 	while(running)
 	{
-		sock.M_Receive(p);
-		do {C_PacketParser<C_DummyParse>::M_Parse(p);} while (p.M_Size());
-		p.M_Clear();
-
-		g_Sleep(10);
-		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
+		if(sock.M_Receive(p, 0, NULL, NULL))
+		{
+			/*
+			C_Packet keys;
+			keyvec=getkeys();
+			if(prevkeyvec != 0xF0)
+			{
+				keys << keyvec;
+				sock.M_Send(keys);
+			}
+			prevkeyvec=keyvec;
+			*/
+			while(p.M_Size()) C_PacketParser<C_DummyParse>::M_Parse(p);
+		}
 		r->M_Draw();
+
+		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
 	}
 	p.M_Clear();
-	p << NET::Disconnect;
+	p << (unsigned char)NET::Disconnect;
 	sock.M_Send(p);
 
 	C_Singleton::M_DestroySingletons();

@@ -27,25 +27,21 @@ void C_PacketParser::M_Parse(C_Packet& p)
 	{
 		case NET::ModelBegin:
 		{
-			std::cout << "Model" << std::endl;
 			M_Model(p);
 			return;
 		}
 		case NET::EntityBegin:
 		{
-			std::cout << "Entity" << std::endl;
 			M_GfxEntity(p, false);
 			return;
 		}
 		case NET::FullEntityBegin:
 		{
-			std::cout << "Entityfull" << std::endl;
 			M_GfxEntity(p, true);
 			return;
 		}
 		case NET::EntityDeleted:
 		{
-			std::cout << "Entitydel" << std::endl;
 			M_EntityDeleted(p);
 			return;
 		}

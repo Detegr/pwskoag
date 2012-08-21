@@ -117,9 +117,9 @@ int main()
 					(*it)->M_DumpFullInstance(packet);
 				}
 				sock.M_Send(packet, ip, port);
+				packet.M_Clear();
 			}
 		}
-		packet.M_Clear();
 		for(std::vector<C_Entity*>::const_iterator it=players.begin(); it!=players.end(); ++it)
 		{
 			*(*it) >> packet;

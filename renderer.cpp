@@ -82,6 +82,7 @@ void C_Renderer::M_DeleteEntity(C_GfxEntity* e)
 	{
 		if((*it) == e)
 		{
+			m_Entities.erase(it);
 			delete e;
 			return;
 		}

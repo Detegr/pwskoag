@@ -76,6 +76,17 @@ void C_Renderer::M_AddEntity(C_GfxEntity* e)
 {
 	m_Entities.push_back(e);
 }
+void C_Renderer::M_DeleteEntity(C_GfxEntity* e)
+{
+	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
+	{
+		if((*it) == e)
+		{
+			delete e;
+			return;
+		}
+	}
+}
 
 C_GfxEntity* C_Renderer::M_GetEntity(unsigned short id)
 {

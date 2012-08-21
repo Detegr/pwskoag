@@ -11,42 +11,60 @@ using namespace dtglib;
 
 class C_DummyParse {};
 
-template <class T>
 struct C_PacketParser
 {
-		static void* M_SpecificParse(C_Packet& p, void* data=NULL);
-		static T& M_Parse(C_Packet& p);
+		static void M_GfxEntity(C_Packet& p, bool full);
+		static void M_Parse(C_Packet& p);
+		static void M_EntityDeleted(C_Packet& p);
+		static void M_Model(C_Packet& p);
 };
 
-template <class T>
-T& C_PacketParser<T>::M_Parse(C_Packet& p)
+void C_PacketParser::M_Parse(C_Packet& p)
 {
 	unsigned char header;
 	p >> header;
 	switch(header)
 	{
-		case NET::ModelBegin: return *(T*)C_PacketParser<C_Model>::M_SpecificParse(p); break;
+		case NET::ModelBegin:
+		{
+			std::cout << "Model" << std::endl;
+			M_Model(p);
+			return;
+		}
 		case NET::EntityBegin:
 		{
-			bool b=false;
-			return *(T*)C_PacketParser<C_GfxEntity>::M_SpecificParse(p, &b);
-			break;
+			std::cout << "Entity" << std::endl;
+			M_GfxEntity(p, false);
+			return;
 		}
 		case NET::FullEntityBegin:
 		{
-			bool b=true;
-			return *(T*)C_PacketParser<C_GfxEntity>::M_SpecificParse(p, &b);
-			break;
+			std::cout << "Entityfull" << std::endl;
+			M_GfxEntity(p, true);
+			return;
+		}
+		case NET::EntityDeleted:
+		{
+			std::cout << "Entitydel" << std::endl;
+			M_EntityDeleted(p);
+			return;
 		}
 	}
+	std::cout << "UNKNOWN HEADER: " << (int)header << std::endl;
 	assert(false);
-	return *(T*)NULL;
+	return;
 }
 
-template <>
-void* C_PacketParser<C_GfxEntity>::M_SpecificParse(C_Packet& p, void* data)
+void C_PacketParser::M_EntityDeleted(C_Packet& p)
 {
-	bool full=*(bool*)data;
+	unsigned short id;
+	p >> id;
+	C_Renderer* r=C_Singleton::M_Renderer();
+	r->M_DeleteEntity(r->M_GetEntity(id));
+}
+
+void C_PacketParser::M_GfxEntity(C_Packet& p, bool full)
+{
 	std::string name;
 	float scale,x,y,angle;
 	scale=x=y=angle=0.0f;
@@ -67,11 +85,9 @@ void* C_PacketParser<C_GfxEntity>::M_SpecificParse(C_Packet& p, void* data)
 		e->M_SetPosition(x/10.0f, y/10.0f);
 		e->M_SetRotation(angle);
 	}
-	return e;
 }
 
-template <>
-void* C_PacketParser<C_Model>::M_SpecificParse(C_Packet& p, void*)
+void C_PacketParser::M_Model(C_Packet& p)
 {
 	unsigned char header;
 
@@ -92,6 +108,5 @@ void* C_PacketParser<C_Model>::M_SpecificParse(C_Packet& p, void*)
 	p >> w;
 	p >> h;
 
-	const C_Model* m=C_Singleton::M_ModelManager()->M_Create(name, verts, w, h);
-	return (void*)m;
+	C_Singleton::M_ModelManager()->M_Create(name, verts, w, h);
 }

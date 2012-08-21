@@ -35,7 +35,7 @@ bool M_DoConnection(C_UdpSocket& sock)
 	{
 		if((sock.M_Ip() == ip) && (sock.M_Port() == port))
 		{
-			while(p.M_Size()) C_PacketParser<C_DummyParse>::M_Parse(p);
+			while(p.M_Size()) C_PacketParser::M_Parse(p);
 			return true;
 		}
 	}
@@ -88,9 +88,9 @@ int main()
 				sock.M_Send(keys);
 			}
 			prevkeyvec=keyvec;
-			std::cout << p.M_Size() << std::endl;
-			while(p.M_Size()) C_PacketParser<C_DummyParse>::M_Parse(p);
+			while(p.M_Size()) C_PacketParser::M_Parse(p);
 		}
+		g_Sleep(1);
 		p.M_Clear();
 		r->M_Draw();
 

@@ -25,4 +25,5 @@ class C_Entity
 		void M_DumpFullInstance(dtglib::C_Packet& p);
 		float M_Scale() const {return m_Scale;}
 		std::string M_Name() const {return m_Model.M_Name();}
+		unsigned short M_Id() const {return m_Id;}
 };

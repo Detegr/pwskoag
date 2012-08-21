@@ -28,5 +28,6 @@ class C_Renderer
 		void M_Draw();
 		void M_Use(const C_Shader& s);
 		void M_AddEntity(C_GfxEntity* e);
+		void M_DeleteEntity(C_GfxEntity* e);
 		C_GfxEntity* M_GetEntity(unsigned short id);
 };

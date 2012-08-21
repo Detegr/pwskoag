@@ -83,7 +83,13 @@ int main()
 			{
 				unsigned char header=0;
 				packet >> header;
-				if(header == NET::Disconnect) pool.M_Remove(c);
+				if(header == NET::Disconnect)
+				{
+					packet.M_Clear();
+					packet << (unsigned char)NET::EntityDeleted << c->M_GetEntity()->M_Id();
+					p->M_DestroyEntity(c->M_GetEntity());
+					pool.M_Remove(c);
+				}
 				else if((header & 0xF0) == 0xF0)
 				{
 					c->M_SetKeys(header);
@@ -91,7 +97,6 @@ int main()
 			}
 			else
 			{
-				std::cout << "New connection." << std::endl;
 				packet.M_Clear();
 				c=pool.M_Add(new C_Connection(ip,port));
 				C_Entity* e=p->M_CreateDynamicEntity(m->M_Get("triangle"), 0.08f);
@@ -102,6 +107,11 @@ int main()
 				m->M_Get("box") >> packet;
 				g->M_DumpFullInstance(packet);
 				e->M_DumpFullInstance(packet);
+				players.push_back(e);
+				for(std::vector<C_Entity*>::const_iterator it=players.begin(); it!=players.end(); ++it)
+				{
+					(*it)->M_DumpFullInstance(packet);
+				}
 				for(std::vector<C_Entity*>::const_iterator it=boxes.begin(); it!=boxes.end(); ++it)
 				{
 					(*it)->M_DumpFullInstance(packet);
@@ -110,6 +120,10 @@ int main()
 			}
 		}
 		packet.M_Clear();
+		for(std::vector<C_Entity*>::const_iterator it=players.begin(); it!=players.end(); ++it)
+		{
+			*(*it) >> packet;
+		}
 		for(std::vector<C_Entity*>::const_iterator it=boxes.begin(); it!=boxes.end(); ++it)
 		{
 			*(*it) >> packet;

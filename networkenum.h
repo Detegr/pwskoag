@@ -10,6 +10,7 @@ struct NET
 		ModelIndex,
 		ModelDimensions,
 		EntityBegin,
-		FullEntityBegin
+		FullEntityBegin,
+		EntityDeleted
 	};
 };

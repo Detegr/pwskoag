@@ -76,7 +76,6 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 			force *= 6.0f;
 			b->ApplyForceToCenter(force);
 		}
-		*e >> p;
 		sock.M_Send(p, c->m_Ip, c->m_Port);
 	}
 }

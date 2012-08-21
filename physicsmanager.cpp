@@ -33,3 +33,17 @@ void C_PhysicsManager::M_Simulate()
 	double dt=C_Singleton::M_Timer()->M_Get()/0.016;
 	m_World.Step(m_TimeStep*dt, m_VelocityIterations, m_PositionIterations);
 }
+
+void C_PhysicsManager::M_DestroyEntity(C_Entity* e)
+{
+	for(std::vector<C_Entity*>::iterator it=m_Bodies.begin(); it!=m_Bodies.end(); ++it)
+	{
+		if((*it) == e)
+		{
+			m_Bodies.erase(it);
+			m_World.DestroyBody(e->M_Body());
+			delete e;
+			return;
+		}
+	}
+}

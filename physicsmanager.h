@@ -16,7 +16,7 @@ class C_PhysicsManager
 		C_PhysicsManager();
 		~C_PhysicsManager();
 		static float32 m_TimeStep;
-		static const int32 m_VelocityIterations = 6; // 8
+		static const int32 m_VelocityIterations = 8; // 8
 		static const int32 m_PositionIterations = 3; // 3
 		b2World m_World;
 

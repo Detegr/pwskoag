@@ -7,7 +7,7 @@ float32 C_PhysicsManager::m_TimeStep;
 C_PhysicsManager::C_PhysicsManager() :
 	m_World(b2Vec2(0.0f, 0.0f))
 {
-	C_PhysicsManager::m_TimeStep = 1.0f/60.0f;
+	C_PhysicsManager::m_TimeStep = 1.0f/30.0f;
 	m_World.SetAllowSleeping(true);
 }
 C_PhysicsManager::~C_PhysicsManager()
@@ -30,7 +30,7 @@ C_Entity* C_PhysicsManager::M_CreateStaticEntity(const C_Model& m, float scale)
 
 void C_PhysicsManager::M_Simulate()
 {
-	double dt=C_Singleton::M_Timer()->M_Get()/0.016;
+	double dt=C_Singleton::M_Timer()->M_Get()/0.030;
 	m_World.Step(m_TimeStep*dt, m_VelocityIterations, m_PositionIterations);
 }
 

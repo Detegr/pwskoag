@@ -36,10 +36,14 @@ int main()
 
 	C_ModelManager* m = C_Singleton::M_ModelManager();
 	if(!m->M_Load("triangle", "test.2dmodel")) exit(1);
-	if(!m->M_Load("ground", "ground.2dmodel")) exit(1);
+	if(!m->M_Load("horizwall", "horizwall.2dmodel")) exit(1);
+	if(!m->M_Load("vertwall", "vertwall.2dmodel")) exit(1);
 	if(!m->M_Load("box", "box.2dmodel")) exit(1);
 
-	C_Entity* g=p->M_CreateStaticEntity(m->M_Get("ground"));
+	C_Entity* top=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
+	C_Entity* bottom=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
+	C_Entity* left=p->M_CreateStaticEntity(m->M_Get("vertwall"), 2.0f);
+	C_Entity* right=p->M_CreateStaticEntity(m->M_Get("vertwall"), 2.0f);
 	std::vector<C_Entity*> boxes;
 	std::vector<C_Entity*> players;
 
@@ -68,10 +72,14 @@ int main()
 		x+=0.15f;
 		boxes.push_back(b);
 	}
-	g->M_SetPosition(0,-0.8f);
+	top->M_SetPosition(0,1.0f);
+	bottom->M_SetPosition(0,-1.0f);
+	left->M_SetPosition(-1.6f,0.0f);
+	right->M_SetPosition(1.6f,0.0f);
 
 	C_IpAddress ip; unsigned short port;
 	C_Packet packet;
+	C_Packet newplayers;
 
 	while(run)
 	{
@@ -86,8 +94,15 @@ int main()
 				if(header == NET::Disconnect)
 				{
 					packet.M_Clear();
+					for(std::vector<C_Entity*>::iterator it=players.begin(); it!=players.end(); ++it)
+					{
+						if((*it) == c->M_GetEntity())
+						{
+							players.erase(it);
+							break;
+						}
+					}
 					packet << (unsigned char)NET::EntityDeleted << c->M_GetEntity()->M_Id();
-					p->M_DestroyEntity(c->M_GetEntity());
 					pool.M_Remove(c);
 				}
 				else if((header & 0xF0) == 0xF0)
@@ -103,11 +118,15 @@ int main()
 				e->M_SetPosition(0,0);
 				c->M_SetEntity(e);
 				m->M_Get("triangle") >> packet;
-				m->M_Get("ground") >> packet;
+				m->M_Get("horizwall") >> packet;
+				m->M_Get("vertwall") >> packet;
 				m->M_Get("box") >> packet;
-				g->M_DumpFullInstance(packet);
+				top->M_DumpFullInstance(packet);
+				bottom->M_DumpFullInstance(packet);
+				left->M_DumpFullInstance(packet);
+				right->M_DumpFullInstance(packet);
 				e->M_DumpFullInstance(packet);
-				players.push_back(e);
+				e->M_DumpFullInstance(newplayers);
 				for(std::vector<C_Entity*>::const_iterator it=players.begin(); it!=players.end(); ++it)
 				{
 					(*it)->M_DumpFullInstance(packet);
@@ -118,6 +137,7 @@ int main()
 				}
 				sock.M_Send(packet, ip, port);
 				packet.M_Clear();
+				players.push_back(e);
 			}
 		}
 		for(std::vector<C_Entity*>::const_iterator it=players.begin(); it!=players.end(); ++it)
@@ -129,8 +149,13 @@ int main()
 			*(*it) >> packet;
 		}
 		pool.M_SendToAll(sock, packet);
+		if(newplayers.M_Size())
+		{
+			pool.M_SendToAll(sock, newplayers);
+			newplayers.M_Clear();
+		}
 		packet.M_Clear();
-		g_Sleep(20-((int)t->M_Get()*1000));
+		g_Sleep(18-((int)t->M_Get()*1000));
 		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();

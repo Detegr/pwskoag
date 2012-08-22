@@ -1,5 +1,5 @@
 #include "ConnectionManager.h"
-#include <iostream>
+#include "serversingleton.h"
 
 using namespace dtglib;
 
@@ -41,6 +41,7 @@ void C_ConnectionPool::M_Remove(C_Connection* c)
 		c->m_Prev->m_Next=c->m_Next;
 		c->m_Next->m_Prev=c->m_Prev;
 	}
+	C_Singleton::M_PhysicsManager()->M_DestroyEntity(c->M_GetEntity());
 	delete c;
 }
 

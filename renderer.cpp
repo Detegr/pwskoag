@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stdexcept>
 #include "glm/gtc/type_ptr.hpp"
+#include "singleton.h"
 
 C_Renderer::C_Renderer(unsigned width, unsigned height) :
 	m_AspectRatio((float)width/(float)height),
@@ -30,7 +31,7 @@ C_Renderer::C_Renderer(unsigned width, unsigned height) :
 		glfwTerminate();
 		throw std::runtime_error("OpenGL 3.3 is not supported.");
 	}
-	glClearColor(0.0f, 0.0f, 0.3f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
 
 	glGenVertexArrays(1,&m_VertexArray);
 	glBindVertexArray(m_VertexArray);
@@ -54,6 +55,8 @@ void C_Renderer::M_Draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
 	{
+		if((*it)->M_ModelName() == "triangle") M_Use(C_Singleton::M_ShaderManager()->M_Get("green"));
+		else M_Use(C_Singleton::M_ShaderManager()->M_Get("minimal"));
 		glm::mat4 MVP=m_Projection*m_View*(*it)->M_ModelMatrix();
 		glUniformMatrix4fv(m_MVP, 1, GL_FALSE, glm::value_ptr(MVP));
 		(*it)->M_Draw();

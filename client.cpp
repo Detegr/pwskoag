@@ -69,6 +69,7 @@ int main()
 	C_ShaderManager* s = C_Singleton::M_ShaderManager();
 
 	s->M_Load("minimal");
+	s->M_Load("green");
 	r->M_Use(s->M_Get("minimal"));
 
 	bool running=true;

@@ -30,4 +30,5 @@ class C_Renderer
 		void M_AddEntity(C_GfxEntity* e);
 		void M_DeleteEntity(C_GfxEntity* e);
 		C_GfxEntity* M_GetEntity(unsigned short id);
+		const std::vector<C_GfxEntity*>& M_Entities() const { return m_Entities; }
 };

@@ -1,24 +1,63 @@
 #pragma once
 #include <cstdio>
 #include <sstream>
+#include <iostream>
 
 template <class T>
 class C_RingBuffer
 {
-	private:
+	protected:
+		friend class iterator;
+		class iterator
+		{
+			private:
+				C_RingBuffer<T> m_Ring;
+				T* m_Pos;
+			public:
+				iterator()
+				{
+					m_Pos=m_Buffer;
+				}
+				iterator(const C_RingBuffer<T>& ring)
+				{
+					m_Ring=ring;
+					m_Pos=m_Ring.m_Cursor;
+				}
+				T* next()
+				{
+					if(!m_Ring.m_Full) return NULL;
+					m_Pos++;
+					if(m_Pos-m_Ring.m_Buffer >= m_Size) m_Pos=m_Ring.m_Buffer;
+					return m_Pos;
+				}
+				T* prev()
+				{
+					if(!m_Ring.m_Full) return NULL;
+					m_Pos--;
+					std::cout << m_Pos - m_Ring.m_Buffer << std::endl;
+					if(m_Pos-m_Ring.m_Buffer <= 0) m_Pos=m_Ring.m_Buffer+m_Ring.m_Size;
+					return m_Pos;
+				}
+		};
 		size_t m_Size;
+		size_t m_Used;
 		T* m_Buffer;
 		T* m_Cursor;
+		bool m_Full;
 	public:
-		C_RingBuffer(size_t size=5);
+		C_RingBuffer(size_t size=3);
 		~C_RingBuffer();
 		void M_Add(const T& val);
+		bool M_Full() const
+		{
+			return m_Full;
+		}
 		T M_Median() const;
 
 		friend std::ostream& operator<<(std::ostream& o, const C_RingBuffer& rb)
 		{
 			o << "RING[ ";
-			for(int i=0; i<rb.m_Size; ++i)
+			for(size_t i=0; i<rb.m_Size; ++i)
 			{
 				bool cursor=false;
 				if(&rb.m_Buffer[i] == rb.m_Cursor)
@@ -27,7 +66,7 @@ class C_RingBuffer
 					cursor=true;
 				}
 				if(rb.m_Buffer[i]) o << rb.m_Buffer[i];
-				else o << "~0";
+				else o << "~";
 				if(cursor) o << ")";
 				o << " ";
 			}
@@ -37,10 +76,9 @@ class C_RingBuffer
 };
 
 template <class T>
-C_RingBuffer<T>::C_RingBuffer(size_t size) : m_Size(size), m_Buffer(NULL), m_Cursor(NULL)
+C_RingBuffer<T>::C_RingBuffer(size_t size) : m_Size(size), m_Used(0), m_Buffer(NULL), m_Cursor(NULL)
 {
 	m_Buffer = new T[m_Size];
-	m_Cursor=m_Buffer;
 }
 
 template <class T>
@@ -52,24 +90,68 @@ C_RingBuffer<T>::~C_RingBuffer()
 template <class T>
 void C_RingBuffer<T>::M_Add(const T& val)
 {
-	*m_Cursor=val;
-	m_Cursor++;
-	if(m_Cursor-m_Buffer+1 > m_Size) m_Cursor=m_Buffer;
+	if(!m_Cursor)
+	{
+		m_Cursor=m_Buffer;
+		*m_Cursor=val;
+		if(m_Used!=m_Size) m_Used++;
+	}
+	else
+	{
+		if(m_Used!=m_Size) m_Used++;
+		m_Cursor++;
+		if(m_Cursor-m_Buffer >= (int)m_Size)
+		{
+			m_Cursor=m_Buffer;
+			m_Full=true;
+		}
+		*m_Cursor=val;
+	}
 }
 
 template <class T>
 T C_RingBuffer<T>::M_Median() const
 {
 	T ret;
-	T* c=m_Buffer;
-	size_t s=0;
-	for(size_t i=0; i<m_Size; ++i)
+	memset(&ret, 0, sizeof(T));
+	for(size_t i=0; i<m_Used; ++i)
 	{
-		if(m_Buffer[i])
-		{
-			ret+=m_Buffer[i];
-			s++;
-		}
+		ret+=m_Buffer[i];
 	}
-	return ret/s;
+	if(m_Used==0) return 0;
+	return ret/m_Used;
+}
+
+template <class T>
+class C_Extrapolator : public C_RingBuffer<T>
+{
+	private:
+		using C_RingBuffer<T>::m_Buffer;
+		using C_RingBuffer<T>::m_Size;
+		using C_RingBuffer<T>::m_Cursor;
+		bool m_Prev;
+		T m_PrevVal;
+		T m_Current;
+	public:
+		C_RingBuffer<T> m_Hops;
+		C_Extrapolator(size_t size=3) : C_RingBuffer<T>(size), m_Prev(false), m_Hops(size-1) {}
+		void M_Add(const T& val);
+		T M_ExtrapolateValue() const;
+		T M_Current() const { return m_Current; }
+};
+
+template <class T>
+void C_Extrapolator<T>::M_Add(const T& val)
+{
+	m_Current=val;
+	C_RingBuffer<T>::M_Add(val);
+	if(m_Prev) m_Hops.M_Add(val - m_PrevVal);
+	m_Prev=true;
+	m_PrevVal=val;
+}
+
+template <class T>
+T C_Extrapolator<T>::M_ExtrapolateValue() const
+{
+	return *m_Cursor + m_Hops.M_Median();
 }

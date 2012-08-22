@@ -72,6 +72,7 @@ int main()
 		x+=0.15f;
 		boxes.push_back(b);
 	}
+
 	top->M_SetPosition(0,1.0f);
 	bottom->M_SetPosition(0,-1.0f);
 	left->M_SetPosition(-1.6f,0.0f);
@@ -155,7 +156,7 @@ int main()
 			newplayers.M_Clear();
 		}
 		packet.M_Clear();
-		g_Sleep(18-((int)t->M_Get()*1000));
+		g_Sleep(33-((int)t->M_Get()*1000));
 		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();

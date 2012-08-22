@@ -1,13 +1,13 @@
 #include "gfxtimer.h"
 
-C_Timer::C_Timer() : m_Frames(0), m_Time(glfwGetTime())
+C_GfxTimer::C_GfxTimer() : m_Frames(0), m_Time(glfwGetTime())
 {
 	m_PrevTime=0;
 	m_Dt=0;
 	memset(title, 0, 64);
 }
 
-void C_Timer::M_SetTime()
+void C_GfxTimer::M_SetTime()
 {
 	m_Frames++;
 	double t=glfwGetTime();
@@ -22,5 +22,5 @@ void C_Timer::M_SetTime()
 		m_Frames=0;
 	}
 }
-double C_Timer::M_DT() const { return m_Dt; }
-double C_Timer::M_MSPF() const { return m_MSPF; }
+double C_GfxTimer::M_DT() const { return m_Dt; }
+double C_GfxTimer::M_MSPF() const { return m_MSPF; }

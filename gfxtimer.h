@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstring>
 
-class C_Timer
+class C_GfxTimer
 {
 	private:
 		unsigned int m_Frames;
@@ -15,7 +15,7 @@ class C_Timer
 		float m_MSPF;
 		char title[64];
 	public:
-		C_Timer();
+		C_GfxTimer();
 		void M_SetTime();
 		double M_DT() const;
 		double M_MSPF() const;

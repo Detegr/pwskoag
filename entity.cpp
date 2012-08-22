@@ -29,8 +29,19 @@ void C_GfxEntity::M_Translate(float amount, unsigned char axis)
 
 void C_GfxEntity::M_SetPosition(float x, float y)
 {
+	m_Ex.M_Add(x);
+	m_Ey.M_Add(y);
 	m_TranslationMatrix = glm::translate(glm::mat4(1.0), glm::vec3(x/m_Scale,y/m_Scale,0.0f));
 	m_Pos.x=x*m_Scale; m_Pos.y=y*m_Scale;
+}
+void C_GfxEntity::M_ExtrapolatePosition(double dt)
+{
+	float xx = m_Ex.M_ExtrapolateValue();
+	float yy = m_Ey.M_ExtrapolateValue();
+	float xxx = m_Ex.M_Current() + ((xx - m_Ex.M_Current()) * (dt/0.04));
+	float yyy = m_Ey.M_Current() + ((yy - m_Ey.M_Current()) * (dt/0.04));
+	m_TranslationMatrix = glm::translate(glm::mat4(1.0), glm::vec3(xxx/m_Scale,yyy/m_Scale,0.0f));
+	m_Pos.x=xxx*m_Scale; m_Pos.y=yyy*m_Scale;
 }
 
 void C_GfxEntity::M_Scale(float amount)
@@ -50,7 +61,14 @@ void C_GfxEntity::M_Rotate(float amount)
 
 void C_GfxEntity::M_SetRotation(float amount)
 {
+	m_Er.M_Add(amount*(180/3.14));
 	m_RotationMatrix = glm::rotate(glm::mat4(1.0), (const float)(amount*(180/3.14)), glm::vec3(0.0f, 0.0f, 1.0f));
+}
+void C_GfxEntity::M_ExtrapolateRotation(double dt)
+{
+	float a=m_Er.M_ExtrapolateValue();
+	float ca=m_Er.M_Current() + ((a - m_Er.M_Current()) * (dt/0.04));
+	m_RotationMatrix = glm::rotate(glm::mat4(1.0), (const float)ca, glm::vec3(0.0f, 0.0f, 1.0f));
 }
 const glm::mat4& C_GfxEntity::M_ModelMatrix()
 {

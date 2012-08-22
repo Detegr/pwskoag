@@ -4,6 +4,7 @@
 #include "networkenum.h"
 #include "packetparser.h"
 #include "input.h"
+#include "timer.h"
 
 using namespace dtglib;
 
@@ -77,10 +78,13 @@ int main()
 
 	unsigned char keyvec=0;
 	unsigned char prevkeyvec=0;
+	C_Timer idt;
+	idt.M_Reset();
 	while(running)
 	{
-		if(sock.M_Receive(p, 1, NULL, NULL))
+		if(sock.M_Receive(p, 0, NULL, NULL))
 		{
+			idt.M_Reset();
 			C_Packet keys;
 			keyvec=getkeys();
 			if(prevkeyvec != 0xF0)
@@ -90,6 +94,15 @@ int main()
 			}
 			prevkeyvec=keyvec;
 			while(p.M_Size()) C_PacketParser::M_Parse(p);
+		}
+		else
+		{
+			const std::vector<C_GfxEntity*>& entities = r->M_Entities();
+			for(std::vector<C_GfxEntity*>::const_iterator it=entities.begin(); it!=entities.end(); ++it)
+			{
+				(*it)->M_ExtrapolatePosition(idt.M_Get());
+				(*it)->M_ExtrapolateRotation(idt.M_Get());
+			}
 		}
 		g_Sleep(1);
 		p.M_Clear();

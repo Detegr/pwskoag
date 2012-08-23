@@ -4,6 +4,8 @@
 #include <GL3/gl3.h>
 #include <cstdio>
 #include <cstring>
+#include "dtglib/Base.h"
+
 #ifdef _WIN32
 #else
 	#include <sys/time.h>
@@ -13,7 +15,7 @@ class C_Timer
 {
 	private:
 		#ifdef _WIN32
-			uint64 m_Time;
+			dtglib::uint64 m_Time;
 		#else
 			struct timeval m_Time;
 		#endif

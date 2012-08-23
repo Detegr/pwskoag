@@ -56,7 +56,10 @@ unsigned char getkeys()
 
 int main()
 {
-	C_UdpSocket sock("localhost", 51119);
+	#ifdef _WIN32
+		C_SocketInitializer si;
+	#endif
+	C_UdpSocket sock("192.168.1.2", 51119);
 	if(!M_DoConnection(sock))
 	{
 		std::cerr << "Failed to connect!" << std::endl;
@@ -84,6 +87,7 @@ int main()
 	{
 		if(sock.M_Receive(p, 0, NULL, NULL))
 		{
+			std::cout << p.M_Size() << std::endl;
 			idt.M_Reset();
 			C_Packet keys;
 			keyvec=getkeys();

@@ -17,6 +17,11 @@ C_ModelManager::~C_ModelManager()
 bool C_ModelManager::M_Load(const std::string& name, const std::string& path)
 {
 	std::vector<std::string> f=C_FileReader::M_ReadToArray(path);
+	if(!f.size())
+	{
+		std::cerr << "Failed to load model: " << path << std::endl;
+		return false;
+	}
 	std::stringstream ss;
 	ss.precision(3); // Increase if more precision is needed.
 

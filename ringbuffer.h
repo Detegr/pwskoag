@@ -7,38 +7,6 @@ template <class T>
 class C_RingBuffer
 {
 	protected:
-		friend class iterator;
-		class iterator
-		{
-			private:
-				C_RingBuffer<T> m_Ring;
-				T* m_Pos;
-			public:
-				iterator()
-				{
-					m_Pos=m_Buffer;
-				}
-				iterator(const C_RingBuffer<T>& ring)
-				{
-					m_Ring=ring;
-					m_Pos=m_Ring.m_Cursor;
-				}
-				T* next()
-				{
-					if(!m_Ring.m_Full) return NULL;
-					m_Pos++;
-					if(m_Pos-m_Ring.m_Buffer >= m_Size) m_Pos=m_Ring.m_Buffer;
-					return m_Pos;
-				}
-				T* prev()
-				{
-					if(!m_Ring.m_Full) return NULL;
-					m_Pos--;
-					std::cout << m_Pos - m_Ring.m_Buffer << std::endl;
-					if(m_Pos-m_Ring.m_Buffer <= 0) m_Pos=m_Ring.m_Buffer+m_Ring.m_Size;
-					return m_Pos;
-				}
-		};
 		size_t m_Size;
 		size_t m_Used;
 		T* m_Buffer;

@@ -4,7 +4,7 @@ C_Timer::C_Timer() {M_Reset();}
 double C_Timer::M_Get() const
 {
 	#ifdef _WIN32
-		return (GetTickCount64()-m_Time);
+		return (GetTickCount64()-m_Time) / 1000.0;
 	#else
 		struct timeval cur;
 		gettimeofday(&cur, NULL);

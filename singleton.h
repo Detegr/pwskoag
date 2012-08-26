@@ -3,7 +3,6 @@
 #include "inputhandler.h"
 #include "shadermanager.h"
 #include "modelmanager.h"
-#include "physicsmanager.h"
 #include "gfxtimer.h"
 
 #define DTGLIB_WINDOW_WIDTH 1280

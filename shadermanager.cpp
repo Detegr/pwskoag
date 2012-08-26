@@ -1,6 +1,7 @@
 #include "shadermanager.h"
 #include "filereader.h"
 #include <stdexcept>
+#include <string>
 
 bool C_ShaderManager::M_CheckResult(GLuint id, GLuint status)
 {

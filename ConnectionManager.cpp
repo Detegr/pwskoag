@@ -58,6 +58,8 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 {
 	for(C_Connection* c=m_Head; c; c=c->m_Next)
 	{
+		if(c->M_Pending()) continue;
+
 		C_Entity* e=c->M_GetEntity();
 		b2Body* b=e->M_Body();
 		unsigned char keyvec=c->M_GetKeys();

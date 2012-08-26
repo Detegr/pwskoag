@@ -92,23 +92,33 @@ int main()
 			{
 				unsigned char header=0;
 				packet >> header;
-				if(header == NET::Disconnect)
+				if(c->M_Pending())
 				{
-					packet.M_Clear();
-					for(std::vector<C_Entity*>::iterator it=players.begin(); it!=players.end(); ++it)
+					if(header == NET::Connect)
 					{
-						if((*it) == c->M_GetEntity())
-						{
-							players.erase(it);
-							break;
-						}
+						c->M_Pending(false);
 					}
-					packet << (unsigned char)NET::EntityDeleted << c->M_GetEntity()->M_Id();
-					pool.M_Remove(c);
 				}
-				else if((header & 0xF0) == 0xF0)
+				else
 				{
-					c->M_SetKeys(header);
+					if(header == NET::Disconnect)
+					{
+						packet.M_Clear();
+						for(std::vector<C_Entity*>::iterator it=players.begin(); it!=players.end(); ++it)
+						{
+							if((*it) == c->M_GetEntity())
+							{
+								players.erase(it);
+								break;
+							}
+						}
+						packet << (unsigned char)NET::EntityDeleted << c->M_GetEntity()->M_Id();
+						pool.M_Remove(c);
+					}
+					else if((header & 0xF0) == 0xF0)
+					{
+						c->M_SetKeys(header);
+					}
 				}
 			}
 			else

@@ -27,7 +27,7 @@ inline void g_Sleep(unsigned int ms)
 bool M_DoConnection(C_UdpSocket& sock)
 {
 	C_Packet p;
-	p << NET::Connect;
+	p << (unsigned char)NET::Connect;
 	sock.M_Send(p);
 	p.M_Clear();
 	C_IpAddress ip;
@@ -37,7 +37,9 @@ bool M_DoConnection(C_UdpSocket& sock)
 		if((sock.M_Ip() == ip) && (sock.M_Port() == port))
 		{
 			while(p.M_Size()) C_PacketParser::M_Parse(p);
-			return true;
+			p.M_Clear();
+			p << (unsigned char)NET::Connect;
+			return sock.M_Send(p);
 		}
 	}
 	return false;

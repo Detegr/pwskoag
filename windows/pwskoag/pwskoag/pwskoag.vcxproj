@@ -81,11 +81,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\dtglib\windows\dtglib\dtglib.vcxproj">
-      <Project>{99f1eaf6-5349-41cf-aa96-614104d2a46d}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\..\client.cpp" />
     <ClCompile Include="..\..\..\entity.cpp" />
     <ClCompile Include="..\..\..\filereader.cpp" />
@@ -115,6 +110,11 @@
     <ClInclude Include="..\..\..\singleton.h" />
     <ClInclude Include="..\..\..\timer.h" />
     <ClInclude Include="..\..\..\vec2.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\dtglib\windows\dtglib\dtglib.vcxproj">
+      <Project>{63cee65c-5e90-4af4-84e7-c078ba85bb83}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

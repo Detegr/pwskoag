@@ -1,7 +1,4 @@
 #pragma once
-#include <GL3/gl3w.h>
-#include <GL/glfw.h>
-#include <GL3/gl3.h>
 #include <cstdio>
 #include <cstring>
 #include "dtglib/Base.h"

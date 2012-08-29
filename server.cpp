@@ -48,7 +48,7 @@ int main()
 	std::vector<C_Entity*> players;
 
 	float x=-1.0f;
-	float y=0.9f;
+	float y=0.6f;
 	float size=0.05f;
 	int rows=4;
 	for(int j=0; j<rows; ++j)
@@ -60,7 +60,7 @@ int main()
 			x+=0.15f;
 			boxes.push_back(b);
 		}
-		size-=0.003f;
+		size-=0.005f;
 		y-=2.0f/rows;
 	}
 

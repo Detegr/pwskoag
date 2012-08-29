@@ -1,11 +1,7 @@
 #pragma once
-#include <GL3/gl3w.h>
-#include <GL/glfw.h>
-#include <GL3/gl3.h>
 #include <vector>
 #include <iostream>
 #include "model.h"
-#include "entity.h"
 
 class C_ModelManager
 {

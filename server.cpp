@@ -48,29 +48,20 @@ int main()
 	std::vector<C_Entity*> players;
 
 	float x=-1.0f;
-	float y=0.5f;
-	for(int i=0; i<16; ++i)
+	float y=0.9f;
+	float size=0.05f;
+	int rows=4;
+	for(int j=0; j<rows; ++j)
 	{
-		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.05f);
-		b->M_SetPosition(x, y);
-		x+=0.15f;
-		boxes.push_back(b);
-	}
-	x=-1.0f;
-	for(int i=0; i<16; ++i)
-	{
-		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.04f);
-		b->M_SetPosition(x, y-0.4f);
-		x+=0.15f;
-		boxes.push_back(b);
-	}
-	x=-1.0f;
-	for(int i=0; i<16; ++i)
-	{
-		C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.03f);
-		b->M_SetPosition(x, y-0.8f);
-		x+=0.15f;
-		boxes.push_back(b);
+		x=-1.0f;
+		for(int i=0; i<16; ++i) {
+			C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), size);
+			b->M_SetPosition(x, y);
+			x+=0.15f;
+			boxes.push_back(b);
+		}
+		size-=0.003f;
+		y-=2.0f/rows;
 	}
 
 	top->M_SetPosition(0,1.0f);

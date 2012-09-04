@@ -25,3 +25,6 @@ xcuserdata
 Session.vim
 linux/
 !linux/Makefile
+client
+glm/
+server

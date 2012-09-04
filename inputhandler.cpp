@@ -12,6 +12,7 @@ void C_InputHandler::M_HandleKey(int key, int state)
 		case GLFW_KEY_DOWN: k=DOWN; break;
 		case GLFW_KEY_LEFT: k=LEFT; break;
 		case GLFW_KEY_RIGHT: k=RIGHT; break;
+		case GLFW_KEY_SPACE: k=SPACE; break;
 		case GLFW_KEY_ESC: k=ESC; break;
 		default: k=(Key)-1;
 	}

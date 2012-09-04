@@ -47,8 +47,9 @@ bool M_DoConnection(C_UdpSocket& sock)
 
 unsigned char getkeys()
 {
-	unsigned char keyvec=0xF0;
+	unsigned char keyvec=0x10;
 	C_InputHandler* i = C_Singleton::M_InputHandler();
+	if(i->M_Get(Key::SPACE)) keyvec|=0x20;
 	if(i->M_Get(Key::UP)) keyvec |= 0x8;
 	else if(i->M_Get(Key::DOWN)) keyvec |=0x4;
 	if(i->M_Get(Key::LEFT)) keyvec |= 0x2;
@@ -61,10 +62,11 @@ int main()
 	#ifdef _WIN32
 		C_SocketInitializer si;
 	#endif
-	C_UdpSocket sock("192.168.1.2", 51119);
+	C_IpAddress ip("localhost");
+	C_UdpSocket sock(ip, 51119);
 	if(!M_DoConnection(sock))
 	{
-		std::cerr << "Failed to connect!" << std::endl;
+		std::cerr << "Failed to connect to" << ip << "!" << std::endl;
 		C_Singleton::M_DestroySingletons();
 		return 1;
 	}

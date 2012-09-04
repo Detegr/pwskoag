@@ -60,6 +60,12 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 	{
 		if(c->M_Pending()) continue;
 
+		for(std::vector<C_Entity*>::const_iterator it=c->m_Bullets.begin(); it!=c->m_Bullets.end(); ++it)
+		{
+			(*it)->M_DumpFullInstance(p);
+			//*(*it) >> p;
+		}
+
 		C_Entity* e=c->M_GetEntity();
 		b2Body* b=e->M_Body();
 		unsigned char keyvec=c->M_GetKeys();
@@ -78,6 +84,24 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 			b2Vec2 force = b2Vec2(-sin(a), cos(a));
 			force *= 6.0f;
 			b->ApplyForceToCenter(force);
+		}
+		if(keyvec & 0x20)
+		{
+			C_PhysicsManager* p=C_Singleton::M_PhysicsManager();
+			C_ModelManager* m=C_Singleton::M_ModelManager();
+			C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), 0.01f);
+			b2Body* body=c->M_GetEntity()->M_Body();
+			b2Vec2 pos=body->GetPosition();
+			float angle=body->GetAngle();
+			float speed=10.0f;
+			b2Vec2 newv(-sin(angle), cos(angle));
+			newv*=speed;
+			b2Vec2 align=b2Vec2(-sin(angle), cos(angle));
+			align*=0.2;
+			pos+=align;
+			b->M_Body()->SetTransform(pos, 0.0f);
+			b->M_Body()->SetLinearVelocity(newv);
+			c->m_Bullets.push_back(b);
 		}
 		sock.M_Send(p, c->m_Ip, c->m_Port);
 	}

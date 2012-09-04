@@ -10,6 +10,7 @@ class C_Connection
 		C_Connection* m_Next;
 		C_Connection* m_Prev;
 		C_Entity*	m_Entity;
+		std::vector<C_Entity*> m_Bullets;
 		unsigned char m_KeyVec;
 		bool m_Pending;
 	public:

@@ -6,5 +6,6 @@ enum Key
 	DOWN,
 	LEFT,
 	RIGHT,
+	SPACE,
 	ESC
 };

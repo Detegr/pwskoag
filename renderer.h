@@ -6,6 +6,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "shadermanager.h"
 #include "modelmanager.h"
+#include "entity.h"
 
 class C_Renderer
 {

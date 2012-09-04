@@ -54,7 +54,7 @@ int main()
 	for(int j=0; j<rows; ++j)
 	{
 		x=-1.0f;
-		for(int i=0; i<16; ++i) {
+		for(int i=0; i<4; ++i) {
 			C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), size);
 			b->M_SetPosition(x, y);
 			x+=0.15f;
@@ -106,7 +106,7 @@ int main()
 						packet << (unsigned char)NET::EntityDeleted << c->M_GetEntity()->M_Id();
 						pool.M_Remove(c);
 					}
-					else if((header & 0xF0) == 0xF0)
+					else if(header & 0x10)
 					{
 						c->M_SetKeys(header);
 					}

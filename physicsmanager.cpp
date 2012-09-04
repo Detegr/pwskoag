@@ -22,6 +22,12 @@ C_Entity* C_PhysicsManager::M_CreateDynamicEntity(const C_Model& m, float scale)
 	m_Bodies.push_back(new C_Entity(m_World,m,scale,true));
 	return m_Bodies.back();
 }
+C_Bullet* C_PhysicsManager::M_CreateBullet(const C_Model& m, float scale)
+{
+	C_Bullet* b=new C_Bullet(m_World,m,scale,true);
+	m_Bodies.push_back(b);
+	return b;
+}
 C_Entity* C_PhysicsManager::M_CreateStaticEntity(const C_Model& m, float scale)
 {
 	m_Bodies.push_back(new C_Entity(m_World,m,scale,false));

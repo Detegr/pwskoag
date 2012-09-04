@@ -7,7 +7,7 @@ OSXLIBS=-framework OpenGL -framework Cocoa -lglfw -lBox2D -ldtglib
 SOURCES=singleton.cpp renderer.cpp inputhandler.cpp shadermanager.cpp filereader.cpp modelmanager.cpp entity.cpp model.cpp gfxtimer.cpp timer.cpp
 MAIN=client.cpp
 SERVERMAIN=server.cpp
-SERVERSOURCES=serversingleton.cpp filereader.cpp modelmanager.cpp model.cpp physicsmanager.cpp physicalentity.cpp timer.cpp ConnectionManager.cpp
+SERVERSOURCES=serversingleton.cpp filereader.cpp modelmanager.cpp model.cpp physicsmanager.cpp physicalentity.cpp timer.cpp ConnectionManager.cpp bullet.cpp
 SERVERHEADERS=$(SERVERSOURCES:.cpp=.h)
 SERVEROBJECTS=$(SERVERSOURCES:.cpp=.o)
 HEADERS=$(SOURCES:.cpp=.h)

@@ -7,7 +7,7 @@
 class C_Entity
 {
 	friend class C_PhysicsManager;
-	private:
+	protected:
 		C_Entity() {}
 		C_Entity(const C_Entity&) {}
 

@@ -92,11 +92,11 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 			b2Body* body=c->M_GetEntity()->M_Body();
 			b2Vec2 pos=body->GetPosition();
 			float angle=body->GetAngle();
-			float speed=10.0f;
+			float speed=20.0f;
 			b2Vec2 newv(-sin(angle), cos(angle));
 			newv*=speed;
 			b2Vec2 align=b2Vec2(-sin(angle), cos(angle));
-			align*=0.2;
+			//align*=0.2;
 			pos+=align;
 			b->M_Body()->SetTransform(pos, 0.0f);
 			b->M_Body()->SetLinearVelocity(newv);

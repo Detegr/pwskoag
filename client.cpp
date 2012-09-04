@@ -62,11 +62,11 @@ int main()
 	#ifdef _WIN32
 		C_SocketInitializer si;
 	#endif
-	C_IpAddress ip("localhost");
+	C_IpAddress ip("127.0.0.1");
 	C_UdpSocket sock(ip, 51119);
 	if(!M_DoConnection(sock))
 	{
-		std::cerr << "Failed to connect to" << ip << "!" << std::endl;
+		std::cerr << "Failed to connect to " << ip << "!" << std::endl;
 		C_Singleton::M_DestroySingletons();
 		return 1;
 	}
@@ -91,7 +91,6 @@ int main()
 	{
 		if(sock.M_Receive(p, 0, NULL, NULL))
 		{
-			std::cout << p.M_Size() << std::endl;
 			idt.M_Reset();
 			C_Packet keys;
 			keyvec=getkeys();

@@ -1,6 +1,6 @@
 #include "bullet.h"
 
-C_Bullet::C_Bullet(b2World& w, const C_Model& m, float scale, bool dynamic) : C_Entity(w,m,scale,dynamic)
+C_Bullet::C_Bullet(b2World& w, const C_Model& m, float scale, bool dynamic) : C_Entity(w,m,scale,dynamic,C_Entity::Type::Bullet)
 {}
 
 void C_Bullet::PostSolve(b2Contact*, const b2ContactImpulse*)

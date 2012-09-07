@@ -7,17 +7,24 @@
 class C_Entity
 {
 	friend class C_PhysicsManager;
+	public:
+		enum Type
+		{
+			Default=0,
+			Bullet
+		};
 	protected:
 		C_Entity() {}
 		C_Entity(const C_Entity&) {}
 
 		unsigned short m_Id;
 		C_Model m_Model;
-		float m_Scale;
-		bool m_Dynamic;
+		float	m_Scale;
+		bool	m_Dynamic;
 		b2Body* m_Body;
+		Type	m_Type;
 
-		C_Entity(b2World& w, const C_Model& m, float scale=1.0f, bool dynamic=true);
+		C_Entity(b2World& w, const C_Model& m, float scale=1.0f, bool dynamic=true, Type t=Default);
 	public:
 		b2Body* M_Body() { return m_Body; }
 		void M_SetPosition(float x, float y);

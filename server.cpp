@@ -3,6 +3,7 @@
 #include "serversingleton.h"
 #include "ConnectionManager.h"
 #include "networkenum.h"
+#include "contactlistener.h"
 
 using namespace dtglib;
 
@@ -25,13 +26,14 @@ inline void g_Sleep(unsigned int ms)
 int main()
 {
 	C_UdpSocket sock(51119);
-	sock.M_Bind();
-	//C_Thread connectionhandler(&handleconnections, &sock);
+	try {sock.M_Bind();} catch(const std::runtime_error& e) {std::cerr << "Failed to bind socket!" << std::endl; return 1;}
 
 	bool run=true;
 
 	C_ConnectionPool pool;
+	C_ContactListener contactlistener;
 	C_PhysicsManager* p = C_Singleton::M_PhysicsManager();
+	p->M_SetContactListener(new C_ContactListener);
 	C_Timer* t = C_Singleton::M_Timer();
 
 	C_ModelManager* m = C_Singleton::M_ModelManager();

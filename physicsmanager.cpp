@@ -16,6 +16,7 @@ C_PhysicsManager::~C_PhysicsManager()
 	{
 		delete *it;
 	}
+	delete m_ContactListener;
 }
 C_Entity* C_PhysicsManager::M_CreateDynamicEntity(const C_Model& m, float scale)
 {
@@ -52,4 +53,10 @@ void C_PhysicsManager::M_DestroyEntity(C_Entity* e)
 			return;
 		}
 	}
+}
+
+void C_PhysicsManager::M_SetContactListener(b2ContactListener* cl)
+{
+	m_ContactListener=cl;
+	m_World.SetContactListener(m_ContactListener);
 }

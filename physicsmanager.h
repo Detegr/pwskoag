@@ -20,6 +20,7 @@ class C_PhysicsManager
 		static const int32 m_VelocityIterations = 8; // 8
 		static const int32 m_PositionIterations = 3; // 3
 		b2World m_World;
+		b2ContactListener* m_ContactListener;
 
 		std::vector<C_Entity*> m_Bodies;
 	public:
@@ -28,4 +29,5 @@ class C_PhysicsManager
 		C_Entity* M_CreateStaticEntity(const C_Model& m, float s=1.0f);
 		C_Bullet* M_CreateBullet(const C_Model& m, float s=1.0f);
 		void M_DestroyEntity(C_Entity* e);
+		void M_SetContactListener(b2ContactListener* cl);
 };

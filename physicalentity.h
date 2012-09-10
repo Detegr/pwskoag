@@ -26,6 +26,7 @@ class C_Entity
 
 		C_Entity(b2World& w, const C_Model& m, float scale=1.0f, bool dynamic=true, Type t=Default);
 	public:
+		static const int BULLET_HITS=2;
 		b2Body* M_Body() { return m_Body; }
 		void M_SetPosition(float x, float y);
 		void operator>>(dtglib::C_Packet& p);

@@ -48,11 +48,11 @@ void C_PhysicsManager::M_DestroyEntity(C_Entity* e)
 		if((*it) == e)
 		{
 			m_Bodies.erase(it);
-			m_World.DestroyBody(e->M_Body());
-			delete e;
 			return;
 		}
 	}
+	m_World.DestroyBody(e->M_Body());
+	delete e;
 }
 
 void C_PhysicsManager::M_SetContactListener(b2ContactListener* cl)

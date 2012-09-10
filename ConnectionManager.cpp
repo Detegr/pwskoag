@@ -1,5 +1,6 @@
 #include "ConnectionManager.h"
 #include "serversingleton.h"
+#include "networkenum.h"
 
 using namespace dtglib;
 
@@ -62,9 +63,10 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 
 		for(std::list<C_Bullet*>::iterator it=c->m_Bullets.begin(); it!=c->m_Bullets.end(); ++it)
 		{
-			if((*it)->M_Hits() >= 2)
+			if((*it)->M_Hits() >= C_Entity::BULLET_HITS)
 			{
-				delete *it;
+				p << (unsigned char)NET::EntityDeleted << (*it)->M_Id();
+				C_Singleton::M_PhysicsManager()->M_DestroyEntity(*it);
 				it=c->m_Bullets.erase(it);
 				continue;
 			}

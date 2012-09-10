@@ -14,4 +14,5 @@ class C_Bullet : public C_Entity, public b2ContactListener
 		void PreSolve(b2Contact*, const b2Manifold*) {}
 		void PostSolve(b2Contact* c, const b2ContactImpulse* impulse);
 	public:
+		int M_Hits() const { return m_Data[1]; }
 };

@@ -3,12 +3,11 @@
 
 void C_ContactListener::BeginContact(b2Contact *c)
 {
-	C_Entity::Type* ud1=(C_Entity::Type*)c->GetFixtureA()->GetBody()->GetUserData();
-	C_Entity::Type* ud2=(C_Entity::Type*)c->GetFixtureB()->GetBody()->GetUserData();
-	if(*ud1 == C_Entity::Type::Bullet || *ud2 == C_Entity::Type::Bullet)
-	{
-		std::cout << "Bullet hit." << std::endl;
-	}
+	int* ud1=(int*)c->GetFixtureA()->GetBody()->GetUserData();
+	int* ud2=(int*)c->GetFixtureB()->GetBody()->GetUserData();
+	// Count the hits
+	if(ud1[0] == C_Entity::Type::Bullet) ud1[1]++;
+	if(ud2[0] == C_Entity::Type::Bullet) ud2[1]++;
 }
 void C_ContactListener::EndContact(b2Contact *)
 {

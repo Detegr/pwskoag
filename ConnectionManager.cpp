@@ -60,8 +60,14 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 	{
 		if(c->M_Pending()) continue;
 
-		for(std::vector<C_Bullet*>::const_iterator it=c->m_Bullets.begin(); it!=c->m_Bullets.end(); ++it)
+		for(std::list<C_Bullet*>::iterator it=c->m_Bullets.begin(); it!=c->m_Bullets.end(); ++it)
 		{
+			if((*it)->M_Hits() >= 2)
+			{
+				delete *it;
+				it=c->m_Bullets.erase(it);
+				continue;
+			}
 			*(*it) >> p;
 		}
 
@@ -86,23 +92,27 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 		}
 		if(keyvec & 0x20)
 		{
-			C_PhysicsManager* pm=C_Singleton::M_PhysicsManager();
-			C_ModelManager* m=C_Singleton::M_ModelManager();
-			C_Bullet* b=pm->M_CreateBullet(m->M_Get("box"), 0.01f);
-			b2Body* body=c->M_GetEntity()->M_Body();
-			b2Vec2 pos=body->GetPosition();
-			float angle=body->GetAngle();
-			float speed=20.0f;
-			b2Vec2 newv(-sin(angle), cos(angle));
-			newv*=speed;
-			b2Vec2 align=b2Vec2(-sin(angle), cos(angle));
-			//align*=0.2;
-			pos+=align;
-			b->M_Body()->SetTransform(pos, 0.0f);
-			b->M_Body()->SetLinearVelocity(newv);
-			b->M_Body()->SetBullet(true);
-			b->M_DumpFullInstance(p);
-			c->m_Bullets.push_back(b);
+			if(c->m_ShootTimer.M_Get() > .25f)
+			{
+				c->m_ShootTimer.M_Reset();
+				C_PhysicsManager* pm=C_Singleton::M_PhysicsManager();
+				C_ModelManager* m=C_Singleton::M_ModelManager();
+				C_Bullet* b=pm->M_CreateBullet(m->M_Get("box"), 0.01f);
+				b2Body* body=c->M_GetEntity()->M_Body();
+				b2Vec2 pos=body->GetPosition();
+				float angle=body->GetAngle();
+				float speed=20.0f;
+				b2Vec2 newv(-sin(angle), cos(angle));
+				newv*=speed;
+				b2Vec2 align=b2Vec2(-sin(angle), cos(angle));
+				//align*=0.2;
+				pos+=align;
+				b->M_Body()->SetTransform(pos, 0.0f);
+				b->M_Body()->SetLinearVelocity(newv);
+				b->M_Body()->SetBullet(true);
+				b->M_DumpFullInstance(p);
+				c->m_Bullets.push_back(b);
+			}
 		}
 		sock.M_Send(p, c->m_Ip, c->m_Port);
 	}

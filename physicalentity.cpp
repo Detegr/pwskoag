@@ -4,15 +4,17 @@
 #define TOWORLD 10.0f
 
 C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic, Type t) : 
-	m_Id(0), m_Model(m), m_Scale(s), m_Dynamic(dynamic), m_Body(NULL), m_Type(t)
+	m_Id(0), m_Model(m), m_Scale(s), m_Dynamic(dynamic), m_Body(NULL), m_Data()
 {
 	static unsigned int id=0;
 	id++;
 	m_Id=id;
+	memset(m_Data, 0, 2);
+	m_Data[0]=t;
 	b2BodyDef bodydef;
 	if(dynamic) bodydef.type=b2_dynamicBody;
 	m_Body=w.CreateBody(&bodydef);
-	m_Body->SetUserData(&m_Type);
+	m_Body->SetUserData(&m_Data);
 
 	b2PolygonShape hitshape;
 	hitshape.SetAsBox((m_Model.M_Width()/2)*s*TOWORLD, (m_Model.M_Height()/2)*s*TOWORLD);

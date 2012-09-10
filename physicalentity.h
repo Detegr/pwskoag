@@ -22,7 +22,7 @@ class C_Entity
 		float	m_Scale;
 		bool	m_Dynamic;
 		b2Body* m_Body;
-		Type	m_Type;
+		int		m_Data[2];
 
 		C_Entity(b2World& w, const C_Model& m, float scale=1.0f, bool dynamic=true, Type t=Default);
 	public:

@@ -9,7 +9,7 @@ C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic, Type t) 
 	static unsigned int id=0;
 	id++;
 	m_Id=id;
-	memset(m_Data, 0, 2);
+	memset(&m_Data, 0, 2);
 	m_Data[0]=t;
 	b2BodyDef bodydef;
 	if(dynamic) bodydef.type=b2_dynamicBody;
@@ -27,6 +27,14 @@ C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic, Type t) 
 
 	dynamic ? m_Body->CreateFixture(&fix) : m_Body->CreateFixture(&hitshape, 0.0f);
 }
+
+C_Entity::~C_Entity()
+{
+	m_Body->SetUserData(NULL);
+	m_Body->GetWorld()->DestroyBody(m_Body);
+	m_Body=NULL;
+}
+
 void C_Entity::M_SetPosition(float x, float y)
 {
 	m_Body->SetTransform(b2Vec2(x*TOWORLD, y*TOWORLD), 0.0f);

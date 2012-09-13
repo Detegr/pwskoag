@@ -16,6 +16,7 @@ class C_Entity
 	protected:
 		C_Entity() {}
 		C_Entity(const C_Entity&) {}
+		virtual ~C_Entity();
 
 		unsigned short m_Id;
 		C_Model m_Model;

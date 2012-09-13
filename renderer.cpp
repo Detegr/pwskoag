@@ -55,7 +55,7 @@ void C_Renderer::M_Draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
 	{
-		if((*it)->M_ModelName() == "triangle") M_Use(C_Singleton::M_ShaderManager()->M_Get("green"));
+		if((*it)->M_ModelName() == "triangle" || (*it)->M_ModelName() == "bullet") M_Use(C_Singleton::M_ShaderManager()->M_Get("green"));
 		else M_Use(C_Singleton::M_ShaderManager()->M_Get("minimal"));
 		glm::mat4 MVP=m_Projection*m_View*(*it)->M_ModelMatrix();
 		glUniformMatrix4fv(m_MVP, 1, GL_FALSE, glm::value_ptr(MVP));

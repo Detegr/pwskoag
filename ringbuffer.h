@@ -102,7 +102,7 @@ class C_Extrapolator : public C_RingBuffer<T>
 		T m_Current;
 	public:
 		C_RingBuffer<T> m_Hops;
-		C_Extrapolator(size_t size=3) : C_RingBuffer<T>(size), m_Prev(false), m_Hops(size-1) {}
+		C_Extrapolator(size_t size=4) : C_RingBuffer<T>(size), m_Prev(false), m_Hops(size-1) {}
 		void M_Add(const T& val);
 		T M_ExtrapolateValue() const;
 		T M_Current() const { return m_Current; }

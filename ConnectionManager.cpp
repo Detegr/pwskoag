@@ -99,7 +99,7 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 				c->m_ShootTimer.M_Reset();
 				C_PhysicsManager* pm=C_Singleton::M_PhysicsManager();
 				C_ModelManager* m=C_Singleton::M_ModelManager();
-				C_Bullet* b=pm->M_CreateBullet(m->M_Get("box"), 0.01f);
+				C_Bullet* b=pm->M_CreateBullet(m->M_Get("bullet"), 0.05f);
 				b2Body* body=c->M_GetEntity()->M_Body();
 				b2Vec2 pos=body->GetPosition();
 				float angle=body->GetAngle();

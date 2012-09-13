@@ -41,6 +41,7 @@ int main()
 	if(!m->M_Load("horizwall", "horizwall.2dmodel")) exit(1);
 	if(!m->M_Load("vertwall", "vertwall.2dmodel")) exit(1);
 	if(!m->M_Load("box", "box.2dmodel")) exit(1);
+	if(!m->M_Load("bullet", "bullet.2dmodel")) exit(1);
 
 	C_Entity* top=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
 	C_Entity* bottom=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
@@ -125,6 +126,7 @@ int main()
 				m->M_Get("horizwall") >> packet;
 				m->M_Get("vertwall") >> packet;
 				m->M_Get("box") >> packet;
+				m->M_Get("bullet") >> packet;
 				top->M_DumpFullInstance(packet);
 				bottom->M_DumpFullInstance(packet);
 				left->M_DumpFullInstance(packet);
@@ -159,7 +161,7 @@ int main()
 			newplayers.M_Clear();
 		}
 		packet.M_Clear();
-		g_Sleep(33-((int)t->M_Get()*1000));
+		g_Sleep(30-((int)t->M_Get()*1000));
 		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();

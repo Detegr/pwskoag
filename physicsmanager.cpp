@@ -43,16 +43,17 @@ void C_PhysicsManager::M_Simulate()
 
 void C_PhysicsManager::M_DestroyEntity(C_Entity* e)
 {
+	bool d=false;
 	for(std::vector<C_Entity*>::iterator it=m_Bodies.begin(); it!=m_Bodies.end(); ++it)
 	{
 		if((*it) == e)
 		{
-			m_Bodies.erase(it);
-			return;
+			it=m_Bodies.erase(it);
+			d=true;
+			break;
 		}
 	}
-	m_World.DestroyBody(e->M_Body());
-	delete e;
+	if(d) delete e;
 }
 
 void C_PhysicsManager::M_SetContactListener(b2ContactListener* cl)

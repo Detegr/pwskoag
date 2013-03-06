@@ -28,3 +28,4 @@ linux/
 client
 glm/
 server
+*.pyc

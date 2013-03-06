@@ -72,13 +72,13 @@ void C_PacketParser::M_GfxEntity(C_Packet& p, bool full)
 	C_GfxEntity* e=r->M_GetEntity(id);
 	if(e)
 	{
-		e->M_SetPosition(x/10.0f, y/10.0f);
+		e->M_SetPosition(x,y);
 		e->M_SetRotation(angle);
 	}
 	else if(full)
 	{
 		C_GfxEntity* e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), scale);
-		e->M_SetPosition(x/10.0f, y/10.0f);
+		e->M_SetPosition(x,y);
 		e->M_SetRotation(angle);
 	}
 }

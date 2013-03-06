@@ -43,6 +43,11 @@ C_Renderer::C_Renderer(unsigned width, unsigned height) :
 	std::cout << "OK!" << std::endl;
 }
 
+void C_Renderer::SetView(const C_Vec2& pos)
+{
+	m_View=glm::lookAt(glm::vec3(pos.x,pos.y,1), glm::vec3(pos.x, pos.y, 0), glm::vec3(0,1,0));
+}
+
 void C_Renderer::M_Use(const C_Shader& s)
 {
 	m_CurrentShader=s.M_Id();
@@ -57,6 +62,12 @@ void C_Renderer::M_Draw()
 	{
 		if((*it)->M_ModelName() == "triangle" || (*it)->M_ModelName() == "bullet") M_Use(C_Singleton::M_ShaderManager()->M_Get("green"));
 		else M_Use(C_Singleton::M_ShaderManager()->M_Get("minimal"));
+		/*
+		if((*it)->M_ModelName() == "triangle")
+		{
+			SetView((*it)->GetPosition());
+		}
+		*/
 		glm::mat4 MVP=m_Projection*m_View*(*it)->M_ModelMatrix();
 		glUniformMatrix4fv(m_MVP, 1, GL_FALSE, glm::value_ptr(MVP));
 		(*it)->M_Draw();

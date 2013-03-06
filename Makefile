@@ -2,7 +2,7 @@ CC=g++ -Os -Wall -Wextra -Werror -Wno-comment -std=c++0x
 CFLAGS=-I/usr/local/include/GL -I/usr/local/include -L /usr/local/lib -L dtglib/
 SERVERCFLAGS=-I/usr/local/include -L /usr/local/lib -Ldtglib/
 SERVERLIBS=-ldtglib -lBox2D -lpthread
-LIBS=-ldtglib -lGL -lGLU -lglfw -lXrandr -lBox2D
+LIBS=-ldtglib -lGL -lGLU -lglfw -lXrandr -lBox2D -ldl -lpthread
 OSXLIBS=-framework OpenGL -framework Cocoa -lglfw -lBox2D -ldtglib
 SOURCES=singleton.cpp renderer.cpp inputhandler.cpp shadermanager.cpp filereader.cpp modelmanager.cpp entity.cpp model.cpp gfxtimer.cpp timer.cpp
 MAIN=client.cpp

@@ -43,11 +43,15 @@ int main()
 	if(!m->M_Load("box", "box.2dmodel")) exit(1);
 	if(!m->M_Load("bullet", "bullet.2dmodel")) exit(1);
 
-	C_Entity* top=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
-	C_Entity* bottom=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
-	C_Entity* left=p->M_CreateStaticEntity(m->M_Get("vertwall"), 2.0f);
-	C_Entity* right=p->M_CreateStaticEntity(m->M_Get("vertwall"), 2.0f);
+	C_Entity* top=p->M_CreateDynamicEntity(m->M_Get("horizwall"), 2.0f);
+	C_Entity* bottom=p->M_CreateDynamicEntity(m->M_Get("horizwall"), 2.0f);
+	C_Entity* left=p->M_CreateDynamicEntity(m->M_Get("vertwall"), 2.0f);
+	C_Entity* right=p->M_CreateDynamicEntity(m->M_Get("vertwall"), 2.0f);
 	std::vector<C_Entity*> boxes;
+	boxes.push_back(top);
+	boxes.push_back(bottom);
+	boxes.push_back(left);
+	boxes.push_back(right);
 	std::vector<C_Entity*> players;
 
 	float x=-1.0f;

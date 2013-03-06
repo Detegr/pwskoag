@@ -44,14 +44,14 @@ void C_Entity::operator>>(dtglib::C_Packet& p)
 {
 	b2Vec2 pos=m_Body->GetPosition();
 	float angle=m_Body->GetAngle();
-	p << (unsigned char)NET::EntityBegin << m_Id << pos.x << pos.y << angle;
+	p << (unsigned char)NET::EntityBegin << m_Id << pos.x/TOWORLD << pos.y/TOWORLD << angle;
 }
 
 void C_Entity::M_DumpFullInstance(dtglib::C_Packet& p)
 {
 	b2Vec2 pos=m_Body->GetPosition();
 	float angle=m_Body->GetAngle();
-	p << (unsigned char)NET::FullEntityBegin << m_Id << m_Model.M_Name() << m_Scale << pos.x << pos.y << angle;
+	p << (unsigned char)NET::FullEntityBegin << m_Id << m_Model.M_Name() << m_Scale << pos.x/TOWORLD << pos.y/TOWORLD << angle;
 }
 
 /*

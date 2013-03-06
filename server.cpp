@@ -164,7 +164,7 @@ int main()
 			newplayers.M_Clear();
 		}
 		packet.M_Clear();
-		g_Sleep(30-((int)t->M_Get()*1000));
+		g_Sleep(60-((int)t->M_Get()*1000));
 		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();

@@ -104,12 +104,14 @@ int main()
 		}
 		else
 		{
+			/*
 			const std::vector<C_GfxEntity*>& entities = r->M_Entities();
 			for(std::vector<C_GfxEntity*>::const_iterator it=entities.begin(); it!=entities.end(); ++it)
 			{
 				(*it)->M_ExtrapolatePosition(idt.M_Get());
 				(*it)->M_ExtrapolateRotation(idt.M_Get());
 			}
+			*/
 		}
 		g_Sleep(1);
 		p.M_Clear();

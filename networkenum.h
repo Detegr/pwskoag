@@ -6,6 +6,7 @@ struct NET
 	{
 		Connect,
 		Disconnect,
+		PlayerId,
 		ModelBegin,
 		ModelIndex,
 		ModelDimensions,

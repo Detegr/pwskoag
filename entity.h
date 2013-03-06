@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/matrix_access.hpp"
 #include "model.h"
 #include "vec2.h"
 #include "ringbuffer.h"
@@ -10,6 +11,7 @@ class C_GfxEntity
 {
 	private:
 		unsigned short m_Id;
+		bool m_IsPlayer;
 		C_Extrapolator<float> m_Ex;
 		C_Extrapolator<float> m_Ey;
 		//C_Vec2 m_Pos;
@@ -41,4 +43,6 @@ class C_GfxEntity
 		const glm::mat4& M_ModelMatrix();
 		void M_Draw() const;
 		unsigned int M_Id() const { return m_Id; }
+		bool IsPlayer() const { return m_IsPlayer; }
+		void SetPlayer(bool b) { m_IsPlayer=b; }
 };

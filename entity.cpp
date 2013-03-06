@@ -1,8 +1,8 @@
 #include "singleton.h"
 #include "entity.h"
 
-C_GfxEntity::C_GfxEntity() : m_Id(0), m_Model(), m_Scale(1.0f), m_ModelMatrix(glm::mat4(1.0f)) {}
-C_GfxEntity::C_GfxEntity(unsigned short id, const C_Model& m, float scale) : m_Id(id), m_Model(m), m_Scale(scale), m_ModelMatrix(glm::mat4(1.0f))
+C_GfxEntity::C_GfxEntity() : m_Id(0), m_IsPlayer(false), m_Model(), m_Scale(1.0f), m_ModelMatrix(glm::mat4(1.0f)) {}
+C_GfxEntity::C_GfxEntity(unsigned short id, const C_Model& m, float scale) : m_Id(id), m_IsPlayer(false), m_Model(m), m_Scale(scale), m_ModelMatrix(glm::mat4(1.0f))
 {
 	M_Scale(scale);
 	glGenBuffers(1, &m_Vbo);
@@ -32,13 +32,11 @@ void C_GfxEntity::M_SetPosition(float x, float y)
 	m_Ex.M_Add(x);
 	m_Ey.M_Add(y);
 	m_TranslationMatrix = glm::translate(glm::mat4(1.0), glm::vec3(x/m_Scale,y/m_Scale,0.0f));
-	//m_Pos.x=x*m_Scale;
-	//m_Pos.y=y*m_Scale;
 }
 
 const C_Vec2 C_GfxEntity::GetPosition() const
 {
-	return C_Vec2(0,0);//m_Pos.x/m_Scale, m_Pos.y/m_Scale);
+	return C_Vec2(m_TranslationMatrix[3][0]*m_Scale, m_TranslationMatrix[3][1]*m_Scale);
 }
 
 void C_GfxEntity::M_ExtrapolatePosition(double dt)
@@ -48,7 +46,6 @@ void C_GfxEntity::M_ExtrapolatePosition(double dt)
 	float xxx = m_Ex.M_Current() + ((xx - m_Ex.M_Current()) * (dt/0.04));
 	float yyy = m_Ey.M_Current() + ((yy - m_Ey.M_Current()) * (dt/0.04));
 	m_TranslationMatrix = glm::translate(glm::mat4(1.0), glm::vec3(xxx/m_Scale,yyy/m_Scale,0.0f));
-	//m_Pos.x=xxx*m_Scale; m_Pos.y=yyy*m_Scale;
 }
 
 void C_GfxEntity::M_Scale(float amount)

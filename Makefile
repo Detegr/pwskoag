@@ -1,13 +1,33 @@
-CC=g++ -Os -Wall -Wextra -Werror -Wno-comment -std=c++0x
+CC=g++ -g3 -Wall -Wextra -Werror -Wno-comment -std=c++0x
 CFLAGS=-I/usr/local/include/GL -I/usr/local/include -L /usr/local/lib -L dtglib/
 SERVERCFLAGS=-I/usr/local/include -L /usr/local/lib -Ldtglib/
 SERVERLIBS=-ldtglib -lBox2D -lpthread
 LIBS=-ldtglib -lGL -lGLU -lglfw -lXrandr -lBox2D -ldl -lpthread
 OSXLIBS=-framework OpenGL -framework Cocoa -lglfw -lBox2D -ldtglib
-SOURCES=singleton.cpp renderer.cpp inputhandler.cpp shadermanager.cpp filereader.cpp modelmanager.cpp entity.cpp model.cpp gfxtimer.cpp timer.cpp
+SOURCES=singleton.cpp \
+		renderer.cpp \
+		inputhandler.cpp \
+		shadermanager.cpp \
+		filereader.cpp \
+		modelmanager.cpp \
+		entity.cpp \
+		model.cpp \
+		gfxtimer.cpp \
+		timer.cpp \
+		packetparser.cpp
+
 MAIN=client.cpp
 SERVERMAIN=server.cpp
-SERVERSOURCES=serversingleton.cpp filereader.cpp modelmanager.cpp model.cpp physicsmanager.cpp physicalentity.cpp timer.cpp ConnectionManager.cpp bullet.cpp contactlistener.cpp
+SERVERSOURCES=	serversingleton.cpp \
+				filereader.cpp \
+				modelmanager.cpp \
+				model.cpp \
+				physicsmanager.cpp \
+				physicalentity.cpp \
+				timer.cpp \
+				ConnectionManager.cpp \
+				bullet.cpp \
+				contactlistener.cpp
 SERVERHEADERS=$(SERVERSOURCES:.cpp=.h)
 SERVEROBJECTS=$(SERVERSOURCES:.cpp=.o)
 HEADERS=$(SOURCES:.cpp=.h)

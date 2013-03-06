@@ -43,15 +43,12 @@ int main()
 	if(!m->M_Load("box", "box.2dmodel")) exit(1);
 	if(!m->M_Load("bullet", "bullet.2dmodel")) exit(1);
 
-	C_Entity* top=p->M_CreateDynamicEntity(m->M_Get("horizwall"), 2.0f);
-	C_Entity* bottom=p->M_CreateDynamicEntity(m->M_Get("horizwall"), 2.0f);
-	C_Entity* left=p->M_CreateDynamicEntity(m->M_Get("vertwall"), 2.0f);
-	C_Entity* right=p->M_CreateDynamicEntity(m->M_Get("vertwall"), 2.0f);
+	C_Entity* top=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
+	C_Entity* bottom=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
+	C_Entity* left=p->M_CreateStaticEntity(m->M_Get("vertwall"), 2.0f);
+	C_Entity* right=p->M_CreateStaticEntity(m->M_Get("vertwall"), 2.0f);
+
 	std::vector<C_Entity*> boxes;
-	boxes.push_back(top);
-	boxes.push_back(bottom);
-	boxes.push_back(left);
-	boxes.push_back(right);
 	std::vector<C_Entity*> players;
 
 	float x=-1.0f;
@@ -71,10 +68,10 @@ int main()
 		y-=2.0f/rows;
 	}
 
-	top->M_SetPosition(0,1.0f);
-	bottom->M_SetPosition(0,-1.0f);
-	left->M_SetPosition(-1.6f,0.0f);
-	right->M_SetPosition(1.6f,0.0f);
+	top->M_SetPosition(0,2.0f);
+	bottom->M_SetPosition(0,-2.0f);
+	left->M_SetPosition(-2.0f,0.0f);
+	right->M_SetPosition(2.0f,0.0f);
 
 	C_IpAddress ip; unsigned short port;
 	C_Packet packet;
@@ -131,6 +128,7 @@ int main()
 				m->M_Get("vertwall") >> packet;
 				m->M_Get("box") >> packet;
 				m->M_Get("bullet") >> packet;
+
 				top->M_DumpFullInstance(packet);
 				bottom->M_DumpFullInstance(packet);
 				left->M_DumpFullInstance(packet);
@@ -145,6 +143,7 @@ int main()
 				{
 					(*it)->M_DumpFullInstance(packet);
 				}
+				packet << (unsigned char)NET::PlayerId << e->M_Id();
 				sock.M_Send(packet, ip, port);
 				packet.M_Clear();
 				players.push_back(e);

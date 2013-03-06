@@ -62,12 +62,10 @@ void C_Renderer::M_Draw()
 	{
 		if((*it)->M_ModelName() == "triangle" || (*it)->M_ModelName() == "bullet") M_Use(C_Singleton::M_ShaderManager()->M_Get("green"));
 		else M_Use(C_Singleton::M_ShaderManager()->M_Get("minimal"));
-		/*
-		if((*it)->M_ModelName() == "triangle")
+		if((*it)->IsPlayer())
 		{
 			SetView((*it)->GetPosition());
 		}
-		*/
 		glm::mat4 MVP=m_Projection*m_View*(*it)->M_ModelMatrix();
 		glUniformMatrix4fv(m_MVP, 1, GL_FALSE, glm::value_ptr(MVP));
 		(*it)->M_Draw();

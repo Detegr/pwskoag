@@ -11,7 +11,7 @@ compilation_database_folder = ''
 
 # These are the compilation flags that will be used in case there's no
 # compilation database set.
-flags = ["-Wall", "-Wextra", "-Werror", "-Wno-comment", "-std=c++0x", '-DUSE_CLANG_COMPLETER', '-x', 'c++']
+flags = ["-Wall", "-Wextra", "-Werror", "-Wno-comment", "-std=c++0x", '-DUSE_CLANG_COMPLETER', '-x', 'c++', "-I", "."]
 
 if compilation_database_folder:
   database = ycm_core.CompilationDatabase( compilation_database_folder )

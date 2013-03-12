@@ -60,7 +60,7 @@ int main()
 		x=-1.0f;
 		for(int i=0; i<4; ++i) {
 			C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), size);
-			b->M_SetPosition(x, y);
+			b->SetPosition(x, y);
 			x+=0.15f;
 			boxes.push_back(b);
 		}
@@ -68,10 +68,10 @@ int main()
 		y-=2.0f/rows;
 	}
 
-	top->M_SetPosition(0,2.0f);
-	bottom->M_SetPosition(0,-2.0f);
-	left->M_SetPosition(-2.0f,0.0f);
-	right->M_SetPosition(2.0f,0.0f);
+	top->SetPosition(0,2.0f);
+	bottom->SetPosition(0,-2.0f);
+	left->SetPosition(-2.0f,0.0f);
+	right->SetPosition(2.0f,0.0f);
 
 	C_IpAddress ip; unsigned short port;
 	C_Packet packet;
@@ -121,7 +121,7 @@ int main()
 				packet.M_Clear();
 				c=pool.M_Add(new C_Connection(ip,port));
 				C_Entity* e=p->M_CreateDynamicEntity(m->M_Get("triangle"), 0.08f);
-				e->M_SetPosition(0,0);
+				e->SetPosition(0,0);
 				c->M_SetEntity(e);
 				m->M_Get("triangle") >> packet;
 				m->M_Get("horizwall") >> packet;
@@ -164,7 +164,7 @@ int main()
 			newplayers.M_Clear();
 		}
 		packet.M_Clear();
-		g_Sleep(60-((int)t->M_Get()*1000));
+		g_Sleep(250-((int)t->M_Get()*1000));
 		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();

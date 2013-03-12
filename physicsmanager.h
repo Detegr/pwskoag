@@ -26,8 +26,11 @@ class C_PhysicsManager
 	public:
 		void M_Simulate();
 		C_Entity* M_CreateDynamicEntity(const C_Model& m, float s=1.0f);
+		C_Entity* M_CreateDynamicEntity(unsigned short id, const C_Model& m, float s=1.0f);
 		C_Entity* M_CreateStaticEntity(const C_Model& m, float s=1.0f);
+		C_Entity* M_CreateStaticEntity(unsigned short id, const C_Model& m, float s=1.0f);
 		C_Bullet* M_CreateBullet(const C_Model& m, float s=1.0f);
 		void M_DestroyEntity(C_Entity* e);
 		void M_SetContactListener(b2ContactListener* cl);
+		C_Entity* GetEntity(unsigned short id) const;
 };

@@ -27,11 +27,16 @@ void C_GfxEntity::M_Translate(float amount, unsigned char axis)
 	m_TranslationMatrix = glm::translate(m_TranslationMatrix, glm::vec3(xamount,yamount,0.0f));
 }
 
-void C_GfxEntity::M_SetPosition(float x, float y)
+void C_GfxEntity::SetPosition(float x, float y)
 {
 	m_Ex.M_Add(x);
 	m_Ey.M_Add(y);
 	m_TranslationMatrix = glm::translate(glm::mat4(1.0), glm::vec3(x/m_Scale,y/m_Scale,0.0f));
+}
+
+void C_GfxEntity::SetPosition(const C_Vec2& v)
+{
+	m_TranslationMatrix = glm::translate(glm::mat4(1.0), glm::vec3(v.x/m_Scale, v.y/m_Scale, 0.0f));
 }
 
 const C_Vec2 C_GfxEntity::GetPosition() const

@@ -5,6 +5,8 @@
 #include "packetparser.h"
 #include "input.h"
 #include "timer.h"
+#include "physicsmanager.h"
+#include "physicalentity.h"
 
 using namespace dtglib;
 
@@ -75,6 +77,7 @@ int main()
 	C_Singleton::M_InputHandler();
 	C_Renderer* r = C_Singleton::M_Renderer();
 	C_ShaderManager* s = C_Singleton::M_ShaderManager();
+	C_PhysicsManager* pm = C_Singleton::M_PhysicsManager();
 
 	s->M_Load("minimal");
 	s->M_Load("green");
@@ -84,16 +87,20 @@ int main()
 	p.M_Clear();
 
 	unsigned char keyvec=0;
-	unsigned char prevkeyvec=0;
-	C_Timer idt;
-	idt.M_Reset();
+	//unsigned char prevkeyvec=0;
+	C_Timer timer;
+	timer.M_Reset();
 	while(running)
 	{
-		if(sock.M_Receive(p, 0, NULL, NULL))
+		double newt=timer.M_Now();
+		double currt=
+		idt.M_Reset();
+		keyvec=getkeys();
+		/*
+		if(sock.M_Receive(p, 1, NULL, NULL))
 		{
-			idt.M_Reset();
+			//idt.M_Reset();
 			C_Packet keys;
-			keyvec=getkeys();
 			if(prevkeyvec != 0xF0)
 			{
 				keys << keyvec;
@@ -102,8 +109,36 @@ int main()
 			prevkeyvec=keyvec;
 			while(p.M_Size()) C_PacketParser::M_Parse(p);
 		}
-		else
+		*/
+		//else
 		{
+			const std::vector<C_GfxEntity*>& entities = r->M_Entities();
+			for(std::vector<C_GfxEntity*>::const_iterator it=entities.begin(); it!=entities.end(); ++it)
+			{
+				C_Entity* e=pm->GetEntity((*it)->M_Id());
+				if((*it)->IsPlayer())
+				{
+					b2Body* b=e->M_Body();
+					if(keyvec & 0x1)
+					{
+						b->SetAngularVelocity(-3.0f);
+					}
+					else if(keyvec & 0x2)
+					{
+						b->SetAngularVelocity(3.0f);
+					}
+					else b->SetAngularVelocity(0.0f);
+					if(keyvec & 0x8)
+					{
+						float32 a = b->GetAngle();
+						b2Vec2 force = b2Vec2(-sin(a), cos(a));
+						force *= 0.06f;
+						b->ApplyForceToCenter(force);
+					}
+				}
+				(*it)->SetPosition(e->GetPosition().x, e->GetPosition().y);
+				(*it)->M_SetRotation(e->GetRotation());
+			}
 			/*
 			const std::vector<C_GfxEntity*>& entities = r->M_Entities();
 			for(std::vector<C_GfxEntity*>::const_iterator it=entities.begin(); it!=entities.end(); ++it)
@@ -113,7 +148,9 @@ int main()
 			}
 			*/
 		}
-		g_Sleep(1);
+		//g_Sleep(1);
+		g_Sleep(30-((int)idt.M_Get()*1000));
+		pm->M_Simulate();
 		p.M_Clear();
 		r->M_Draw();
 

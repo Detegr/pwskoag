@@ -12,6 +12,16 @@ double C_Timer::M_Get() const
 	#endif
 }
 
+double C_Timer::M_Now() const
+{
+	#ifdef _WIN32
+		return (GetTickCount64()) / 1000.0;
+	#else
+		struct timeval cur;
+		gettimeofday(&cur, NULL);
+		return (((cur.tv_sec*1000000)+(cur.tv_usec));
+}
+
 void C_Timer::M_Reset()
 {
 	#ifdef _WIN32

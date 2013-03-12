@@ -12,9 +12,11 @@ SOURCES=singleton.cpp \
 		modelmanager.cpp \
 		entity.cpp \
 		model.cpp \
-		gfxtimer.cpp \
 		timer.cpp \
-		packetparser.cpp
+		packetparser.cpp \
+		physicsmanager.cpp \
+		physicalentity.cpp \
+		bullet.cpp
 
 MAIN=client.cpp
 SERVERMAIN=server.cpp

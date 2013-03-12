@@ -3,12 +3,24 @@
 
 #define TOWORLD 10.0f
 
-C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic, Type t) : 
-	m_Id(0), m_Model(m), m_Scale(s), m_Dynamic(dynamic), m_Body(NULL), m_Data()
+C_Entity::C_Entity(b2World& w, const C_Model& m, float s, bool dynamic, Type t)
 {
-	static unsigned int id=0;
+	static unsigned short id=0;
 	id++;
+	M_Initialize(id,w,m,s,dynamic,t);
+}
+
+C_Entity::C_Entity(unsigned short id, b2World& w, const C_Model& m, float s, bool dynamic, Type t)
+{
+	M_Initialize(id,w,m,s,dynamic,t);
+}
+
+void C_Entity::M_Initialize(unsigned short id, b2World& w, const C_Model& m, float s, bool dynamic, Type t)
+{
 	m_Id=id;
+	m_Model=m;
+	m_Scale=s;
+	m_Body=NULL;
 	memset(&m_Data, 0, 2);
 	m_Data[0]=t;
 	b2BodyDef bodydef;
@@ -35,9 +47,13 @@ C_Entity::~C_Entity()
 	m_Body=NULL;
 }
 
-void C_Entity::M_SetPosition(float x, float y)
+void C_Entity::SetPosition(float x, float y)
 {
 	m_Body->SetTransform(b2Vec2(x*TOWORLD, y*TOWORLD), 0.0f);
+}
+void C_Entity::SetPosition(const C_Vec2& v)
+{
+	m_Body->SetTransform(b2Vec2(v.x*TOWORLD, v.y*TOWORLD), 0.0f);
 }
 
 void C_Entity::operator>>(dtglib::C_Packet& p)
@@ -51,7 +67,22 @@ void C_Entity::M_DumpFullInstance(dtglib::C_Packet& p)
 {
 	b2Vec2 pos=m_Body->GetPosition();
 	float angle=m_Body->GetAngle();
-	p << (unsigned char)NET::FullEntityBegin << m_Id << m_Model.M_Name() << m_Scale << pos.x/TOWORLD << pos.y/TOWORLD << angle;
+	unsigned char* t=(unsigned char*)m_Body->GetUserData();
+	p << (unsigned char)NET::FullEntityBegin << m_Id << *t << m_Model.M_Name() << m_Scale << pos.x/TOWORLD << pos.y/TOWORLD << angle;
+}
+C_Vec2 C_Entity::GetPosition() const
+{
+	b2Vec2 pos=m_Body->GetPosition();
+	return C_Vec2(pos.x/TOWORLD, pos.y/TOWORLD);
+}
+float C_Entity::GetRotation() const
+{
+	return m_Body->GetAngle();
+}
+
+void C_Entity::SetRotation(float r)
+{
+	m_Body->SetTransform(m_Body->GetPosition(), r);
 }
 
 /*

@@ -20,5 +20,6 @@ class C_Timer
 	public:
 		C_Timer();
 		double M_Get() const;
+		double M_Now() const;
 		void M_Reset();
 };

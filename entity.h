@@ -30,7 +30,8 @@ class C_GfxEntity
 	public:
 		static C_GfxEntity* M_Create(unsigned short id, const C_Model& m, float scale=1.0f);
 		void M_Translate(float amount, unsigned char axis);
-		void M_SetPosition(float x, float y);
+		void SetPosition(float x, float y);
+		void SetPosition(const C_Vec2& v);
 		const C_Vec2 GetPosition() const;
 		void M_ExtrapolatePosition(double dt);
 		void M_Scale(float amount);

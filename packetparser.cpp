@@ -59,21 +59,40 @@ void C_PacketParser::M_GfxEntity(C_Packet& p, bool full)
 	float scale,x,y,angle;
 	scale=x=y=angle=0.0f;
 	unsigned short id=65535;
-	if(full) p >> id >> name >> scale >> x >> y >> angle;
+	unsigned char type;
+
+	if(full) p >> id >> type >> name >> scale >> x >> y >> angle;
 	else p >> id >> x >> y >> angle;
 
+	//C_PhysicsManager* pm=C_Singleton::M_PhysicsManager();
 	C_Renderer* r=C_Singleton::M_Renderer();
 	C_GfxEntity* e=r->M_GetEntity(id);
+	//C_Entity* pe=pm->GetEntity(id);
 	if(e)
 	{
-		e->M_SetPosition(x,y);
-		e->M_SetRotation(angle);
+		//e->SetPosition(pe->GetPosition());
+		//pe->SetPosition(x,y);
+		//e->M_SetRotation(angle);
 	}
 	else if(full)
 	{
 		std::cout << "Creating entity with id: " << id << std::endl;
-		C_GfxEntity* e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), scale);
-		e->M_SetPosition(x,y);
+		C_PhysicsManager* p=C_Singleton::M_PhysicsManager();
+		C_ModelManager* m=C_Singleton::M_ModelManager();
+		const C_Model& model=m->M_Get(name);
+		C_GfxEntity* e=C_GfxEntity::M_Create(id, model, scale);
+		C_Entity* pe;
+		if(type == C_Entity::Fixed)
+		{
+			pe=p->M_CreateStaticEntity(id, model, scale);
+		}
+		else
+		{
+			pe=p->M_CreateDynamicEntity(id, model, scale);
+		}
+		e->SetPosition(x,y);
+		pe->SetPosition(x,y);
+		pe->SetRotation(angle);
 		e->M_SetRotation(angle);
 	}
 }

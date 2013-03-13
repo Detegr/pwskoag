@@ -34,7 +34,7 @@ int main()
 	C_ContactListener contactlistener;
 	C_PhysicsManager* p = C_Singleton::M_PhysicsManager();
 	p->M_SetContactListener(new C_ContactListener);
-	C_Timer* t = C_Singleton::M_Timer();
+	C_Timer* tmr = C_Singleton::M_Timer();
 
 	C_ModelManager* m = C_Singleton::M_ModelManager();
 	if(!m->M_Load("triangle", "test.2dmodel")) exit(1);
@@ -77,9 +77,24 @@ int main()
 	C_Packet packet;
 	C_Packet newplayers;
 
+	double t=0.0;
+	double accu=0.0;
+	const double dt=0.1;
+	C_Timer timer;
+	double currt=timer.M_Now();
+
+	tmr->M_Reset();
+	timer.M_Reset();
 	while(run)
 	{
-		t->M_Reset();
+		double newt=timer.M_Now();
+		double framet=newt-currt;
+		if(framet > 0.25)
+		{
+			framet=0.25;
+		}
+		currt=newt;
+
 		while(sock.M_Receive(packet, 1, &ip, &port))
 		{
 			C_Connection* c = pool.M_Exists(ip,port);
@@ -157,15 +172,27 @@ int main()
 		{
 			*(*it) >> packet;
 		}
-		pool.M_SendToAll(sock, packet);
-		if(newplayers.M_Size())
+
+		accu += framet;
+		while(accu >= dt)
 		{
-			pool.M_SendToAll(sock, newplayers);
-			newplayers.M_Clear();
+			p->M_Simulate(dt);
+			accu -= dt;
+			t += dt;
+		}
+
+		if(100-(int)(timer.M_Get()*1000) == 0)
+		{
+			std::cout << "Sending" << std::endl;
+			pool.M_SendToAll(sock, packet);
+			if(newplayers.M_Size())
+			{
+				pool.M_SendToAll(sock, newplayers);
+				newplayers.M_Clear();
+			}
+			timer.M_Reset();
 		}
 		packet.M_Clear();
-		g_Sleep(250-((int)t->M_Get()*1000));
-		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();
 }

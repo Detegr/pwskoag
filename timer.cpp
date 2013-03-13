@@ -19,7 +19,8 @@ double C_Timer::M_Now() const
 	#else
 		struct timeval cur;
 		gettimeofday(&cur, NULL);
-		return (((cur.tv_sec*1000000)+(cur.tv_usec));
+		return ((cur.tv_sec*1000000)+(cur.tv_usec));
+	#endif
 }
 
 void C_Timer::M_Reset()

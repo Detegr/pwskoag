@@ -64,15 +64,16 @@ void C_PacketParser::M_GfxEntity(C_Packet& p, bool full)
 	if(full) p >> id >> type >> name >> scale >> x >> y >> angle;
 	else p >> id >> x >> y >> angle;
 
-	//C_PhysicsManager* pm=C_Singleton::M_PhysicsManager();
+	C_PhysicsManager* pm=C_Singleton::M_PhysicsManager();
 	C_Renderer* r=C_Singleton::M_Renderer();
 	C_GfxEntity* e=r->M_GetEntity(id);
-	//C_Entity* pe=pm->GetEntity(id);
+	C_Entity* pe=pm->GetEntity(id);
 	if(e)
 	{
-		//e->SetPosition(pe->GetPosition());
-		//pe->SetPosition(x,y);
-		//e->M_SetRotation(angle);
+		e->SetPosition(pe->GetPosition());
+		pe->SetPosition(x,y);
+		e->M_SetRotation(angle);
+		pe->SetRotation(angle);
 	}
 	else if(full)
 	{

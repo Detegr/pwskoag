@@ -49,10 +49,9 @@ C_Entity* C_PhysicsManager::M_CreateStaticEntity(unsigned short id, const C_Mode
 	return m_Bodies.back();
 }
 
-void C_PhysicsManager::M_Simulate()
+void C_PhysicsManager::M_Simulate(double timestep)
 {
-	double dt=C_Singleton::M_Timer()->M_Get()/0.030;
-	m_World.Step(m_TimeStep*dt, m_VelocityIterations, m_PositionIterations);
+	m_World.Step(timestep, m_VelocityIterations, m_PositionIterations);
 }
 
 void C_PhysicsManager::M_DestroyEntity(C_Entity* e)

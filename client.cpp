@@ -87,19 +87,29 @@ int main()
 	p.M_Clear();
 
 	unsigned char keyvec=0;
-	//unsigned char prevkeyvec=0;
+	unsigned char prevkeyvec=0;
 	C_Timer timer;
 	timer.M_Reset();
+
+	double t=0.0;
+	double accu=0.0;
+	const double dt=0.1;
+	double currt=timer.M_Now();
+
 	while(running)
 	{
+		timer.M_Reset();
 		double newt=timer.M_Now();
-		double currt=
-		idt.M_Reset();
+		double framet=newt-currt;
+		if(framet > 0.25)
+		{
+			framet=0.25;
+		}
+		currt=newt;
+
 		keyvec=getkeys();
-		/*
 		if(sock.M_Receive(p, 1, NULL, NULL))
 		{
-			//idt.M_Reset();
 			C_Packet keys;
 			if(prevkeyvec != 0xF0)
 			{
@@ -109,7 +119,6 @@ int main()
 			prevkeyvec=keyvec;
 			while(p.M_Size()) C_PacketParser::M_Parse(p);
 		}
-		*/
 		//else
 		{
 			const std::vector<C_GfxEntity*>& entities = r->M_Entities();
@@ -121,18 +130,18 @@ int main()
 					b2Body* b=e->M_Body();
 					if(keyvec & 0x1)
 					{
-						b->SetAngularVelocity(-3.0f);
+						b->SetAngularVelocity(-0.3f);
 					}
 					else if(keyvec & 0x2)
 					{
-						b->SetAngularVelocity(3.0f);
+						b->SetAngularVelocity(0.3f);
 					}
 					else b->SetAngularVelocity(0.0f);
 					if(keyvec & 0x8)
 					{
 						float32 a = b->GetAngle();
 						b2Vec2 force = b2Vec2(-sin(a), cos(a));
-						force *= 0.06f;
+						force *= 0.6f;
 						b->ApplyForceToCenter(force);
 					}
 				}
@@ -148,11 +157,17 @@ int main()
 			}
 			*/
 		}
-		//g_Sleep(1);
-		g_Sleep(30-((int)idt.M_Get()*1000));
-		pm->M_Simulate();
+		accu += framet;
+		while(accu >= dt)
+		{
+			//pm->M_Simulate(dt);
+			accu -= dt;
+			t += dt;
+		}
 		p.M_Clear();
 		r->M_Draw();
+		
+		//g_Sleep(30-((int)timer.M_Get()*1000));
 
 		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
 	}

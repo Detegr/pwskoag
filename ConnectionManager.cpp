@@ -78,18 +78,18 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 		unsigned char keyvec=c->M_GetKeys();
 		if(keyvec & 0x1)
 		{
-			b->SetAngularVelocity(-3.0f);
+			b->SetAngularVelocity(-0.3f);
 		}
 		else if(keyvec & 0x2)
 		{
-			b->SetAngularVelocity(3.0f);
+			b->SetAngularVelocity(0.3f);
 		}
 		else b->SetAngularVelocity(0.0f);
 		if(keyvec & 0x8)
 		{
 			float32 a = c->M_GetEntity()->M_Body()->GetAngle();
 			b2Vec2 force = b2Vec2(-sin(a), cos(a));
-			force *= 6.0f;
+			force *= 0.6f;
 			b->ApplyForceToCenter(force);
 		}
 		if(keyvec & 0x20)

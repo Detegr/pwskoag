@@ -24,7 +24,7 @@ class C_PhysicsManager
 
 		std::vector<C_Entity*> m_Bodies;
 	public:
-		void M_Simulate();
+		void M_Simulate(double timestep);
 		C_Entity* M_CreateDynamicEntity(const C_Model& m, float s=1.0f);
 		C_Entity* M_CreateDynamicEntity(unsigned short id, const C_Model& m, float s=1.0f);
 		C_Entity* M_CreateStaticEntity(const C_Model& m, float s=1.0f);

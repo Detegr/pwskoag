@@ -72,50 +72,11 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 			}
 			*(*it) >> p;
 		}
-
-		C_Entity* e=c->M_GetEntity();
-		b2Body* b=e->M_Body();
-		unsigned char keyvec=c->M_GetKeys();
-		if(keyvec & 0x1)
-		{
-			b->SetAngularVelocity(-0.3f);
-		}
-		else if(keyvec & 0x2)
-		{
-			b->SetAngularVelocity(0.3f);
-		}
-		else b->SetAngularVelocity(0.0f);
-		if(keyvec & 0x8)
-		{
-			float32 a = c->M_GetEntity()->M_Body()->GetAngle();
-			b2Vec2 force = b2Vec2(-sin(a), cos(a));
-			force *= 0.6f;
-			b->ApplyForceToCenter(force);
-		}
-		if(keyvec & 0x20)
-		{
-			if(c->m_ShootTimer.M_Get() > .25f)
-			{
-				c->m_ShootTimer.M_Reset();
-				C_PhysicsManager* pm=C_Singleton::M_PhysicsManager();
-				C_ModelManager* m=C_Singleton::M_ModelManager();
-				C_Bullet* b=pm->M_CreateBullet(m->M_Get("bullet"), 0.05f);
-				b2Body* body=c->M_GetEntity()->M_Body();
-				b2Vec2 pos=body->GetPosition();
-				float angle=body->GetAngle();
-				float speed=20.0f;
-				b2Vec2 newv(-sin(angle), cos(angle));
-				newv*=speed;
-				b2Vec2 align=b2Vec2(-sin(angle), cos(angle));
-				//align*=0.2;
-				pos+=align;
-				b->M_Body()->SetTransform(pos, 0.0f);
-				b->M_Body()->SetLinearVelocity(newv);
-				b->M_Body()->SetBullet(true);
-				b->M_DumpFullInstance(p);
-				c->m_Bullets.push_back(b);
-			}
-		}
 		sock.M_Send(p, c->m_Ip, c->m_Port);
 	}
+}
+
+void C_ConnectionPool::HandlePlayerInput(C_Connection* c, C_Packet&)
+{
+	C_Singleton::M_PhysicsManager()->ApplyPlayerForces(c->M_GetEntity(), c->M_GetKeys());
 }

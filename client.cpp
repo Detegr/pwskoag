@@ -93,14 +93,14 @@ int main()
 
 	double t=0.0;
 	double accu=0.0;
-	const double dt=0.1;
-	double currt=timer.M_Now();
+	const double dt=0.01;
+	double currt=timer.M_Now()/100000;
 
 	while(running)
 	{
 		timer.M_Reset();
-		double newt=timer.M_Now();
-		double framet=newt-currt;
+		double newt=timer.M_Now()/100000;
+		double framet=(newt-currt);
 		if(framet > 0.25)
 		{
 			framet=0.25;
@@ -127,23 +127,7 @@ int main()
 				C_Entity* e=pm->GetEntity((*it)->M_Id());
 				if((*it)->IsPlayer())
 				{
-					b2Body* b=e->M_Body();
-					if(keyvec & 0x1)
-					{
-						b->SetAngularVelocity(-0.3f);
-					}
-					else if(keyvec & 0x2)
-					{
-						b->SetAngularVelocity(0.3f);
-					}
-					else b->SetAngularVelocity(0.0f);
-					if(keyvec & 0x8)
-					{
-						float32 a = b->GetAngle();
-						b2Vec2 force = b2Vec2(-sin(a), cos(a));
-						force *= 0.6f;
-						b->ApplyForceToCenter(force);
-					}
+					pm->ApplyPlayerForces(e, keyvec);
 				}
 				(*it)->SetPosition(e->GetPosition().x, e->GetPosition().y);
 				(*it)->M_SetRotation(e->GetRotation());
@@ -160,15 +144,14 @@ int main()
 		accu += framet;
 		while(accu >= dt)
 		{
-			//pm->M_Simulate(dt);
+			pm->M_Simulate(dt);
 			accu -= dt;
 			t += dt;
 		}
 		p.M_Clear();
+
 		r->M_Draw();
 		
-		//g_Sleep(30-((int)timer.M_Get()*1000));
-
 		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
 	}
 	p.M_Clear();

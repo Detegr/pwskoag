@@ -42,4 +42,5 @@ class C_ConnectionPool
 		C_Connection* M_Exists(const C_IpAddress& ip, ushort port) const;
 		C_Connection* M_Head() const { return m_Head; }
 		void M_SendToAll(C_UdpSocket& sock, C_Packet& p) const;
+		void HandlePlayerInput(C_Connection* c, C_Packet& p);
 };

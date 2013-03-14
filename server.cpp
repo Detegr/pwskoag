@@ -79,23 +79,23 @@ int main()
 
 	double t=0.0;
 	double accu=0.0;
-	const double dt=0.1;
+	const double dt=0.01;
 	C_Timer timer;
-	double currt=timer.M_Now();
+	double currt=timer.M_Now()/100000;
 
 	tmr->M_Reset();
 	timer.M_Reset();
 	while(run)
 	{
-		double newt=timer.M_Now();
-		double framet=newt-currt;
+		double newt=timer.M_Now()/100000;
+		double framet=(newt-currt);
 		if(framet > 0.25)
 		{
 			framet=0.25;
 		}
 		currt=newt;
 
-		while(sock.M_Receive(packet, 1, &ip, &port))
+		if(sock.M_Receive(packet, 1, &ip, &port))
 		{
 			C_Connection* c = pool.M_Exists(ip,port);
 			if(c)
@@ -128,6 +128,7 @@ int main()
 					else if(header & 0x10)
 					{
 						c->M_SetKeys(header);
+						pool.HandlePlayerInput(c,packet);
 					}
 				}
 			}
@@ -181,15 +182,15 @@ int main()
 			t += dt;
 		}
 
-		if(100-(int)(timer.M_Get()*1000) == 0)
+		if(newplayers.M_Size())
 		{
-			std::cout << "Sending" << std::endl;
+			//pool.M_SendToAll(sock, packet);
+			pool.M_SendToAll(sock, newplayers);
+			newplayers.M_Clear();
+		}
+		else if(50-(int)(timer.M_Get()*1000) <= 0)
+		{
 			pool.M_SendToAll(sock, packet);
-			if(newplayers.M_Size())
-			{
-				pool.M_SendToAll(sock, newplayers);
-				newplayers.M_Clear();
-			}
 			timer.M_Reset();
 		}
 		packet.M_Clear();

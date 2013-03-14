@@ -33,4 +33,5 @@ class C_PhysicsManager
 		void M_DestroyEntity(C_Entity* e);
 		void M_SetContactListener(b2ContactListener* cl);
 		C_Entity* GetEntity(unsigned short id) const;
+		void ApplyPlayerForces(C_Entity* e, unsigned char keyvec);
 };

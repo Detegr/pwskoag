@@ -39,6 +39,7 @@ class C_GfxEntity
 		void M_SetScale(float amount);
 		void M_Rotate(float amount);
 		void M_SetRotation(float amount);
+		float GetRotation() const;
 		void M_ExtrapolateRotation(double dt);
 		const std::string& M_ModelName() const;
 		const glm::mat4& M_ModelMatrix();

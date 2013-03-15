@@ -73,6 +73,12 @@ void C_GfxEntity::M_SetRotation(float amount)
 	m_Er.M_Add(amount*(180/3.14));
 	m_RotationMatrix = glm::rotate(glm::mat4(1.0), (const float)(amount*(180/3.14)), glm::vec3(0.0f, 0.0f, 1.0f));
 }
+
+float C_GfxEntity::GetRotation() const
+{
+	return glm::acos(m_RotationMatrix[0][0]);
+}
+
 void C_GfxEntity::M_ExtrapolateRotation(double dt)
 {
 	float a=m_Er.M_ExtrapolateValue();

@@ -36,7 +36,7 @@ void C_PacketParser::M_Parse(C_Packet& p)
 		{
 			unsigned short id;
 			p >> id;
-			C_Singleton::M_Renderer()->M_GetEntity(id)->SetPlayer(true);
+			C_Singleton::M_Renderer()->GetEntity(id)->SetPlayer(true);
 			return;
 		}
 	}
@@ -50,7 +50,7 @@ void C_PacketParser::M_EntityDeleted(C_Packet& p)
 	unsigned short id;
 	p >> id;
 	C_Renderer* r=C_Singleton::M_Renderer();
-	r->M_DeleteEntity(r->M_GetEntity(id));
+	r->DeleteEntity(r->GetEntity(id));
 }
 
 void C_PacketParser::M_GfxEntity(C_Packet& p, bool full)
@@ -63,7 +63,7 @@ void C_PacketParser::M_GfxEntity(C_Packet& p, bool full)
 	else p >> id >> x >> y >> angle;
 
 	C_Renderer* r=C_Singleton::M_Renderer();
-	C_GfxEntity* e=r->M_GetEntity(id);
+	C_GfxEntity* e=r->GetEntity(id);
 	if(e)
 	{
 		e->M_SetPosition(x,y);
@@ -72,7 +72,15 @@ void C_PacketParser::M_GfxEntity(C_Packet& p, bool full)
 	else if(full)
 	{
 		std::cout << "Creating entity with id: " << id << std::endl;
-		C_GfxEntity* e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), scale);
+		C_GfxEntity* e;
+		if(name == "triangle")
+		{
+			e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), "ulle.tga", scale);
+		}
+		else
+		{
+			e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), scale);
+		}
 		e->M_SetPosition(x,y);
 		e->M_SetRotation(angle);
 	}

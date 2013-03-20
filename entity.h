@@ -6,6 +6,7 @@
 #include "model.h"
 #include "vec2.h"
 #include "ringbuffer.h"
+#include "texture.h"
 
 class C_GfxEntity
 {
@@ -27,8 +28,11 @@ class C_GfxEntity
 		glm::mat4 m_RotationMatrix;
 		C_GfxEntity();
 		C_GfxEntity(unsigned short id, const C_Model& m, float scale);
+
+		C_Texture m_Texture;
 	public:
 		static C_GfxEntity* M_Create(unsigned short id, const C_Model& m, float scale=1.0f);
+		static C_GfxEntity* M_Create(unsigned short id, const C_Model& m, const std::string& texturepath, float scale=1.0f);
 		void M_Translate(float amount, unsigned char axis);
 		void M_SetPosition(float x, float y);
 		const C_Vec2 GetPosition() const;

@@ -8,7 +8,7 @@ C_GfxTimer* C_Singleton::m_GfxTimer;
 
 C_Renderer* C_Singleton::M_Renderer()
 {
-	if(!m_Renderer) m_Renderer = new C_Renderer(DTGLIB_WINDOW_WIDTH, DTGLIB_WINDOW_HEIGHT);
+	if(!m_Renderer) m_Renderer = new C_Renderer(PWSKOAG_WINDOW_WIDTH, PWSKOAG_WINDOW_HEIGHT);
 	return m_Renderer;
 }
 C_InputHandler* C_Singleton::M_InputHandler()

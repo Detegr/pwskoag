@@ -14,7 +14,8 @@ SOURCES=singleton.cpp \
 		model.cpp \
 		gfxtimer.cpp \
 		timer.cpp \
-		packetparser.cpp
+		packetparser.cpp \
+		texture.cpp
 
 MAIN=client.cpp
 SERVERMAIN=server.cpp

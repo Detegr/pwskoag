@@ -48,20 +48,20 @@ void C_Renderer::SetView(const C_Vec2& pos)
 	m_View=glm::lookAt(glm::vec3(pos.x,pos.y,1), glm::vec3(pos.x, pos.y, 0), glm::vec3(0,1,0));
 }
 
-void C_Renderer::M_Use(const C_Shader& s)
+void C_Renderer::UseShader(const C_Shader& s)
 {
 	m_CurrentShader=s.M_Id();
 	glUseProgram(m_CurrentShader);
 	m_MVP = glGetUniformLocation(m_CurrentShader, "MVP");
 }
 
-void C_Renderer::M_Draw()
+void C_Renderer::Draw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
 	{
-		if((*it)->M_ModelName() == "triangle" || (*it)->M_ModelName() == "bullet") M_Use(C_Singleton::M_ShaderManager()->M_Get("green"));
-		else M_Use(C_Singleton::M_ShaderManager()->M_Get("minimal"));
+		if((*it)->M_ModelName() == "triangle" || (*it)->M_ModelName() == "bullet") UseShader(C_Singleton::M_ShaderManager()->M_Get("green"));
+		else UseShader(C_Singleton::M_ShaderManager()->M_Get("minimal"));
 		if((*it)->IsPlayer())
 		{
 			SetView((*it)->GetPosition());
@@ -84,11 +84,11 @@ C_Renderer::~C_Renderer()
 	std::cout << "OK!" << std::endl;
 }
 
-void C_Renderer::M_AddEntity(C_GfxEntity* e)
+void C_Renderer::AddEntity(C_GfxEntity* e)
 {
 	m_Entities.push_back(e);
 }
-void C_Renderer::M_DeleteEntity(C_GfxEntity* e)
+void C_Renderer::DeleteEntity(C_GfxEntity* e)
 {
 	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
 	{
@@ -101,11 +101,16 @@ void C_Renderer::M_DeleteEntity(C_GfxEntity* e)
 	}
 }
 
-C_GfxEntity* C_Renderer::M_GetEntity(unsigned short id)
+C_GfxEntity* C_Renderer::GetEntity(unsigned short id)
 {
 	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
 	{
 		if((*it)->M_Id() == id) return *it;
 	}
 	return NULL;
+}
+
+GLuint C_Renderer::CurrentShaderId() const
+{
+	return m_CurrentShader;
 }

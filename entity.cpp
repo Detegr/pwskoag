@@ -1,5 +1,6 @@
 #include "singleton.h"
 #include "entity.h"
+#include "glm/gtc/type_ptr.hpp"
 
 C_GfxEntity::C_GfxEntity() : m_Id(0), m_IsPlayer(false), m_Model(), m_Scale(1.0f), m_ModelMatrix(glm::mat4(1.0f)) {}
 C_GfxEntity::C_GfxEntity(unsigned short id, const C_Model& m, float scale) : m_Id(id), m_IsPlayer(false), m_Model(m), m_Scale(scale), m_ModelMatrix(glm::mat4(1.0f))
@@ -14,7 +15,16 @@ C_GfxEntity* C_GfxEntity::M_Create(unsigned short id, const C_Model& m, float sc
 {
 	C_GfxEntity* e=new C_GfxEntity(id, m, scale);
 	C_Renderer* r = C_Singleton::M_Renderer();
-	r->M_AddEntity(e);
+	r->AddEntity(e);
+	return e;
+}
+
+C_GfxEntity* C_GfxEntity::M_Create(unsigned short id, const C_Model& m, const std::string& texturepath, float scale)
+{
+	C_GfxEntity* e = M_Create(id,m,scale);
+	std::cout << "Loading texture " << texturepath << "...";
+	if(e->m_Texture.LoadData(texturepath)) std::cout << "OK!" << std::endl;
+	else std::cout << "failed!" << std::endl;
 	return e;
 }
 
@@ -87,9 +97,31 @@ const std::string& C_GfxEntity::M_ModelName() const
 
 void C_GfxEntity::M_Draw() const
 {
+	if(m_Texture.Id())
+	{
+		GLuint texloc=glGetUniformLocation(C_Singleton::M_Renderer()->CurrentShaderId(), "texsampler");
+		glUniform1i(texloc, m_Texture.Id());
+
+		std::cout << "texloc: " << texloc << " texid: " << m_Texture.Id() << std::endl;
+
+		GLfloat uv[5*2] = {	0.0f, 0.0f,
+							0.2f, 0.2f,
+							0.4f, 0.4f,
+							0.6f, 0.6f,
+							1.0f, 1.0f };
+		GLuint colorbuf;
+		glGenBuffers(1, &colorbuf);
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuf);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(uv), uv, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuf);
+		glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,(void*)0);
+	}
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, m_Vbo);
 	glVertexAttribPointer(0,C_Model::COMPONENTS_PER_VERT,GL_FLOAT,GL_FALSE,0,(void*)0);
 	glDrawArrays(GL_TRIANGLE_STRIP,0,m_Model.M_Vertices().size());
 	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
 }

@@ -5,8 +5,8 @@
 #include "modelmanager.h"
 #include "gfxtimer.h"
 
-#define DTGLIB_WINDOW_WIDTH 1280
-#define DTGLIB_WINDOW_HEIGHT 800
+#define PWSKOAG_WINDOW_WIDTH 1280
+#define PWSKOAG_WINDOW_HEIGHT 800
 
 class C_Singleton
 {

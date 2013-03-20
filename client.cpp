@@ -78,7 +78,7 @@ int main()
 
 	s->M_Load("minimal");
 	s->M_Load("green");
-	r->M_Use(s->M_Get("minimal"));
+	r->UseShader(s->M_Get("minimal"));
 
 	bool running=true;
 	p.M_Clear();
@@ -104,7 +104,7 @@ int main()
 		}
 		else
 		{
-			const std::vector<C_GfxEntity*>& entities = r->M_Entities();
+			const std::vector<C_GfxEntity*>& entities = r->Entities();
 			for(std::vector<C_GfxEntity*>::const_iterator it=entities.begin(); it!=entities.end(); ++it)
 			{
 				(*it)->M_ExtrapolatePosition(idt.M_Get());
@@ -113,7 +113,7 @@ int main()
 		}
 		g_Sleep(1);
 		p.M_Clear();
-		r->M_Draw();
+		r->Draw();
 
 		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
 	}

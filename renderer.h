@@ -25,12 +25,13 @@ class C_Renderer
 		C_Renderer(unsigned width, unsigned height);
 		~C_Renderer();
 	public:
-		bool M_Opened() {return glfwGetWindowParam(GLFW_OPENED);}
-		void M_Draw();
-		void M_Use(const C_Shader& s);
-		void M_AddEntity(C_GfxEntity* e);
-		void M_DeleteEntity(C_GfxEntity* e);
-		C_GfxEntity* M_GetEntity(unsigned short id);
-		const std::vector<C_GfxEntity*>& M_Entities() const { return m_Entities; }
+		bool IsOpened() {return glfwGetWindowParam(GLFW_OPENED);}
+		void Draw();
+		GLuint CurrentShaderId() const;
+		void UseShader(const C_Shader& s);
+		void AddEntity(C_GfxEntity* e);
+		void DeleteEntity(C_GfxEntity* e);
+		C_GfxEntity* GetEntity(unsigned short id);
+		const std::vector<C_GfxEntity*>& Entities() const { return m_Entities; }
 		void SetView(const C_Vec2& pos);
 };

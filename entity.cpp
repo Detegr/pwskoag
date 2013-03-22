@@ -25,6 +25,7 @@ C_GfxEntity* C_GfxEntity::M_Create(unsigned short id, const C_Model& m, const st
 	std::cout << "Loading texture " << texturepath << "...";
 	if(e->m_Texture.LoadData(texturepath)) std::cout << "OK!" << std::endl;
 	else std::cout << "failed!" << std::endl;
+	e->m_Texture.SetFiltering(GL_NEAREST);
 	return e;
 }
 
@@ -100,11 +101,12 @@ void C_GfxEntity::M_Draw() const
 	if(m_Texture.Id())
 	{
 		GLuint texloc=glGetUniformLocation(C_Singleton::M_Renderer()->CurrentShaderId(), "texsampler");
-		glUniform1i(texloc, m_Texture.Id());
+		glBindTexture(GL_TEXTURE_2D, m_Texture.Id());
+		glUniform1i(texloc, 0);
 
 		std::cout << "texloc: " << texloc << " texid: " << m_Texture.Id() << std::endl;
 
-		GLfloat uv[5*2] = {	0.0f, 0.0f,
+		GLfloat uv[] = {	0.0f, 0.0f,
 							0.2f, 0.2f,
 							0.4f, 0.4f,
 							0.6f, 0.6f,

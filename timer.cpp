@@ -1,7 +1,7 @@
 #include "timer.h"
 
-C_Timer::C_Timer() {M_Reset();}
-double C_Timer::M_Get() const
+C_Timer::C_Timer() {Reset();}
+double C_Timer::Get() const
 {
 	#ifdef _WIN32
 		return (GetTickCount64()-m_Time) / 1000.0;
@@ -12,7 +12,7 @@ double C_Timer::M_Get() const
 	#endif
 }
 
-void C_Timer::M_Reset()
+void C_Timer::Reset()
 {
 	#ifdef _WIN32
 		m_Time=GetTickCount64();

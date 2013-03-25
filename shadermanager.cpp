@@ -23,7 +23,7 @@ bool C_ShaderManager::M_CheckResult(GLuint id, GLuint status)
 	return true;
 }
 
-bool C_ShaderManager::M_Load(const std::string& name)
+bool C_ShaderManager::Load(const std::string& name)
 {
 	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
@@ -59,7 +59,7 @@ bool C_ShaderManager::M_Load(const std::string& name)
 	return true;
 }
 
-const C_Shader& C_ShaderManager::M_Get(const std::string& name) const
+const C_Shader& C_ShaderManager::Get(const std::string& name) const
 {
 	for(std::vector<C_Shader>::const_iterator it=m_Shaders.begin(); it!=m_Shaders.end(); ++it)
 	{

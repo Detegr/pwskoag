@@ -19,6 +19,7 @@ class C_Singleton
 
 	public:
 		static C_Renderer* M_Renderer();
+		static C_Renderer* M_Renderer(unsigned int w, unsigned int h);
 		static C_InputHandler* M_InputHandler();
 		static C_ShaderManager* M_ShaderManager();
 		static C_ModelManager* M_ModelManager();

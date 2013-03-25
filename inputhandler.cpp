@@ -19,7 +19,7 @@ void C_InputHandler::M_HandleKey(int key, int state)
 	if(k!=-1) m_KeysDown[k]=state==GLFW_PRESS?true:false;
 }
 
-bool C_InputHandler::M_Get(Key k)
+bool C_InputHandler::Get(Key k)
 {
 	return m_KeysDown[k];
 }

@@ -22,12 +22,12 @@ class C_Connection
 		ushort		m_Port;
 		C_Connection(const C_IpAddress& ip, ushort port) :
 			m_Next(NULL), m_Prev(NULL), m_Entity(NULL), m_KeyVec(0), m_Pending(true), m_Ip(ip), m_Port(port) {}
-		void M_SetEntity(C_Entity* e) {m_Entity=e;}
-		C_Entity* M_GetEntity() const { return m_Entity; }
-		void M_SetKeys(unsigned char keyvec) { m_KeyVec=keyvec; }
-		unsigned char M_GetKeys() const { return m_KeyVec; }
-		void M_Pending(bool p) {m_Pending=p;}
-		bool M_Pending() const {return m_Pending;}
+		void SetEntity(C_Entity* e) {m_Entity=e;}
+		C_Entity* GetEntity() const { return m_Entity; }
+		void SetKeys(unsigned char keyvec) { m_KeyVec=keyvec; }
+		unsigned char GetKeys() const { return m_KeyVec; }
+		void Pending(bool p) {m_Pending=p;}
+		bool Pending() const {return m_Pending;}
 };
 
 class C_ConnectionPool

@@ -37,16 +37,16 @@ int main()
 	C_Timer* t = C_Singleton::M_Timer();
 
 	C_ModelManager* m = C_Singleton::M_ModelManager();
-	if(!m->M_Load("triangle", "test.2dmodel")) exit(1);
-	if(!m->M_Load("horizwall", "horizwall.2dmodel")) exit(1);
-	if(!m->M_Load("vertwall", "vertwall.2dmodel")) exit(1);
-	if(!m->M_Load("box", "box.2dmodel")) exit(1);
-	if(!m->M_Load("bullet", "bullet.2dmodel")) exit(1);
+	if(!m->Load("triangle", "test.2dmodel")) exit(1);
+	if(!m->Load("horizwall", "horizwall.2dmodel")) exit(1);
+	if(!m->Load("vertwall", "vertwall.2dmodel")) exit(1);
+	if(!m->Load("box", "box.2dmodel")) exit(1);
+	if(!m->Load("bullet", "bullet.2dmodel")) exit(1);
 
-	C_Entity* top=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
-	C_Entity* bottom=p->M_CreateStaticEntity(m->M_Get("horizwall"), 2.0f);
-	C_Entity* left=p->M_CreateStaticEntity(m->M_Get("vertwall"), 2.0f);
-	C_Entity* right=p->M_CreateStaticEntity(m->M_Get("vertwall"), 2.0f);
+	C_Entity* top=p->M_CreateStaticEntity(m->Get("horizwall"), 2.0f);
+	C_Entity* bottom=p->M_CreateStaticEntity(m->Get("horizwall"), 2.0f);
+	C_Entity* left=p->M_CreateStaticEntity(m->Get("vertwall"), 2.0f);
+	C_Entity* right=p->M_CreateStaticEntity(m->Get("vertwall"), 2.0f);
 
 	std::vector<C_Entity*> boxes;
 	std::vector<C_Entity*> players;
@@ -59,7 +59,7 @@ int main()
 	{
 		x=-1.0f;
 		for(int i=0; i<4; ++i) {
-			C_Entity* b=p->M_CreateDynamicEntity(m->M_Get("box"), size);
+			C_Entity* b=p->M_CreateDynamicEntity(m->Get("box"), size);
 			b->M_SetPosition(x, y);
 			x+=0.15f;
 			boxes.push_back(b);
@@ -79,7 +79,7 @@ int main()
 
 	while(run)
 	{
-		t->M_Reset();
+		t->Reset();
 		while(sock.M_Receive(packet, 1, &ip, &port))
 		{
 			C_Connection* c = pool.M_Exists(ip,port);
@@ -87,11 +87,11 @@ int main()
 			{
 				unsigned char header=0;
 				packet >> header;
-				if(c->M_Pending())
+				if(c->Pending())
 				{
 					if(header == NET::Connect)
 					{
-						c->M_Pending(false);
+						c->Pending(false);
 					}
 				}
 				else
@@ -101,18 +101,18 @@ int main()
 						packet.M_Clear();
 						for(std::vector<C_Entity*>::iterator it=players.begin(); it!=players.end(); ++it)
 						{
-							if((*it) == c->M_GetEntity())
+							if((*it) == c->GetEntity())
 							{
 								players.erase(it);
 								break;
 							}
 						}
-						packet << (unsigned char)NET::EntityDeleted << c->M_GetEntity()->M_Id();
+						packet << (unsigned char)NET::EntityDeleted << c->GetEntity()->M_Id();
 						pool.M_Remove(c);
 					}
 					else if(header & 0x10)
 					{
-						c->M_SetKeys(header);
+						c->SetKeys(header);
 					}
 				}
 			}
@@ -120,14 +120,14 @@ int main()
 			{
 				packet.M_Clear();
 				c=pool.M_Add(new C_Connection(ip,port));
-				C_Entity* e=p->M_CreateDynamicEntity(m->M_Get("triangle"), 0.08f);
+				C_Entity* e=p->M_CreateDynamicEntity(m->Get("triangle"), 0.08f);
 				e->M_SetPosition(0,0);
-				c->M_SetEntity(e);
-				m->M_Get("triangle") >> packet;
-				m->M_Get("horizwall") >> packet;
-				m->M_Get("vertwall") >> packet;
-				m->M_Get("box") >> packet;
-				m->M_Get("bullet") >> packet;
+				c->SetEntity(e);
+				m->Get("triangle") >> packet;
+				m->Get("horizwall") >> packet;
+				m->Get("vertwall") >> packet;
+				m->Get("box") >> packet;
+				m->Get("bullet") >> packet;
 
 				top->M_DumpFullInstance(packet);
 				bottom->M_DumpFullInstance(packet);
@@ -164,7 +164,7 @@ int main()
 			newplayers.M_Clear();
 		}
 		packet.M_Clear();
-		g_Sleep(30-((int)t->M_Get()*1000));
+		g_Sleep(30-((int)t->Get()*1000));
 		p->M_Simulate();
 	}
 	C_Singleton::M_DestroySingletons();

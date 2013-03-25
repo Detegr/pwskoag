@@ -14,7 +14,7 @@ C_ModelManager::~C_ModelManager()
 	std::cout << "OK!" << std::endl;
 }
 
-bool C_ModelManager::M_Load(const std::string& name, const std::string& path)
+bool C_ModelManager::Load(const std::string& name, const std::string& path)
 {
 	std::vector<std::string> f=C_FileReader::M_ReadToArray(path);
 	if(!f.size())
@@ -55,14 +55,14 @@ bool C_ModelManager::M_Load(const std::string& name, const std::string& path)
 	return true;
 }
 
-const C_Model* C_ModelManager::M_Create(const std::string& name, const std::vector<float>& verts, float width, float height)
+const C_Model* C_ModelManager::Create(const std::string& name, const std::vector<float>& verts, float width, float height)
 {
 	C_Model* newmodel=new C_Model(name,verts,width,height);
 	m_Models.push_back(newmodel);
 	return newmodel;
 }
 
-const C_Model& C_ModelManager::M_Get(const std::string& name) const
+const C_Model& C_ModelManager::Get(const std::string& name) const
 {
 	for(std::vector<C_Model*>::const_iterator it=m_Models.begin(); it!=m_Models.end(); ++it)
 	{

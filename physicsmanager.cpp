@@ -37,7 +37,7 @@ C_Entity* C_PhysicsManager::M_CreateStaticEntity(const C_Model& m, float scale)
 
 void C_PhysicsManager::M_Simulate()
 {
-	double dt=C_Singleton::M_Timer()->M_Get()/0.030;
+	double dt=C_Singleton::M_Timer()->Get()/0.030;
 	m_World.Step(m_TimeStep*dt, m_VelocityIterations, m_PositionIterations);
 }
 

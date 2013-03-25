@@ -75,11 +75,11 @@ void C_PacketParser::M_GfxEntity(C_Packet& p, bool full)
 		C_GfxEntity* e;
 		if(name == "triangle")
 		{
-			e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), "ulle.tga", scale);
+			e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->Get(name), "ulle.tga", scale);
 		}
 		else
 		{
-			e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->M_Get(name), scale);
+			e=C_GfxEntity::M_Create(id, C_Singleton::M_ModelManager()->Get(name), scale);
 		}
 		e->M_SetPosition(x,y);
 		e->M_SetRotation(angle);
@@ -107,5 +107,5 @@ void C_PacketParser::M_Model(C_Packet& p)
 	p >> w;
 	p >> h;
 
-	C_Singleton::M_ModelManager()->M_Create(name, verts, w, h);
+	C_Singleton::M_ModelManager()->Create(name, verts, w, h);
 }

@@ -49,11 +49,11 @@ unsigned char getkeys()
 {
 	unsigned char keyvec=0x10;
 	C_InputHandler* i = C_Singleton::M_InputHandler();
-	if(i->M_Get(Key::SPACE)) keyvec|=0x20;
-	if(i->M_Get(Key::UP)) keyvec |= 0x8;
-	else if(i->M_Get(Key::DOWN)) keyvec |=0x4;
-	if(i->M_Get(Key::LEFT)) keyvec |= 0x2;
-	else if(i->M_Get(Key::RIGHT)) keyvec |= 0x1;
+	if(i->Get(Key::SPACE)) keyvec|=0x20;
+	if(i->Get(Key::UP)) keyvec |= 0x8;
+	else if(i->Get(Key::DOWN)) keyvec |=0x4;
+	if(i->Get(Key::LEFT)) keyvec |= 0x2;
+	else if(i->Get(Key::RIGHT)) keyvec |= 0x1;
 	return keyvec;
 }
 
@@ -76,9 +76,9 @@ int main()
 	C_Renderer* r = C_Singleton::M_Renderer();
 	C_ShaderManager* s = C_Singleton::M_ShaderManager();
 
-	s->M_Load("minimal");
-	s->M_Load("green");
-	r->UseShader(s->M_Get("minimal"));
+	s->Load("minimal");
+	s->Load("green");
+	//r->UseShader(s->Get("minimal"));
 
 	bool running=true;
 	p.M_Clear();
@@ -86,12 +86,12 @@ int main()
 	unsigned char keyvec=0;
 	unsigned char prevkeyvec=0;
 	C_Timer idt;
-	idt.M_Reset();
+	idt.Reset();
 	while(running)
 	{
 		if(sock.M_Receive(p, 0, NULL, NULL))
 		{
-			idt.M_Reset();
+			idt.Reset();
 			C_Packet keys;
 			keyvec=getkeys();
 			if(prevkeyvec != 0xF0)
@@ -107,15 +107,15 @@ int main()
 			const std::vector<C_GfxEntity*>& entities = r->Entities();
 			for(std::vector<C_GfxEntity*>::const_iterator it=entities.begin(); it!=entities.end(); ++it)
 			{
-				(*it)->M_ExtrapolatePosition(idt.M_Get());
-				(*it)->M_ExtrapolateRotation(idt.M_Get());
+				(*it)->M_ExtrapolatePosition(idt.Get());
+				(*it)->M_ExtrapolateRotation(idt.Get());
 			}
 		}
 		g_Sleep(1);
 		p.M_Clear();
 		r->Draw();
 
-		running=!(C_Singleton::M_InputHandler()->M_Get(ESC));
+		running=!(C_Singleton::M_InputHandler()->Get(ESC));
 	}
 	p.M_Clear();
 	p << (unsigned char)NET::Disconnect;

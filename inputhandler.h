@@ -20,6 +20,6 @@ class C_InputHandler
 
 		static unsigned char m_KeysDown[12];
 	public:
-		static bool M_Get(Key k);
+		static bool Get(Key k);
 };
 

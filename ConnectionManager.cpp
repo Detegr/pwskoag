@@ -42,7 +42,7 @@ void C_ConnectionPool::M_Remove(C_Connection* c)
 		c->m_Prev->m_Next=c->m_Next;
 		c->m_Next->m_Prev=c->m_Prev;
 	}
-	C_Singleton::M_PhysicsManager()->M_DestroyEntity(c->M_GetEntity());
+	C_Singleton::M_PhysicsManager()->M_DestroyEntity(c->GetEntity());
 	delete c;
 }
 
@@ -59,7 +59,7 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 {
 	for(C_Connection* c=m_Head; c; c=c->m_Next)
 	{
-		if(c->M_Pending()) continue;
+		if(c->Pending()) continue;
 
 		for(std::list<C_Bullet*>::iterator it=c->m_Bullets.begin(); it!=c->m_Bullets.end(); ++it)
 		{
@@ -73,9 +73,9 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 			*(*it) >> p;
 		}
 
-		C_Entity* e=c->M_GetEntity();
+		C_Entity* e=c->GetEntity();
 		b2Body* b=e->M_Body();
-		unsigned char keyvec=c->M_GetKeys();
+		unsigned char keyvec=c->GetKeys();
 		if(keyvec & 0x1)
 		{
 			b->SetAngularVelocity(-3.0f);
@@ -87,20 +87,20 @@ void C_ConnectionPool::M_SendToAll(C_UdpSocket& sock, C_Packet& p) const
 		else b->SetAngularVelocity(0.0f);
 		if(keyvec & 0x8)
 		{
-			float32 a = c->M_GetEntity()->M_Body()->GetAngle();
+			float32 a = c->GetEntity()->M_Body()->GetAngle();
 			b2Vec2 force = b2Vec2(-sin(a), cos(a));
 			force *= 6.0f;
 			b->ApplyForceToCenter(force);
 		}
 		if(keyvec & 0x20)
 		{
-			if(c->m_ShootTimer.M_Get() > .25f)
+			if(c->m_ShootTimer.Get() > .25f)
 			{
-				c->m_ShootTimer.M_Reset();
+				c->m_ShootTimer.Reset();
 				C_PhysicsManager* pm=C_Singleton::M_PhysicsManager();
 				C_ModelManager* m=C_Singleton::M_ModelManager();
-				C_Bullet* b=pm->M_CreateBullet(m->M_Get("bullet"), 0.05f);
-				b2Body* body=c->M_GetEntity()->M_Body();
+				C_Bullet* b=pm->M_CreateBullet(m->Get("bullet"), 0.05f);
+				b2Body* body=c->GetEntity()->M_Body();
 				b2Vec2 pos=body->GetPosition();
 				float angle=body->GetAngle();
 				float speed=20.0f;

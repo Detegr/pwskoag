@@ -31,7 +31,7 @@ C_Renderer::C_Renderer(unsigned width, unsigned height) :
 		glfwTerminate();
 		throw std::runtime_error("OpenGL 3.3 is not supported.");
 	}
-	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	glGenVertexArrays(1,&m_VertexArray);
 	glBindVertexArray(m_VertexArray);
@@ -60,8 +60,8 @@ void C_Renderer::Draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
 	{
-		if((*it)->M_ModelName() == "triangle" || (*it)->M_ModelName() == "bullet") UseShader(C_Singleton::M_ShaderManager()->M_Get("green"));
-		else UseShader(C_Singleton::M_ShaderManager()->M_Get("minimal"));
+		if((*it)->M_ModelName() == "triangle" || (*it)->M_ModelName() == "bullet") UseShader(C_Singleton::M_ShaderManager()->Get("green"));
+		else UseShader(C_Singleton::M_ShaderManager()->Get("minimal"));
 		if((*it)->IsPlayer())
 		{
 			SetView((*it)->GetPosition());

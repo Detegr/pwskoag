@@ -40,6 +40,6 @@ class C_ShaderManager
 		std::vector<C_Shader> m_Shaders;
 		bool M_CheckResult(GLuint id, GLuint status);
 	public:
-		bool M_Load(const std::string& name);
-		const C_Shader& M_Get(const std::string& name) const;
+		bool Load(const std::string& name);
+		const C_Shader& Get(const std::string& name) const;
 };

@@ -19,6 +19,6 @@ class C_Timer
 		C_Timer(const C_Timer&) {}
 	public:
 		C_Timer();
-		double M_Get() const;
-		void M_Reset();
+		double Get() const;
+		void Reset();
 };

@@ -13,7 +13,7 @@ class C_ModelManager
 		~C_ModelManager();
 		std::vector<C_Model*> m_Models;
 	public:
-		bool M_Load(const std::string& name, const std::string& path);
-		const C_Model& M_Get(const std::string& model) const;
-		const C_Model* M_Create(const std::string& name, const std::vector<float>& verts, float width, float height);
+		bool Load(const std::string& name, const std::string& path);
+		const C_Model& Get(const std::string& model) const;
+		const C_Model* Create(const std::string& name, const std::vector<float>& verts, float width, float height);
 };

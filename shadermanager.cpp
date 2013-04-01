@@ -67,3 +67,24 @@ const C_Shader& C_ShaderManager::Get(const std::string& name) const
 	}
 	throw std::runtime_error("Shader " + name + " does not exist!");
 }
+
+GLuint C_ShaderManager::GetUniformLocation(const C_Shader& s, const std::string& locname)
+{
+	return glGetUniformLocation(s.M_Id(), locname.c_str());
+}
+
+GLuint C_ShaderManager::GetUniformFromCurrent(const std::string& locname)
+{
+	return GetUniformLocation(*m_CurrentShader, locname.c_str());
+}
+
+void C_ShaderManager::Use(const std::string& name)
+{
+	Use(Get(name));
+}
+
+void C_ShaderManager::Use(const C_Shader& shader)
+{
+	m_CurrentShader = &shader;
+	glUseProgram(m_CurrentShader->M_Id());
+}

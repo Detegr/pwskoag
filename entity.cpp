@@ -85,7 +85,7 @@ void C_GfxEntity::M_ExtrapolateRotation(double dt)
 	float ca=m_Er.M_Current() + ((a - m_Er.M_Current()) * (dt/0.04));
 	m_RotationMatrix = glm::rotate(glm::mat4(1.0), (const float)ca, glm::vec3(0.0f, 0.0f, 1.0f));
 }
-const glm::mat4& C_GfxEntity::M_ModelMatrix()
+const glm::mat4& C_GfxEntity::ModelMatrix()
 {
 	m_ModelMatrix = m_ScaleMatrix * m_TranslationMatrix * m_RotationMatrix;
 	return m_ModelMatrix;

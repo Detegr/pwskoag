@@ -44,7 +44,7 @@ class C_GfxEntity
 		void M_SetRotation(float amount);
 		void M_ExtrapolateRotation(double dt);
 		const std::string& M_ModelName() const;
-		const glm::mat4& M_ModelMatrix();
+		const glm::mat4& ModelMatrix();
 		void M_Draw() const;
 		unsigned int M_Id() const { return m_Id; }
 		bool IsPlayer() const { return m_IsPlayer; }

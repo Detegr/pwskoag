@@ -26,7 +26,7 @@ class C_Renderer
 		~C_Renderer();
 	public:
 		bool IsOpened() {return glfwGetWindowParam(GLFW_OPENED);}
-		void Draw();
+		void Draw(std::function<void (C_GfxEntity*) > renderfunc);
 		GLuint CurrentShaderId() const;
 		void UseShader(const C_Shader& s);
 		void AddEntity(C_GfxEntity* e);
@@ -34,4 +34,8 @@ class C_Renderer
 		C_GfxEntity* GetEntity(unsigned short id);
 		const std::vector<C_GfxEntity*>& Entities() const { return m_Entities; }
 		void SetView(const C_Vec2& pos);
+		void Clear();
+
+		const glm::mat4& ProjectionMatrix() const { return m_Projection; }
+		const glm::mat4& ViewMatrix() const { return m_View; }
 };

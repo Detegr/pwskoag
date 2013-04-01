@@ -5,6 +5,8 @@
 #include "packetparser.h"
 #include "input.h"
 #include "timer.h"
+#include <functional>
+#include "glm/gtc/type_ptr.hpp"
 
 using namespace dtglib;
 
@@ -57,6 +59,23 @@ unsigned char getkeys()
 	return keyvec;
 }
 
+std::function<void (C_GfxEntity*)> drawentity = [] (C_GfxEntity* e)
+{
+	C_Renderer* r = C_Singleton::M_Renderer();
+	C_ShaderManager* s = C_Singleton::M_ShaderManager();
+
+	if(e->M_ModelName() == "triangle" || e->M_ModelName() == "bullet") s->Use("green");
+	else s->Use("minimal");
+
+	if(e->IsPlayer())
+	{
+		r->SetView(e->GetPosition());
+	}
+	glm::mat4 MVP=r->ProjectionMatrix()*r->ViewMatrix()*e->ModelMatrix();
+	glUniformMatrix4fv(s->GetUniformFromCurrent("MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+	e->M_Draw();
+};
+
 int main()
 {
 	#ifdef _WIN32
@@ -78,7 +97,6 @@ int main()
 
 	s->Load("minimal");
 	s->Load("green");
-	//r->UseShader(s->Get("minimal"));
 
 	bool running=true;
 	p.M_Clear();
@@ -113,7 +131,8 @@ int main()
 		}
 		g_Sleep(1);
 		p.M_Clear();
-		r->Draw();
+
+		r->Draw(drawentity);
 
 		running=!(C_Singleton::M_InputHandler()->Get(ESC));
 	}

@@ -23,7 +23,7 @@ class C_ShaderManager
 {
 	friend class C_Singleton;
 	private:
-		C_ShaderManager()
+		C_ShaderManager() : m_CurrentShader(NULL)
 		{
 			std::cout << "Initializing shadermanager..." << std::flush;
 			std::cout << "OK!" << std::endl;
@@ -39,7 +39,14 @@ class C_ShaderManager
 		}
 		std::vector<C_Shader> m_Shaders;
 		bool M_CheckResult(GLuint id, GLuint status);
+
+		const C_Shader* m_CurrentShader;
 	public:
 		bool Load(const std::string& name);
 		const C_Shader& Get(const std::string& name) const;
+		void Use(const std::string& name);
+		void Use(const C_Shader& shader);
+		const C_Shader* Current() const { return m_CurrentShader; }
+		GLuint GetUniformLocation(const C_Shader& s, const std::string& locname);
+		GLuint GetUniformFromCurrent(const std::string& locname);
 };

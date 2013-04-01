@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include "glm/gtc/type_ptr.hpp"
 #include "singleton.h"
+#include <functional>
 
 C_Renderer::C_Renderer(unsigned width, unsigned height) :
 	m_AspectRatio((float)width/(float)height),
@@ -31,7 +32,7 @@ C_Renderer::C_Renderer(unsigned width, unsigned height) :
 		glfwTerminate();
 		throw std::runtime_error("OpenGL 3.3 is not supported.");
 	}
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
 
 	glGenVertexArrays(1,&m_VertexArray);
 	glBindVertexArray(m_VertexArray);
@@ -48,27 +49,12 @@ void C_Renderer::SetView(const C_Vec2& pos)
 	m_View=glm::lookAt(glm::vec3(pos.x,pos.y,1), glm::vec3(pos.x, pos.y, 0), glm::vec3(0,1,0));
 }
 
-void C_Renderer::UseShader(const C_Shader& s)
-{
-	m_CurrentShader=s.M_Id();
-	glUseProgram(m_CurrentShader);
-	m_MVP = glGetUniformLocation(m_CurrentShader, "MVP");
-}
-
-void C_Renderer::Draw()
+void C_Renderer::Draw(std::function<void (C_GfxEntity*) > renderfunc)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for(std::vector<C_GfxEntity*>::iterator it=m_Entities.begin(); it!=m_Entities.end(); ++it)
 	{
-		if((*it)->M_ModelName() == "triangle" || (*it)->M_ModelName() == "bullet") UseShader(C_Singleton::M_ShaderManager()->Get("green"));
-		else UseShader(C_Singleton::M_ShaderManager()->Get("minimal"));
-		if((*it)->IsPlayer())
-		{
-			SetView((*it)->GetPosition());
-		}
-		glm::mat4 MVP=m_Projection*m_View*(*it)->M_ModelMatrix();
-		glUniformMatrix4fv(m_MVP, 1, GL_FALSE, glm::value_ptr(MVP));
-		(*it)->M_Draw();
+		renderfunc(*it);
 	}
 	glfwSwapBuffers();
 }
